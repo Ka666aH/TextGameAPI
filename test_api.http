@@ -1,0 +1,19 @@
+### Тестирование API игры
+
+### Начать игру
+POST http://localhost:5111/game/start
+
+### Показать текущую комнату (автоматически начнет игру, если не начата)
+GET http://localhost:5111/game/currentroom
+
+### Показать инвентарь
+GET http://localhost:5111/game/inventory
+
+### Показать монеты
+GET http://localhost:5111/game/coins
+
+### Перейти в следующую комнату
+POST http://localhost:5111/game/nextroom
+
+### Поиск предметов в текущей комнате
+GET http://localhost:5111/game/search 
