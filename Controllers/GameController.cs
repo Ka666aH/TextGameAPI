@@ -18,15 +18,12 @@ namespace TextGame.Controllers
             try
             {
                 gameRepository.Start();
-                return Results.Ok("Игра успешно начата.");
+                return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Игра не началась из-за ошибки.\n{ex.Message}.");
+                return Results.Json(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message),statusCode: 500);
             }
         }
-
-        
-
     }
 }

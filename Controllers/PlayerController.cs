@@ -18,11 +18,11 @@ namespace TextGame.Controllers
             try
             {
                 var room = gameRepository.ShowCurrentRoom();
-                return Results.Ok(room);
+                return Results.Ok(new SuccessfulResponse(room));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Ошибка при получении текущей комнаты: {ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.CurrentRoomError, ex.Message),statusCode: 500);
             }
         }
 
@@ -32,11 +32,11 @@ namespace TextGame.Controllers
             try
             {
                 var inventory = gameRepository.ShowInventory();
-                return Results.Ok(inventory);
+                return Results.Ok(new SuccessfulResponse(inventory));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Ошибка при получении инвентаря: {ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.InventoryError, ex.Message), statusCode: 500);
             }
         }
 
@@ -46,11 +46,11 @@ namespace TextGame.Controllers
             try
             {
                 var coins = gameRepository.ShowCoins();
-                return Results.Ok(coins);
+                return Results.Ok(new SuccessfulResponse(coins));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Ошибка при получении количества монет: {ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.CoinsError, ex.Message), statusCode: 500);
             }
         }
     }

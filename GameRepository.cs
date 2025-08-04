@@ -81,13 +81,13 @@ namespace TextGame
         public Item GetItemById(int id)
         {
             Item? item = CurrentRoom!.Items.FirstOrDefault(i => i.Id == id);
-            if (item == null) throw new ArgumentNullException("Предмет с таким ID не найден.");
+            if (item == null) throw new ArgumentNullException("item","Предмет с таким ID не найден.");
             return item;
         }
         public Item GetChestItemById(Chest chest, int itemId)
         {
             Item? item = chest.Items.FirstOrDefault(i => i.Id == itemId);
-            if (item == null) throw new ArgumentNullException("Предмет с таким ID не найден.");
+            if (item == null) throw new ArgumentNullException("item","Предмет с таким ID не найден.");
             return item;
         }
 
@@ -160,7 +160,7 @@ namespace TextGame
         public void ValidateChestId(int id)
         {
             Chest? chest = (Chest?)CurrentRoom!.Items.FirstOrDefault(i => i.Id == id);
-            if (chest == null) throw new ArgumentNullException("Сундук с таким ID не найден.");
+            if (chest == null) throw new ArgumentNullException("chest","Сундук с таким ID не найден.");
             if (chest is not Chest) throw new ArgumentException("Это не сундук.");
         }
         public Chest GetChestById(int id)

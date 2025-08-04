@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Drawing;
 namespace TextGame.Controllers
 {
+
     [ApiController]
     [Route("room")]
     public class RoomController
     {
+        private static readonly string itemsReceived = "Предметы получены.";
+        private static readonly string itemReceived = "Предмет получен.";
+
         private readonly IGameRepository gameRepository;
 
         public RoomController(IGameRepository gameRepository)
@@ -17,15 +22,15 @@ namespace TextGame.Controllers
             try
             {
                 gameRepository.GoNextRoom();
-                return Results.Ok("Переход в следующую комнату выполнен.");
+                return Results.Ok(new SuccessfulResponse("Переход в следующую комнату выполнен.")); //выдавать комнату
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Ошибка при переходе в следующую комнату: {ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.NextRoomError, ex.Message), statusCode: 500);
             }
         }
 
@@ -36,15 +41,15 @@ namespace TextGame.Controllers
             try
             {
                 var items = gameRepository.Search();
-                return Results.Ok(items);
+                return Results.Ok(new SuccessfulResponse(items));
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Ошибка при поиске предметов: {ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.SearchError, ex.Message), statusCode: 500);
             }
         }
         [HttpPost("items/take/{itemId}")]
@@ -53,24 +58,24 @@ namespace TextGame.Controllers
             try
             {
                 gameRepository.TakeItem(itemId);
-                return Results.Ok("Предмет получен.");
+                return Results.Ok(new SuccessfulResponse(itemReceived)); //вернуть предмет из инвентаря
 
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
             }
             catch (UncarryableException ex)
             {
-                return Results.Ok($"{ex.Message}");
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UncarryableError, ex.Message));
             }
             catch (ArgumentNullException ex)
             {
-                return Results.BadRequest($"{ex.ParamName}");
+                return Results.NotFound(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Ошибка при подъёме предмета: {ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.TakeItemError, ex.Message), statusCode: 500);
             }
         }
         [HttpPost("items/takeall")]
@@ -79,41 +84,44 @@ namespace TextGame.Controllers
             try
             {
                 gameRepository.TakeAllItems();
-                return Results.Ok("Предметы получены.");
-
+                return Results.Ok(new SuccessfulResponse(itemsReceived)); //вернуть предметы из инвентаря?
             }
             catch (EmptyException ex)
             {
-                return Results.Ok(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.EmptyError, ex.Message));
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Ошибка при подъёме предмета: {ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.TakeItemsError, ex.Message), statusCode: 500);
             }
         }
-        //CHEST
+        #region CHEST
         [HttpGet("chest/{chestId}/islocked")]
-        public IResult CheckState(int chestId)
+        public IResult CheckState(int chestId) //упразднить
         {
             try
             {
-                return Results.Ok(gameRepository.CheckChest(chestId));
+                return Results.Ok(new SuccessfulResponse(gameRepository.CheckChest(chestId))); //вернуть сундук и свойство
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
+            }
+            catch (ArgumentNullException ex)
+            {
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest($"{ex.Message}");
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"{ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.TakeItemsError, ex.Message), statusCode: 500);
             }
         }
         [HttpPost("chest/{chestId}/unlock")]
@@ -121,19 +129,23 @@ namespace TextGame.Controllers
         {
             try
             {
-                return Results.Ok(gameRepository.UnlockChest(chestId));
+                return Results.Ok(new SuccessfulResponse(gameRepository.UnlockChest(chestId))); //вернуть сундук и свойство
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
+            }
+            catch (ArgumentNullException ex)
+            {
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest($"{ex.Message}");
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"{ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.TakeItemsError, ex.Message), statusCode: 500);
             }
         }
         [HttpPost("chest/{chestId}/open")]
@@ -141,31 +153,35 @@ namespace TextGame.Controllers
         {
             try
             {
-                return Results.Ok(gameRepository.OpenChest(id));
+                return Results.Ok(new SuccessfulResponse(gameRepository.OpenChest(id))); //разделить открытие и лут, и объдинить их (не все поймут)
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
             }
             catch (LockedException ex)
             {
-                return Results.Ok($"{ex.Message}");
+                return Results.Ok(new SuccessfulResponse(ex.Message)); //вернуть сундук и свойство? 
             }
             catch (ClosedException ex)
             {
-                return Results.Ok($"{ex.Message}");
+                return Results.Ok(new SuccessfulResponse(ex.Message)); //вернуть сундук и свойство?
             }
             catch (MimicException ex)
             {
-                return Results.Ok($"{ex.Message}");
+                return Results.Ok(new SuccessfulResponse(ex.Message));
+            }
+            catch (ArgumentNullException ex)
+            {
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest($"{ex.Message}");
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"{ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.TakeItemsError, ex.Message), statusCode: 500);
             }
         }
         [HttpPost("chest/{chestId}/take/{itemId}")]
@@ -174,27 +190,31 @@ namespace TextGame.Controllers
             try
             {
                 gameRepository.TakeItemFromChest(chestId, itemId);
-                return Results.Ok("Предмет получен.");
+                return Results.Ok(new SuccessfulResponse(itemReceived)); //вернуть предмет из инвентаря
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
             }
             catch (LockedException ex)
             {
-                return Results.BadRequest($"{ex.Message}");
+                return Results.Ok(new SuccessfulResponse(ex.Message)); //вернуть сундук и свойство? 
             }
             catch (ClosedException ex)
             {
-                return Results.BadRequest($"{ex.Message}");
+                return Results.Ok(new SuccessfulResponse(ex.Message)); //вернуть сундук и свойство?
+            }
+            catch (ArgumentNullException ex)
+            {
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest($"{ex.Message}");
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"{ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.TakeItemsError, ex.Message), statusCode: 500);
             }
         }
         [HttpPost("chest/{chestId}/takeall")]
@@ -203,32 +223,37 @@ namespace TextGame.Controllers
             try
             {
                 gameRepository.TakeAllItemsFromChest(chestId);
-                return Results.Ok("Предметы получены.");
+                return Results.Ok(new SuccessfulResponse(itemsReceived)); //вернуть предметы из инвентаря?
             }
             catch (UnstartedGameException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message));
             }
             catch (EmptyException ex)
             {
-                return Results.Ok(ex.Message);
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.EmptyError, ex.Message));
             }
             catch (LockedException ex)
             {
-                return Results.Ok($"{ex.Message}");
+                return Results.Ok(new SuccessfulResponse(ex.Message)); //вернуть сундук и свойство? 
             }
             catch (ClosedException ex)
             {
-                return Results.Ok($"{ex.Message}");
+                return Results.Ok(new SuccessfulResponse(ex.Message)); //вернуть сундук и свойство?
+            }
+            catch (ArgumentNullException ex)
+            {
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest($"{ex.Message}");
+                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
-                return Results.Problem($"{ex.Message}");
+                return Results.Json(new ErrorResponse(ErrorCodes.TakeItemsError, ex.Message), statusCode: 500);
             }
         }
+        #endregion
     }
 }
