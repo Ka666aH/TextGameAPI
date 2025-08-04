@@ -1,25 +1,107 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TextGame;
-//разделить OPEN и SEARCH
 namespace TextGame.Controllers
 {
     [ApiController]
-    [Route("chest")]
-    public class ChestController
+    [Route("room")]
+    public class RoomController
     {
         private readonly IGameRepository gameRepository;
-        //public readonly Chest chest;
 
-        public ChestController(IGameRepository gameRepository)
+        public RoomController(IGameRepository gameRepository)
         {
             this.gameRepository = gameRepository;
         }
-        [HttpGet("isclosed/{id}")]
-        public IResult CheckState(int id)
+        [HttpPost("next")]
+        public IResult GoNextRoom()
         {
             try
             {
-                return Results.Ok(gameRepository.CheckChest(id));
+                gameRepository.GoNextRoom();
+                return Results.Ok("Переход в следующую комнату выполнен.");
+            }
+            catch (UnstartedGameException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem($"Ошибка при переходе в следующую комнату: {ex.Message}");
+            }
+        }
+
+        //[HttpGet("{roomId}/items")]
+        [HttpGet("search")]
+        public IResult Search()
+        {
+            try
+            {
+                var items = gameRepository.Search();
+                return Results.Ok(items);
+            }
+            catch (UnstartedGameException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem($"Ошибка при поиске предметов: {ex.Message}");
+            }
+        }
+        [HttpPost("items/take/{itemId}")]
+        public IResult TakeItem(int itemId)
+        {
+            try
+            {
+                gameRepository.TakeItem(itemId);
+                return Results.Ok("Предмет получен.");
+
+            }
+            catch (UnstartedGameException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+            catch (UncarryableException ex)
+            {
+                return Results.Ok($"{ex.Message}");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return Results.BadRequest($"{ex.ParamName}");
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem($"Ошибка при подъёме предмета: {ex.Message}");
+            }
+        }
+        [HttpPost("items/takeall")]
+        public IResult TakeAllItems()
+        {
+            try
+            {
+                gameRepository.TakeAllItems();
+                return Results.Ok("Предметы получены.");
+
+            }
+            catch (EmptyException ex)
+            {
+                return Results.Ok(ex.Message);
+            }
+            catch (UnstartedGameException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem($"Ошибка при подъёме предмета: {ex.Message}");
+            }
+        }
+        //CHEST
+        [HttpGet("chest/{chestId}/islocked")]
+        public IResult CheckState(int chestId)
+        {
+            try
+            {
+                return Results.Ok(gameRepository.CheckChest(chestId));
             }
             catch (UnstartedGameException ex)
             {
@@ -34,12 +116,12 @@ namespace TextGame.Controllers
                 return Results.Problem($"{ex.Message}");
             }
         }
-        [HttpPost("unlock/{id}")]
-        public IResult UnlockChest(int id)
+        [HttpPost("chest/{chestId}/unlock")]
+        public IResult UnlockChest(int chestId)
         {
             try
             {
-                return Results.Ok(gameRepository.UnlockChest(id));
+                return Results.Ok(gameRepository.UnlockChest(chestId));
             }
             catch (UnstartedGameException ex)
             {
@@ -54,7 +136,7 @@ namespace TextGame.Controllers
                 return Results.Problem($"{ex.Message}");
             }
         }
-        [HttpPost("open/{id}")]
+        [HttpPost("chest/{chestId}/open")]
         public IResult OpenChest(int id)
         {
             try
@@ -86,7 +168,7 @@ namespace TextGame.Controllers
                 return Results.Problem($"{ex.Message}");
             }
         }
-        [HttpPost("takefromchest/{chestId}/{itemId}")]
+        [HttpPost("chest/{chestId}/take/{itemId}")]
         public IResult TakeItemFromChest(int chestId, int itemId)
         {
             try
@@ -115,7 +197,7 @@ namespace TextGame.Controllers
                 return Results.Problem($"{ex.Message}");
             }
         }
-        [HttpPost("takefromchest/{chestId}")]
+        [HttpPost("chest/{chestId}/takeall")]
         public IResult TakeAllItemsFromChest(int chestId)
         {
             try
