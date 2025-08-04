@@ -1,15 +1,16 @@
 using TextGame;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IRoomNumberFactory, RoomNumberFactory>();
 builder.Services.AddSingleton<IRoomItemFactory, RoomItemFactory>();
 builder.Services.AddSingleton<IChestItemFactory, ChestItemFactory>();
 
-//Сессионные
+//РЎРµСЃСЃРёРѕРЅРЅС‹Рµ
+builder.Services.AddSingleton<IRoomNumberFactory, RoomNumberFactory>();
 builder.Services.AddSingleton<IRoomFactory, RoomFactory>(); 
 builder.Services.AddSingleton<IItemIdFactory, ItemIdFactory>();
 
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
+
 // Add services to the container.
 
 builder.Services.AddControllers();

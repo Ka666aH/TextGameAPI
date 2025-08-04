@@ -1,4 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
+//TODO
+//Добавить комнату выхода (победа)
+//Добавить магазин
+//Добавить оружие (и броню?)
+//Добавить боевую систему
+//Добавить противников
 namespace TextGame
 {
     public class GameRepository : IGameRepository

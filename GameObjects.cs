@@ -8,63 +8,74 @@
     #region Room
     public enum RoomType
     {
-        EmptyRoom,
-        SmallRoom,
-        BigRoom,
+        EndRoom, //1:100
+
+        EmptyRoom, //25:100
+        SmallRoom, //44:100
+        BigRoom, //25:100
+
+        Shop, //5:100
     }
     public class Room : GameObject
     {
         public int Number { get; init; }
         public List<Item> Items { get; set; } = new List<Item>();
+        public Room(string name, string description, int number)
+        {
+            Name = name;
+            Description = description;
+            Number = number;
+        }
+    }
+    public class EndRoom : Room
+    {
+        public EndRoom(IRoomNumberFactory roomNumberFactory) : base("ВЫХОД", "Выход наружу. Свобода.", roomNumberFactory.GetRoomNumber()) { }
     }
     public class EmptyRoom : Room
     {
-        private readonly IRoomNumberFactory roomNumberFactory;
-
-        public EmptyRoom(IRoomNumberFactory roomNumberFactory)
-        {
-            this.roomNumberFactory = roomNumberFactory;
-            Name = "ПУСТАЯ КОМНАТА";
-            Description = "Ничего интересного.";
-            Number = roomNumberFactory.GetRoomNumber();
-            Items = new List<Item>();
-        }
+        public EmptyRoom(IRoomNumberFactory roomNumberFactory) : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", roomNumberFactory.GetRoomNumber()) { }
     }
     public class SmallRoom : Room
     {
-        private readonly IRoomNumberFactory roomNumberFactory;
         private readonly IRoomItemFactory roomItemFactory;
 
-        public SmallRoom(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory)
+        public SmallRoom(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory) : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", roomNumberFactory.GetRoomNumber())
         {
-            this.roomNumberFactory = roomNumberFactory;
             this.roomItemFactory = roomItemFactory;
-            Name = "МАЛЕНЬКАЯ КОМНАТА";
-            Description = "Тесная комната. Может иметь предмет внутри.";
-            Number = roomNumberFactory.GetRoomNumber();
-            Items = new List<Item>();
+
             Item? item = roomItemFactory.CreateItem();
             if (item != null) Items.Add(item);
         }
     }
     public class BigRoom : Room
     {
-        private readonly IRoomNumberFactory roomNumberFactory;
         private readonly IRoomItemFactory roomItemFactory;
 
-        public BigRoom(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory)
+        public BigRoom(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory) : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumberFactory.GetRoomNumber())
         {
-            this.roomNumberFactory = roomNumberFactory;
             this.roomItemFactory = roomItemFactory;
-            Name = "БОЛЬШАЯ КОМНАТА";
-            Description = "Просторная комната. Может иметь до трёх предметов внутри.";
-            Number = roomNumberFactory.GetRoomNumber();
-            Items = new List<Item>();
-            for (int i = 0; i < 3; i++)
+
+            const int itemsAmount = 3;
+            for (int i = 0; i < itemsAmount; i++)
             {
                 Item? item = roomItemFactory.CreateItem();
                 if (item != null) Items.Add(item);
             }
+        }
+    }
+    public class Shop : Room
+    {
+        private readonly IRoomItemFactory roomItemFactory;
+
+        public Shop(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory) : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", roomNumberFactory.GetRoomNumber())
+        {
+            this.roomItemFactory = roomItemFactory;
+            //DO Настроить магазин
+            //for (int i = 0; i < 3; i++)
+            //{
+            //    Item? item = roomItemFactory.CreateItem();
+            //    if (item != null) Items.Add(item);
+            //}
         }
     }
     public interface IRoomNumberFactory
@@ -80,10 +91,7 @@
             Interlocked.Increment(ref Number);
             return Number;
         }
-        public void Reset()
-        {
-            Number = 0;
-        }
+        public void Reset() => Number = 0;
     }
 
     public interface IRoomFactory
@@ -95,8 +103,7 @@
     {
         private readonly IRoomNumberFactory roomNumberFactory;
         private readonly IRoomItemFactory roomItemFactory;
-        private readonly RoomType[] roomTypes = (RoomType[])Enum.GetValues(typeof(RoomType));
-        private readonly Random random = new Random();
+        private readonly Random random = Random.Shared;
 
         public RoomFactory(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory)
         {
@@ -106,28 +113,44 @@
 
         public Room CreateRoom()
         {
-            var roomTypeNumber = random.Next(roomTypes.Length);
-            RoomType roomType = roomTypes[roomTypeNumber];
+            //const int EndRoomMin = 0;
+            //const int EndRoomMax = 0;
+            const int SmallRoomMin = 26;
+            const int SmallRoomMax = 69;
+            const int BigRoomMin = 70;
+            const int BigRoomMax = 94;
+            //const int ShopMin = 95;
+            //const int ShopMax = 99;
+
+
+            var roomTypeNumber = random.Next(100);
+            RoomType roomType = roomTypeNumber switch
+            {
+                //>= EndRoomMin   and <= EndRoomMax   => RoomType.EndRoom,
+                >= SmallRoomMin and <= SmallRoomMax => RoomType.SmallRoom,
+                >= BigRoomMin   and <= BigRoomMax   => RoomType.BigRoom,
+                //>= ShopMin      and <= ShopMax      => RoomType.Shop,
+
+                _ => RoomType.EmptyRoom
+            };
+
             return roomType switch
             {
                 RoomType.SmallRoom => new SmallRoom(roomNumberFactory, roomItemFactory),
                 RoomType.BigRoom => new BigRoom(roomNumberFactory, roomItemFactory),
+                RoomType.EndRoom => new EndRoom(roomNumberFactory),
+                RoomType.Shop => new Shop(roomNumberFactory, roomItemFactory),
                 _ => new EmptyRoom(roomNumberFactory),
             };
         }
     }
     #endregion
-    //public enum EventTypes
-    //{
-    //    Search,
-    //    Open,
-    //    Talk,
-    //}
     #region Item
     public class Item : GameObject
     {
         public int Id { get; init; }
         public bool IsCarryable { get; init; }
+        public int Cost { get; init; }
     }
     public enum ItemType
     {
@@ -209,7 +232,7 @@
                 if (item != null) Items.Add(item);
             }
         }
-        public bool CheckChest() => IsLocked;
+        public bool CheckChest() => IsLocked; //убрать
         public void UnlockChest() => IsLocked = false;
         public List<Item> OpenChest()
         {
