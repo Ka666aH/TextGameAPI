@@ -1,6 +1,4 @@
-﻿//TODO
-//Исправить статус коды
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Drawing;
 namespace TextGame.Controllers
 {
