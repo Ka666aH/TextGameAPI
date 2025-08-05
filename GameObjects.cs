@@ -232,13 +232,14 @@
                 if (item != null) Items.Add(item);
             }
         }
-        public bool CheckChest() => IsLocked; //убрать
-        public void UnlockChest() => IsLocked = false;
-        public List<Item> OpenChest()
-        {
-            IsClosed = false;
+        //public bool CheckChest() => IsLocked; //убрать
+        public void Open() => IsClosed = false;
+        public void Unlock() => IsLocked = false;
+        public List<Item> Search()
+        { 
             return Items;
         }
+
     }
     #endregion
     #region ChestItems

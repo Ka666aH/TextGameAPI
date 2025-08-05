@@ -18,5 +18,6 @@
         public static readonly string EmptyError = "EMPTY_ERROR";
         public static readonly string TakeItemsError = "TAKE_ITEMS_ERROR";
         public static readonly string NotChestError = "NOT_CHEST_ERROR";
+        public static readonly string NoKeyError = "NO_KEY_ERROR";
     }
 }

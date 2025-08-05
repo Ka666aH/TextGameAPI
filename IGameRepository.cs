@@ -8,16 +8,21 @@ namespace TextGame
         void Start();
         void GoNextRoom();
         CurrentRoomDTO ShowCurrentRoom();
-        List<Item> Search();
-        void TakeItem(int id);
-        void TakeAllItems();
+        List<Item> Search(int roomId);
+        void TakeItem(int roomId, int itemId);
+        void TakeAllItems(int roomId);
         //bool IsChestExist(int id);
-        bool CheckChest(int id);
-        bool UnlockChest(int id);
-        List<Item> OpenChest(int id);
-        void TakeItemFromChest(int chestId, int itemId);
-        void TakeAllItemsFromChest(int chestId);
+        //bool CheckChest(int id);
+        ChestDTO ReturnChestDTO(Chest chest);
+        ChestDTO ReturnChestDTO(int roomId, int chestId);
+        void OpenChest(int roomId, int chestId);
+        void UnlockChest(int roomId, int chestId);
+        List<Item> SearchChest(int roomId, int chestId);
+        void TakeItemFromChest(int roomId, int chestId, int itemId);
+        void TakeAllItemsFromChest(int roomId, int chestId);
         List<Item> ShowInventory();
+        Item ShowInventoryItem(int itemId);
+        List<Item> ShowInventoryItems(List<int> itemIds);
         int ShowCoins();
     }
 }
