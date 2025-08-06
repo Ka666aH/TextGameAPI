@@ -54,7 +54,7 @@ namespace TextGame
         public void TakeItem(int roomId, int itemId)
         {
             if (!IsGameStarted) throw new UnstartedGameException();
-            if (!ItemIn(itemId, GetRoomById(roomId).Items)) throw new ArgumentNullException("item", "Предмет с таким ID не найден в комнате.");
+            if (!ItemIn(itemId, GetRoomById(roomId).Items)) throw new NullIdException("ITEM_IN_ROOM_NOT_FOUND", "Предмет с таким ID не найден в комнате.");
             Item item = GetItemById(itemId, CurrentRoom!.Items);
             if (!item.IsCarryable) throw new UncarryableException();
             if (item is Coin) Coins++;
@@ -77,31 +77,28 @@ namespace TextGame
         }
         public bool ItemIn(int itemId, List<Item> items)
         {
-            //Room room = GetRoomById(roomId);
-            Item? item = items.FirstOrDefault(i => i.Id == itemId);
-            if (item == null) throw new ArgumentNullException("item", "Предмет с таким ID не найден.");
-
+            Item? item = GetItemById(itemId, items);
             if (items.Contains(item)) return true;
             else return false;
         }
         public Room GetRoomById(int roomId)
         {
             Room? room = Rooms.FirstOrDefault(r => r.Number == roomId);
-            if (room == null) throw new ArgumentNullException("room", "Комната с таким номером не найдена.");
+            if (room == null) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
             return room;
         }
         public Item GetItemById(int itemId, List<Item> items)
         {
             Item? item = items.FirstOrDefault(i => i.Id == itemId);
-            if (item == null) throw new ArgumentNullException("item", "Предмет с таким ID не найден.");
+            if (item == null) throw new NullIdException("ITEM_NOT_FOUND", "Предмет с таким ID не найден.");
             return item;
         }
-        public Item GetChestItemById(Chest chest, int itemId)
-        {
-            Item? item = chest.Items.FirstOrDefault(i => i.Id == itemId);
-            if (item == null) throw new ArgumentNullException("item", "Предмет с таким ID не найден.");
-            return item;
-        }
+        //public Item GetChestItemById(Chest chest, int itemId)
+        //{
+        //    Item? item = chest.Items.FirstOrDefault(i => i.Id == itemId);
+        //    if (item == null) throw new ArgumentNullException("item", "Предмет с таким ID не найден.");
+        //    return item;
+        //}
 
         //public bool IsChestExist(int id)
         //{
@@ -125,7 +122,7 @@ namespace TextGame
             if (chest.IsMimic)
             {
                 IsGameStarted = false;
-                throw new MimicException();
+                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", ShowGameOverStats());
             }
             chest.Open();
         }
@@ -133,9 +130,9 @@ namespace TextGame
         {
             return new ChestDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
         }
-        public ChestDTO ReturnChestDTO(int roomId,int chestId)
+        public ChestDTO ReturnChestDTO(int roomId, int chestId)
         {
-            Chest chest = GetChestById(roomId,chestId);
+            Chest chest = GetChestById(roomId, chestId);
             return new ChestDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
         }
 
@@ -190,8 +187,8 @@ namespace TextGame
         {
             Room room = GetRoomById(roomId);
             Chest? chest = (Chest?)room!.Items.FirstOrDefault(i => i.Id == chestId);
-            if (chest == null) throw new ArgumentNullException("chest", "Сундук с таким ID не найден.");
-            if (chest is not Chest) throw new ArgumentException("Это не сундук.");
+            if (chest == null) throw new NullIdException("CHEST_NOT_FOUND", "Сундук с таким ID не найден.");
+            if (chest is not Chest) throw new InvalidIdException("NOT_CHEST", "Это не сундук.");
             return chest;
         }
 
@@ -199,7 +196,7 @@ namespace TextGame
         {
             return new CurrentRoomDTO(CurrentRoom!.Number, CurrentRoom!.Name!, CurrentRoom!.Description!);
         }
-        
+
         public List<Item> ShowInventory()
         {
             return Inventory;
@@ -223,7 +220,7 @@ namespace TextGame
         }
         public GameOverStatsDTO ShowGameOverStats()
         {
-            return new(CurrentRoom!.Number, Coins,Inventory);
+            return new(CurrentRoom!.Number, Coins, Inventory);
         }
         //private void EnsureGameStarted()
         //{
@@ -232,33 +229,5 @@ namespace TextGame
         //        Start();
         //    }
         //}
-    }
-    public class UnstartedGameException : Exception
-    {
-        public UnstartedGameException() : base("Игра ещё не начата!") { }
-    }
-    public class EmptyException : Exception
-    {
-        public EmptyException() : base("Тут ничего нет!") { }
-    }
-    public class UncarryableException : Exception
-    {
-        public UncarryableException() : base("Невозможно поднять этот предмет!") { }
-    }
-    public class LockedException : Exception
-    {
-        public LockedException() : base("Сундук заперт!") { }
-    }
-    public class NoKeyException : Exception
-    {
-        public NoKeyException() : base("Нет ключа!") { }
-    }
-    public class ClosedException : Exception
-    {
-        public ClosedException() : base("Сундук закрыт!") { }
-    }
-    public class MimicException : Exception
-    {
-        public MimicException() : base("НА ВАС НАПАЛ МИМИК! ВЫ ПОГИБЛИ!") { }
     }
 }

@@ -15,15 +15,8 @@ namespace TextGame.Controllers
         [HttpPost("")]
         public IResult Start()
         {
-            try
-            {
-                gameRepository.Start();
-                return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
-            }
-            catch (Exception ex)
-            {
-                return Results.Json(new ErrorResponse(ErrorCodes.UnstartedGameError, ex.Message),statusCode: 500);
-            }
+            gameRepository.Start();
+            return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
         }
     }
 }
