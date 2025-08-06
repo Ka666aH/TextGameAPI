@@ -7,9 +7,6 @@ namespace TextGame.Controllers
     [Route("room")]
     public class RoomController
     {
-        private static readonly string itemsReceived = "Предметы получены.";
-        private static readonly string itemReceived = "Предмет получен.";
-
         private readonly IGameRepository gameRepository;
 
         public RoomController(IGameRepository gameRepository)
@@ -62,7 +59,6 @@ namespace TextGame.Controllers
             {
                 gameRepository.TakeItem(roomId, itemId);
                 return Results.Ok(new SuccessfulResponse(gameRepository.ShowInventoryItem(itemId)));
-
             }
             catch (UnstartedGameException ex)
             {
@@ -70,7 +66,7 @@ namespace TextGame.Controllers
             }
             catch (UncarryableException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.UncarryableError, ex.Message));
+                return Results.UnprocessableEntity(new ErrorResponse(ErrorCodes.UncarryableError, ex.Message));
             }
             catch (ArgumentNullException ex)
             {
@@ -96,7 +92,7 @@ namespace TextGame.Controllers
             }
             catch (EmptyException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.EmptyError, ex.Message));
+                return Results.NotFound(new ErrorResponse(ErrorCodes.EmptyError, ex.Message));
             }
             catch (ArgumentNullException ex)
             {
@@ -146,23 +142,23 @@ namespace TextGame.Controllers
             }
             catch (LockedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
             catch (ClosedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
             catch (MimicException ex)
             {
-                return Results.Ok(new SuccessfulResponse(ex.Message));
+                return Results.Ok(new SuccessfulResponse(new GameOverResponse(ex.Message, gameRepository.ShowGameOverStats())));
             }
             catch (ArgumentNullException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
+                return Results.NotFound(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
+                return Results.UnprocessableEntity(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
@@ -187,11 +183,11 @@ namespace TextGame.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
+                return Results.NotFound(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
+                return Results.UnprocessableEntity(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
@@ -211,23 +207,23 @@ namespace TextGame.Controllers
             }
             catch (LockedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
             catch (ClosedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
-            catch (MimicException ex)
-            {
-                return Results.Ok(new SuccessfulResponse(ex.Message));
-            }
+            //catch (MimicException ex)
+            //{
+            //    return Results.Ok(new SuccessfulResponse(new GameOverResponse(ex.Message, gameRepository.ShowGameOverStats())));
+            //}
             catch (ArgumentNullException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
+                return Results.NotFound(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
+                return Results.UnprocessableEntity(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
@@ -248,19 +244,19 @@ namespace TextGame.Controllers
             }
             catch (LockedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
             catch (ClosedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
             catch (ArgumentNullException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
+                return Results.NotFound(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
+                return Results.UnprocessableEntity(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {
@@ -282,23 +278,23 @@ namespace TextGame.Controllers
             }
             catch (EmptyException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.EmptyError, ex.Message));
+                return Results.NotFound(new ErrorResponse(ErrorCodes.EmptyError, ex.Message));
             }
             catch (LockedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
             catch (ClosedException)
             {
-                return Results.BadRequest(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+                return Results.Json(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)), statusCode: 403);
             }
             catch (ArgumentNullException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
+                return Results.NotFound(new ErrorResponse(ErrorCodes.NotFound, ex.Message));
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
+                return Results.UnprocessableEntity(new ErrorResponse(ErrorCodes.NotChestError, ex.Message));
             }
             catch (Exception ex)
             {

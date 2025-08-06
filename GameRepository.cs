@@ -221,6 +221,10 @@ namespace TextGame
         {
             return Coins;
         }
+        public GameOverStatsDTO ShowGameOverStats()
+        {
+            return new(CurrentRoom!.Number, Coins,Inventory);
+        }
         //private void EnsureGameStarted()
         //{
         //    if (!IsGameStarted || CurrentRoom == null)

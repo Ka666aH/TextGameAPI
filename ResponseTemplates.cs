@@ -2,7 +2,7 @@
 {
     public record SuccessfulResponse(object? data);
     public record ErrorResponse(string? code, string? message);
-
+    public record GameOverResponse(string? message, GameOverStatsDTO? stats);
     public static class ErrorCodes
     {
         public static readonly string NotFound = "NOT_FOUND";

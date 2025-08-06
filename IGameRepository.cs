@@ -24,5 +24,6 @@ namespace TextGame
         Item ShowInventoryItem(int itemId);
         List<Item> ShowInventoryItems(List<int> itemIds);
         int ShowCoins();
+        GameOverStatsDTO ShowGameOverStats();
     }
 }
