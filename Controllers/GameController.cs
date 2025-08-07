@@ -5,44 +5,44 @@ namespace TextGame.Controllers
     [Route("game")]
     public class GameController
     {
-        private readonly IGameRepository gameRepository;
+        private readonly IGameControllerRepository GameControllerRepository;
 
-        public GameController(IGameRepository gameRepository)
+        public GameController(IGameControllerRepository gameControllerRepository)
         {
-            this.gameRepository = gameRepository;
+            GameControllerRepository = gameControllerRepository;
         }
 
         [HttpPost("")]
         public IResult Start()
         {
-            gameRepository.Start();
+            GameControllerRepository.Start();
             //return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
-            var room = gameRepository.GetCurrentRoom();
+            var room = GameControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(room));
         }
         [HttpGet("map")]
         public IResult GetMap()
         {
-            return Results.Ok(new SuccessfulResponse(gameRepository.GetMap()));
+            return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
         }
         [HttpGet("currentroom")]
         public IResult GetCurrentRoom()
         {
-            var room = gameRepository.GetCurrentRoom();
+            var room = GameControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(room));
         }
 
         [HttpGet("inventory")]
         public IResult GetInventory()
         {
-            var inventory = gameRepository.GetInventory();
+            var inventory = GameControllerRepository.GetInventory();
             return Results.Ok(new SuccessfulResponse(inventory));
         }
 
         [HttpGet("coins")]
         public IResult GetCoins()
         {
-            var coins = gameRepository.GetCoins();
+            var coins = GameControllerRepository.GetCoins();
             return Results.Ok(new SuccessfulResponse(coins));
         }
     }

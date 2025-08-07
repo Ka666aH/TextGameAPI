@@ -7,75 +7,75 @@ namespace TextGame.Controllers
     [Route("room")]
     public class RoomController
     {
-        private readonly IGameRepository gameRepository;
+        private readonly IRoomControllerRepository RoomControllerRepository;
 
-        public RoomController(IGameRepository gameRepository)
+        public RoomController(IRoomControllerRepository roomControllerRepository)
         {
-            this.gameRepository = gameRepository;
+            RoomControllerRepository = roomControllerRepository;
         }
         [HttpPost("next")]
         public IResult GoNextRoom()
         {
-            gameRepository.GoNextRoom();
-            var room = gameRepository.GetCurrentRoom();
+            RoomControllerRepository.GoNextRoom();
+            var room = RoomControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(room));
         }
         [HttpPost("{roomId}")]
         public IResult GoRoom(int roomId)
         {
-            gameRepository.GetRoomById(roomId);
-            var room = gameRepository.GetCurrentRoom();
+            RoomControllerRepository.GetRoomById(roomId);
+            var room = RoomControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(room));
         }
         [HttpPost("{roomId}/items")]
         public IResult Search(int roomId)
         {
-            var items = gameRepository.Search(roomId);
+            var items = RoomControllerRepository.Search(roomId);
             return Results.Ok(new SuccessfulResponse(items));
         }
         [HttpPost("{roomId}/items/take/{itemId}")]
         public IResult TakeItem(int roomId, int itemId)
         {
-            gameRepository.TakeItem(roomId, itemId);
-            return Results.Ok(new SuccessfulResponse(gameRepository.GetInventoryItem(itemId)));
+            RoomControllerRepository.TakeItem(roomId, itemId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItem(itemId)));
         }
         [HttpPost("{roomId}/items/takeall")]
         public IResult TakeAllItems(int roomId)
         {
-            var itemsIds = gameRepository.Search(roomId).Where(i => i.IsCarryable == true).Select(i => i.Id).ToList();
-            gameRepository.TakeAllItems(roomId);
-            return Results.Ok(new SuccessfulResponse(gameRepository.GetInventoryItems(itemsIds)));
+            var itemsIds = RoomControllerRepository.Search(roomId).Where(i => i.IsCarryable == true).Select(i => i.Id).ToList();
+            RoomControllerRepository.TakeAllItems(roomId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItems(itemsIds)));
         }
         #region CHEST
         [HttpPost("{roomId}/items/{chestId}/chest/open")]
         public IResult OpenChest(int roomId, int chestId)
         {
-            gameRepository.OpenChest(roomId, chestId);
-            return Results.Ok(new SuccessfulResponse(gameRepository.SearchChest(roomId, chestId)));
+            RoomControllerRepository.OpenChest(roomId, chestId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.SearchChest(roomId, chestId)));
         }
         [HttpPost("{roomId}/items/{chestId}/chest/unlock")]
         public IResult UnlockChest(int roomId, int chestId)
         {
-            gameRepository.UnlockChest(roomId, chestId);
-            return Results.Ok(new SuccessfulResponse(gameRepository.ReturnChestDTO(roomId, chestId)));
+            RoomControllerRepository.UnlockChest(roomId, chestId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.ReturnChestDTO(roomId, chestId)));
         }
         [HttpPost("{roomId}/items/{chestId}/chest/search")]
         public IResult SearchChest(int roomId, int chestId)
         {
-            return Results.Ok(new SuccessfulResponse(gameRepository.SearchChest(roomId, chestId)));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.SearchChest(roomId, chestId)));
         }
         [HttpPost("{roomId}/items/{chestId}/chest/take/{itemId}")]
         public IResult TakeItemFromChest(int roomId, int chestId, int itemId)
         {
-            gameRepository.TakeItemFromChest(roomId, chestId, itemId);
-            return Results.Ok(new SuccessfulResponse(gameRepository.GetInventoryItem(itemId)));
+            RoomControllerRepository.TakeItemFromChest(roomId, chestId, itemId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItem(itemId)));
         }
         [HttpPost("{roomId}/items/{chestId}/chest/takeall")]
         public IResult TakeAllItemsFromChest(int roomId, int chestId)
         {
-            var itemsIds = gameRepository.SearchChest(roomId, chestId).Where(i => i.IsCarryable == true).Select(i => i.Id).ToList();
-            gameRepository.TakeAllItemsFromChest(roomId, chestId);
-            return Results.Ok(new SuccessfulResponse(gameRepository.GetInventoryItems(itemsIds)));
+            var itemsIds = RoomControllerRepository.SearchChest(roomId, chestId).Where(i => i.IsCarryable == true).Select(i => i.Id).ToList();
+            RoomControllerRepository.TakeAllItemsFromChest(roomId, chestId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItems(itemsIds)));
         }
         #endregion
     }

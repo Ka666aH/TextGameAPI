@@ -240,7 +240,6 @@
                 if (item != null) Items.Add(item);
             }
         }
-        //public bool CheckChest() => IsLocked; //убрать
         public void Open() => IsClosed = false;
         public void Unlock() => IsLocked = false;
         public List<Item> Search()

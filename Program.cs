@@ -10,7 +10,18 @@ builder.Services.AddSingleton<IRoomNumberFactory, RoomNumberFactory>();
 builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
 builder.Services.AddSingleton<IItemIdFactory, ItemIdFactory>();
 
-builder.Services.AddSingleton<IGameRepository, GameRepository>();
+//Контроллерные
+//builder.Services.AddSingleton<IGameRepository, GameRepository>();
+builder.Services.AddSingleton<GameSession>();
+builder.Services.AddSingleton<IGetCurrentRoomRepository, GetCurrentRoomRepository>();
+builder.Services.AddSingleton<IChestRepository, ChestRepository>();
+builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
+builder.Services.AddSingleton<IGameOverStatsRepository, GameOverStatsRepository>();
+builder.Services.AddSingleton<IGetRoomByIdRepository, GetRoomByIdRepository>();
+builder.Services.AddSingleton<IGetItemByIdRepository, GetItemByIdRepository>();
+builder.Services.AddSingleton<IGameControllerRepository, GameControllerRepository>();
+builder.Services.AddSingleton<IRoomControllerRepository, RoomControllerRepository>();
+
 
 // Add services to the container.
 
