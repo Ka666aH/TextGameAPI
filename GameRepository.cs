@@ -194,15 +194,18 @@ namespace TextGame
 
         public CurrentRoomDTO ShowCurrentRoom()
         {
+            if (!IsGameStarted && Rooms.Count <= 0) throw new UnstartedGameException();
             return new CurrentRoomDTO(CurrentRoom!.Number, CurrentRoom!.Name!, CurrentRoom!.Description!);
         }
 
         public List<Item> ShowInventory()
         {
+            if (!IsGameStarted && Rooms.Count <= 0) throw new UnstartedGameException();
             return Inventory;
         }
         public Item ShowInventoryItem(int itemId)
         {
+            if (!IsGameStarted && Rooms.Count <= 0) throw new UnstartedGameException();
             return GetItemById(itemId, Inventory);
         }
         public List<Item> ShowInventoryItems(List<int> itemsIds)
