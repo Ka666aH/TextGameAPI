@@ -47,14 +47,17 @@ namespace TextGame
         public List<Item> Search(int roomId)
         {
             if (!IsGameStarted) throw new UnstartedGameException();
+
             Room room = GetRoomById(roomId);
+            CurrentRoom = room;
             return room!.Items;
         }
 
         public void TakeItem(int roomId, int itemId)
         {
             if (!IsGameStarted) throw new UnstartedGameException();
-            if (!ItemIn(itemId, GetRoomById(roomId).Items)) throw new NullIdException("ITEM_IN_ROOM_NOT_FOUND", "Предмет с таким ID не найден в комнате.");
+            Room room = GetRoomById(roomId);
+            if (!ItemIn(itemId, CurrentRoom!.Items)) throw new NullIdException("ITEM_IN_ROOM_NOT_FOUND", "Предмет с таким ID не найден в комнате.");
             Item item = GetItemById(itemId, CurrentRoom!.Items);
             if (!item.IsCarryable) throw new UncarryableException();
             if (item is Coin) Coins++;
@@ -83,8 +86,12 @@ namespace TextGame
         }
         public Room GetRoomById(int roomId)
         {
-            Room? room = Rooms.FirstOrDefault(r => r.Number == roomId);
-            if (room == null) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
+            //Room? room = Rooms.FirstOrDefault(r => r.Number == roomId);
+            //if (room == null) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
+
+            if (roomId <= 0 || roomId > Rooms.Count) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
+            Room room = Rooms[roomId - 1];
+            CurrentRoom = room;
             return room;
         }
         public Item GetItemById(int itemId, List<Item> items)
@@ -93,26 +100,6 @@ namespace TextGame
             if (item == null) throw new NullIdException("ITEM_NOT_FOUND", "Предмет с таким ID не найден.");
             return item;
         }
-        //public Item GetChestItemById(Chest chest, int itemId)
-        //{
-        //    Item? item = chest.Items.FirstOrDefault(i => i.Id == itemId);
-        //    if (item == null) throw new ArgumentNullException("item", "Предмет с таким ID не найден.");
-        //    return item;
-        //}
-
-        //public bool IsChestExist(int id)
-        //{
-        //    //return CurrentRoom.Items.Any(i => i.Id == id && i is Chest);
-        //    return ValidateChestId(id);
-        //}
-        //public bool CheckChest(int id)
-        //{
-        //    if (!IsGameStarted) throw new UnstartedGameException();
-
-        //    Chest chest = GetChestById(id);
-        //    return chest.CheckChest();
-        //}
-
         public void OpenChest(int roomId, int chestId)
         {
             if (!IsGameStarted) throw new UnstartedGameException();

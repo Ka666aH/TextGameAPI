@@ -25,5 +25,6 @@ namespace TextGame
         List<Item> ShowInventoryItems(List<int> itemIds);
         int ShowCoins();
         GameOverStatsDTO ShowGameOverStats();
+        Room GetRoomById(int roomId);
     }
 }

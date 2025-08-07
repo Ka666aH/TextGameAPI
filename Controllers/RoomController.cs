@@ -19,6 +19,14 @@ namespace TextGame.Controllers
             gameRepository.GoNextRoom();
             var room = gameRepository.ShowCurrentRoom();
             return Results.Ok(new SuccessfulResponse(room));
+
+        }
+        [HttpPost("{roomId}")]
+        public IResult GoRoom(int roomId)
+        {
+            gameRepository.GetRoomById(roomId);
+            var room = gameRepository.ShowCurrentRoom();
+            return Results.Ok(new SuccessfulResponse(room));
         }
         [HttpGet("{roomId}/items")]
         public IResult Search(int roomId)

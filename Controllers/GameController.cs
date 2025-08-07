@@ -16,7 +16,9 @@ namespace TextGame.Controllers
         public IResult Start()
         {
             gameRepository.Start();
-            return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
+            //return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
+            var room = gameRepository.ShowCurrentRoom();
+            return Results.Ok(new SuccessfulResponse(room));
         }
     }
 }
