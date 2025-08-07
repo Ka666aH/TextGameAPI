@@ -8,7 +8,10 @@ namespace TextGame
         private readonly IItemIdFactory itemIdFactory;
 
         // Состояние игры для текущей сессии
-        public List<Room> Rooms { get; set; } = new List<Room>();
+        public List<Room> Rooms { get; set; } = new List<Room>()
+            {
+                new StartRoom(),
+            };
         public Room? CurrentRoom { get; set; }
         private List<Item> Inventory { get; set; } = new List<Item>();
         private int Coins { get; set; }
@@ -25,23 +28,38 @@ namespace TextGame
         {
             ResetGame();
             IsGameStarted = true;
-            GoNextRoom();
+            //GoNextRoom();
         }
         public void ResetGame()
         {
             Coins = 0;
             Inventory = new List<Item>();
-            Rooms = new List<Room>();
+            Rooms = GenerateMap();
+            CurrentRoom = Rooms[0];
             itemIdFactory.Reset();
             roomNumberFactory.Reset();
+        }
+        public List<Room> GenerateMap()
+        {
+            List<Room> rooms = new List<Room>()
+            {
+                new StartRoom(),
+            };
+            while(rooms.Last() is not EndRoom)
+            {
+                rooms.Add(roomFactory.CreateRoom());
+            }
+            return rooms;
         }
 
         public void GoNextRoom()
         {
             if (!IsGameStarted) throw new UnstartedGameException();
 
-            CurrentRoom = roomFactory.CreateRoom();
-            Rooms.Add(CurrentRoom);
+            //CurrentRoom = roomFactory.CreateRoom();
+            //Rooms.Add(CurrentRoom);
+            CurrentRoom = Rooms[CurrentRoom!.Number + 1];
+            CurrentRoom.IsDiscovered = true;
         }
 
         public List<Item> Search(int roomId)
@@ -89,8 +107,9 @@ namespace TextGame
             //Room? room = Rooms.FirstOrDefault(r => r.Number == roomId);
             //if (room == null) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
 
-            if (roomId <= 0 || roomId > Rooms.Count) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
-            Room room = Rooms[roomId - 1];
+            if (roomId < 0 || roomId > Rooms.Count) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
+            Room room = Rooms[roomId];
+            if (!room.IsDiscovered) throw new UndiscoveredRoomException();
             CurrentRoom = room;
             return room;
         }
@@ -179,38 +198,43 @@ namespace TextGame
             return chest;
         }
 
-        public CurrentRoomDTO ShowCurrentRoom()
+        public CurrentRoomDTO GetCurrentRoom()
         {
-            if (!IsGameStarted && Rooms.Count <= 0) throw new UnstartedGameException();
+            if (!IsGameStarted && Rooms.Count <= 1) throw new UnstartedGameException();
             return new CurrentRoomDTO(CurrentRoom!.Number, CurrentRoom!.Name!, CurrentRoom!.Description!);
         }
 
-        public List<Item> ShowInventory()
+        public List<Item> GetInventory()
         {
-            if (!IsGameStarted && Rooms.Count <= 0) throw new UnstartedGameException();
+            if (!IsGameStarted && Rooms.Count <= 1) throw new UnstartedGameException();
             return Inventory;
         }
-        public Item ShowInventoryItem(int itemId)
+        public Item GetInventoryItem(int itemId)
         {
-            if (!IsGameStarted && Rooms.Count <= 0) throw new UnstartedGameException();
             return GetItemById(itemId, Inventory);
         }
-        public List<Item> ShowInventoryItems(List<int> itemsIds)
+        public List<Item> GetInventoryItems(List<int> itemsIds)
         {
             List<Item> items = new List<Item>();
             foreach (var itemId in itemsIds)
             {
-                items.Add(ShowInventoryItem(itemId));
+                items.Add(GetInventoryItem(itemId));
             }
             return items;
         }
-        public int ShowCoins()
+        public int GetCoins()
         {
+            if (!IsGameStarted && Rooms.Count <= 1) throw new UnstartedGameException();
             return Coins;
         }
         public GameOverStatsDTO ShowGameOverStats()
         {
             return new(CurrentRoom!.Number, Coins, Inventory);
+        }
+        public List<MapRoomDTO> GetMap()
+        {
+            if (!IsGameStarted && Rooms.Count <= 1) throw new UnstartedGameException();
+            return Rooms.Select(r=>new MapRoomDTO(r.Number, r.Name ?? "НЕИЗВЕСТНО")).ToList();
         }
         //private void EnsureGameStarted()
         //{

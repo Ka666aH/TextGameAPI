@@ -20,11 +20,19 @@
     {
         public int Number { get; init; }
         public List<Item> Items { get; set; } = new List<Item>();
+        public bool IsDiscovered {  get; set; } = false;
         public Room(string name, string description, int number)
         {
             Name = name;
             Description = description;
             Number = number;
+        }
+    }
+    public class StartRoom : Room
+    {
+        public StartRoom() : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра через которую вы сюда провалились.", 0) 
+        {
+            IsDiscovered = true;
         }
     }
     public class EndRoom : Room
@@ -113,8 +121,8 @@
 
         public Room CreateRoom()
         {
-            //const int EndRoomMin = 0;
-            //const int EndRoomMax = 0;
+            const int EndRoomMin = 0;
+            const int EndRoomMax = 0;
             const int SmallRoomMin = 26;
             const int SmallRoomMax = 69;
             const int BigRoomMin = 70;
@@ -126,10 +134,10 @@
             var roomTypeNumber = random.Next(100);
             RoomType roomType = roomTypeNumber switch
             {
-                //>= EndRoomMin   and <= EndRoomMax   => RoomType.EndRoom,
+                >= EndRoomMin and <= EndRoomMax => RoomType.EndRoom,
                 >= SmallRoomMin and <= SmallRoomMax => RoomType.SmallRoom,
                 >= BigRoomMin   and <= BigRoomMax   => RoomType.BigRoom,
-                //>= ShopMin      and <= ShopMax      => RoomType.Shop,
+                //>= ShopMin and <= ShopMax => RoomType.Shop,
 
                 _ => RoomType.EmptyRoom
             };

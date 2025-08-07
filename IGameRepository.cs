@@ -4,10 +4,9 @@ namespace TextGame
 {
     public interface IGameRepository
     {
-
         void Start();
         void GoNextRoom();
-        CurrentRoomDTO ShowCurrentRoom();
+        CurrentRoomDTO GetCurrentRoom();
         List<Item> Search(int roomId);
         void TakeItem(int roomId, int itemId);
         void TakeAllItems(int roomId);
@@ -20,11 +19,12 @@ namespace TextGame
         List<Item> SearchChest(int roomId, int chestId);
         void TakeItemFromChest(int roomId, int chestId, int itemId);
         void TakeAllItemsFromChest(int roomId, int chestId);
-        List<Item> ShowInventory();
-        Item ShowInventoryItem(int itemId);
-        List<Item> ShowInventoryItems(List<int> itemIds);
-        int ShowCoins();
+        List<Item> GetInventory();
+        Item GetInventoryItem(int itemId);
+        List<Item> GetInventoryItems(List<int> itemIds);
+        int GetCoins();
         GameOverStatsDTO ShowGameOverStats();
         Room GetRoomById(int roomId);
+        List<MapRoomDTO> GetMap();
     }
 }
