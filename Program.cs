@@ -67,9 +67,10 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                     case LockedException or NoKeyException or ClosedException or UndiscoveredRoomException:
                         result = Results.Json(new ErrorResponse(gameEx), statusCode: 403);
                         break;
-                    case DefeatException defeatEx:
+                    case DefeatException or WinException:
+                        EndExeption endEx = (EndExeption)gameEx;
                         result = Results.Ok(new SuccessfulResponse(
-                            new GameOverDTO(defeatEx.Message, defeatEx.GameOverStats)
+                            new GameOverDTO(endEx.Message, endEx.GameOverStats)
                         ));
                         break;
                     default: //UnstartedGameException

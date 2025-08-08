@@ -28,7 +28,7 @@
     public class ChestRepository : IChestRepository
     {
         private GameSession Session;
-        private IGameOverStatsRepository GameOverStats;
+        private IGameOverStatsRepository GameOverStatsRepository;
         private IGetRoomByIdRepository GetRoomByIdRepository;
         private IGetItemByIdRepository GetItemByIdRepository;
         public ChestRepository(
@@ -39,7 +39,7 @@
             )
         {
             Session = session;
-            GameOverStats = gameOverStats;
+            GameOverStatsRepository = gameOverStats;
             GetRoomByIdRepository = getRoomByIdRepository;
             GetItemByIdRepository = getItemByIdRepository;
         }
@@ -68,7 +68,7 @@
             if (chest.IsMimic)
             {
                 Session.IsGameStarted = false;
-                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameOverStats.GetGameOverStats());
+                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameOverStatsRepository.GetGameOverStats());
             }
             chest.Open();
         }
@@ -176,9 +176,14 @@
     public class GetRoomByIdRepository : IGetRoomByIdRepository
     {
         private GameSession Session;
-        public GetRoomByIdRepository(GameSession session)
+        IGameOverStatsRepository GameOverStatsRepository;
+        public GetRoomByIdRepository(
+            GameSession session,
+            IGameOverStatsRepository gameOverStatsRepository
+            )
         {
             Session = session;
+            GameOverStatsRepository = gameOverStatsRepository;
         }
         public Room GetRoomById(int roomId)
         {
@@ -189,6 +194,7 @@
             Room room = Session.Rooms[roomId];
             if (!room.IsDiscovered) throw new UndiscoveredRoomException();
             Session.CurrentRoom = room;
+            if (Session.CurrentRoom is EndRoom) throw new WinException(GameOverStatsRepository.GetGameOverStats());
             return room;
         }
     }
@@ -278,27 +284,27 @@
         private GameSession Session;
         private IGetCurrentRoomRepository GetCurrentRoomRepository;
         private IChestRepository ChestRepository;
-        //private IInventoryRepository InventoryRepository;
         private IGameStatsRepository GameStatsRepository;
         private IGetRoomByIdRepository GetRoomByIdRepository;
         private IGetItemByIdRepository GetItemByIdRepository;
+        private IGameOverStatsRepository GameOverStatsRepository;
         public RoomControllerRepository(
             GameSession session,
             IGetCurrentRoomRepository getCurrentRoomRepository,
             IChestRepository chestRepository,
-            //IInventoryRepository inventoryRepository,
             IGameStatsRepository gameStatsRepository,
             IGetRoomByIdRepository getRoomByIdRepository,
-            IGetItemByIdRepository getItemByIdRepository
+            IGetItemByIdRepository getItemByIdRepository,
+            IGameOverStatsRepository getGameOverStatsRepository
             )
         {
             Session = session;
             GetCurrentRoomRepository = getCurrentRoomRepository;
             ChestRepository = chestRepository;
-            //InventoryRepository = inventoryRepository;
             GameStatsRepository = gameStatsRepository;
             GetRoomByIdRepository = getRoomByIdRepository;
             GetItemByIdRepository = getItemByIdRepository;
+            GameOverStatsRepository = getGameOverStatsRepository;
         }
         public CurrentRoomDTO GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
         public void GoNextRoom()
@@ -306,6 +312,7 @@
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             Session.CurrentRoom = Session.Rooms[Session.CurrentRoom!.Number + 1];
             Session.CurrentRoom.IsDiscovered = true;
+            if (Session.CurrentRoom is EndRoom) throw new WinException(GameOverStatsRepository.GetGameOverStats());
         }
         public List<Item> Search(int roomId)
         {

@@ -136,7 +136,7 @@
             {
                 >= EndRoomMin and <= EndRoomMax => RoomType.EndRoom,
                 >= SmallRoomMin and <= SmallRoomMax => RoomType.SmallRoom,
-                >= BigRoomMin   and <= BigRoomMax   => RoomType.BigRoom,
+                >= BigRoomMin and <= BigRoomMax => RoomType.BigRoom,
                 //>= ShopMin and <= ShopMax => RoomType.Shop,
 
                 _ => RoomType.EmptyRoom

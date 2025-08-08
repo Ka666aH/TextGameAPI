@@ -15,7 +15,7 @@
     }
     public class InvalidIdException : GameException
     {
-        public InvalidIdException(string code,string message) : base(code, message) { }
+        public InvalidIdException(string code, string message) : base(code, message) { }
     }
     public class NullIdException : GameException
     {
@@ -49,12 +49,20 @@
     {
         public ClosedException() : base("CLOSED", "Сундук закрыт!") { }
     }
-    public class DefeatException : GameException
+    public class EndExeption : GameException
     {
         public GameOverStatsDTO GameOverStats { get; }
-        public DefeatException(string message, GameOverStatsDTO gameOverStats) : base("DEFEAT", message) 
+        public EndExeption(string code, string message, GameOverStatsDTO gameOverStats) : base(code, message)
         {
             this.GameOverStats = gameOverStats;
         }
+    }
+    public class DefeatException : EndExeption
+    {
+        public DefeatException(string message, GameOverStatsDTO gameOverStats) : base("DEFEAT", message, gameOverStats) { }
+    }
+    public class WinException : EndExeption
+    {
+        public WinException(GameOverStatsDTO gameOverStats) : base("WIN", "Вы нашли выход и выбрались наружу.", gameOverStats) { }
     }
 }
