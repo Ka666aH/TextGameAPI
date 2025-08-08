@@ -21,7 +21,7 @@
     }
     public interface IGameOverStatsRepository
     {
-        GameOverStatsDTO ShowGameOverStats();
+        GameOverStatsDTO GetGameOverStats();
     }
     public interface IGetRoomByIdRepository
     {
@@ -39,7 +39,7 @@
         List<MapRoomDTO> GetMap();
 
     }
-    public interface IRoomControllerRepository : IGetCurrentRoomRepository, IChestRepository,IInventoryRepository, IGetRoomByIdRepository, IGetItemByIdRepository
+    public interface IRoomControllerRepository : IGetCurrentRoomRepository, IChestRepository, IInventoryRepository, IGetRoomByIdRepository
     {
         void GoNextRoom();
         List<Item> Search(int roomId);

@@ -67,7 +67,7 @@
             if (chest.IsMimic)
             {
                 Session.IsGameStarted = false;
-                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameOverStats.ShowGameOverStats());
+                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameOverStats.GetGameOverStats());
             }
             chest.Open();
         }
@@ -96,7 +96,6 @@
             Chest chest = GetChestById(roomId, chestId);
             if (chest.IsLocked) throw new LockedException();
             if (chest.IsClosed) throw new ClosedException();
-
             Item item = GetItemByIdRepository.GetItemById(itemId, chest.Items);
             if (item is Coin) Session.Coins++;
             else Session.Inventory.Add(item);
@@ -109,8 +108,9 @@
             Chest chest = GetChestById(roomId, chestId);
             if (chest.IsLocked) throw new LockedException();
             if (chest.IsClosed) throw new ClosedException();
-            if (chest.Items.Count(i => i.IsCarryable == true) == 0) throw new EmptyException();
-            foreach (Item item in chest.Items)
+            List<Item> carryableItems = chest.Items.Where(i => i.IsCarryable == true).ToList();
+            if (carryableItems.Count <= 0) throw new EmptyException();
+            foreach (Item item in carryableItems)
             {
                 if (item is Coin) Session.Coins++;
                 else Session.Inventory.Add(item);
@@ -151,7 +151,7 @@
         {
             Session = session;
         }
-        public GameOverStatsDTO ShowGameOverStats()
+        public GameOverStatsDTO GetGameOverStats()
         {
             return new(Session.CurrentRoom!.Number, Session.Coins, Session.Inventory);
         }
@@ -177,11 +177,6 @@
     }
     public class GetItemByIdRepository : IGetItemByIdRepository
     {
-        private GameSession Session;
-        public GetItemByIdRepository(GameSession session)
-        {
-            Session = session;
-        }
         public Item GetItemById(int itemId, List<Item> items)
         {
             Item? item = items.FirstOrDefault(i => i.Id == itemId);
@@ -300,25 +295,19 @@
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             Room room = GetRoomById(roomId);
-            if (!ItemIn(itemId, Session.CurrentRoom!.Items)) throw new NullIdException("ITEM_IN_ROOM_NOT_FOUND", "Предмет с таким ID не найден в комнате.");
             Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom!.Items);
             if (!item.IsCarryable) throw new UncarryableException();
             if (item is Coin) Session.Coins++;
             else Session.Inventory.Add(item);
             Session.CurrentRoom!.Items.Remove(item);
         }
-        public bool ItemIn(int itemId, List<Item> items)
-        {
-            Item? item = GetItemByIdRepository.GetItemById(itemId, items);
-            if (items.Contains(item)) return true;
-            else return false;
-        }
         public void TakeAllItems(int roomId)
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             Room room = GetRoomById(roomId);
-            if (room!.Items.Count(i => i.IsCarryable == true) == 0) throw new EmptyException();
-            foreach (Item item in room.Items)
+            List<Item> carryableItems = room.Items.Where(i => i.IsCarryable == true).ToList();
+            if (carryableItems.Count <= 0) throw new EmptyException();
+            foreach (Item item in carryableItems)
             {
                 if (!item.IsCarryable) continue;
                 if (item is Coin) Session.Coins++;
@@ -334,7 +323,7 @@
         public void TakeItemFromChest(int roomId, int chestId, int itemId) => ChestRepository.TakeItemFromChest(roomId, chestId, itemId);
         public void TakeAllItemsFromChest(int roomId, int chestId) => ChestRepository.TakeAllItemsFromChest(roomId, chestId);
         public Room GetRoomById(int roomId) => GetRoomByIdRepository.GetRoomById(roomId);
-        public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
+        //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
         public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
         public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
     }
