@@ -37,14 +37,14 @@ namespace TextGame.Controllers
         public IResult TakeItem(int roomId, int itemId)
         {
             RoomControllerRepository.TakeItem(roomId, itemId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItem(itemId)));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
         }
         [HttpPost("{roomId}/items/takeall")]
         public IResult TakeAllItems(int roomId)
         {
             var itemsIds = RoomControllerRepository.Search(roomId).Where(i => i.IsCarryable == true).Select(i => i.Id).ToList();
             RoomControllerRepository.TakeAllItems(roomId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItems(itemsIds)));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
         }
         #region CHEST
         [HttpPost("{roomId}/items/{chestId}/chest/open")]
@@ -68,14 +68,14 @@ namespace TextGame.Controllers
         public IResult TakeItemFromChest(int roomId, int chestId, int itemId)
         {
             RoomControllerRepository.TakeItemFromChest(roomId, chestId, itemId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItem(itemId)));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
         }
         [HttpPost("{roomId}/items/{chestId}/chest/takeall")]
         public IResult TakeAllItemsFromChest(int roomId, int chestId)
         {
             var itemsIds = RoomControllerRepository.SearchChest(roomId, chestId).Where(i => i.IsCarryable == true).Select(i => i.Id).ToList();
             RoomControllerRepository.TakeAllItemsFromChest(roomId, chestId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetInventoryItems(itemsIds)));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
         }
         #endregion
     }

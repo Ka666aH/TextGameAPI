@@ -118,30 +118,42 @@
             chest.Items.RemoveAll(x => x.IsCarryable);
         }
     }
-    public class InventoryRepository : IInventoryRepository
+    //public class InventoryRepository : IInventoryRepository
+    //{
+    //    private GameSession Session;
+    //    private IGetItemByIdRepository GetItemByIdRepository;
+    //    public InventoryRepository(
+    //        GameSession session,
+    //        IGetItemByIdRepository getItemByIdRepository
+    //        )
+    //    {
+    //        Session = session;
+    //        GetItemByIdRepository = getItemByIdRepository;
+    //    }
+    //    public Item GetInventoryItem(int itemId)
+    //    {
+    //        return GetItemByIdRepository.GetItemById(itemId, Session.Inventory);
+    //    }
+    //    public List<Item> GetInventoryItems(List<int> itemsIds)
+    //    {
+    //        List<Item> items = new List<Item>();
+    //        foreach (var itemId in itemsIds)
+    //        {
+    //            items.Add(GetInventoryItem(itemId));
+    //        }
+    //        return items;
+    //    }
+    //}
+    public class GameStatsRepository : IGameStatsRepository
     {
         private GameSession Session;
-        private IGetItemByIdRepository GetItemByIdRepository;
-        public InventoryRepository(
-            GameSession session,
-            IGetItemByIdRepository getItemByIdRepository
-            )
+        public GameStatsRepository(GameSession session)
         {
             Session = session;
-            GetItemByIdRepository = getItemByIdRepository;
         }
-        public Item GetInventoryItem(int itemId)
+        public GameStatsDTO GetGameStats()
         {
-            return GetItemByIdRepository.GetItemById(itemId, Session.Inventory);
-        }
-        public List<Item> GetInventoryItems(List<int> itemsIds)
-        {
-            List<Item> items = new List<Item>();
-            foreach (var itemId in itemsIds)
-            {
-                items.Add(GetInventoryItem(itemId));
-            }
-            return items;
+            return new GameStatsDTO(Session.Coins, Session.Inventory);
         }
     }
     public class GameOverStatsRepository : IGameOverStatsRepository
@@ -153,7 +165,7 @@
         }
         public GameOverStatsDTO GetGameOverStats()
         {
-            return new(Session.CurrentRoom!.Number, Session.Coins, Session.Inventory);
+            return new GameOverStatsDTO(Session.CurrentRoom!.Number, Session.Coins, Session.Inventory);
         }
     }
     public class GetRoomByIdRepository : IGetRoomByIdRepository
@@ -255,16 +267,16 @@
         private GameSession Session;
         private IGetCurrentRoomRepository GetCurrentRoomRepository;
         private IChestRepository ChestRepository;
-        private IInventoryRepository InventoryRepository;
-        private IGameOverStatsRepository GameOverStats;
+        //private IInventoryRepository InventoryRepository;
+        private IGameStatsRepository GameStatsRepository;
         private IGetRoomByIdRepository GetRoomByIdRepository;
         private IGetItemByIdRepository GetItemByIdRepository;
         public RoomControllerRepository(
             GameSession session,
             IGetCurrentRoomRepository getCurrentRoomRepository,
             IChestRepository chestRepository,
-            IInventoryRepository inventoryRepository,
-            IGameOverStatsRepository gameOverStats,
+            //IInventoryRepository inventoryRepository,
+            IGameStatsRepository gameStatsRepository,
             IGetRoomByIdRepository getRoomByIdRepository,
             IGetItemByIdRepository getItemByIdRepository
             )
@@ -272,8 +284,8 @@
             Session = session;
             GetCurrentRoomRepository = getCurrentRoomRepository;
             ChestRepository = chestRepository;
-            InventoryRepository = inventoryRepository;
-            GameOverStats = gameOverStats;
+            //InventoryRepository = inventoryRepository;
+            GameStatsRepository = gameStatsRepository;
             GetRoomByIdRepository = getRoomByIdRepository;
             GetItemByIdRepository = getItemByIdRepository;
         }
@@ -324,7 +336,8 @@
         public void TakeAllItemsFromChest(int roomId, int chestId) => ChestRepository.TakeAllItemsFromChest(roomId, chestId);
         public Room GetRoomById(int roomId) => GetRoomByIdRepository.GetRoomById(roomId);
         //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
-        public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
-        public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
+        //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
+        //public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
+        public GameStatsDTO GetGameStats() => GameStatsRepository.GetGameStats();
     }
 }
