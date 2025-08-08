@@ -31,19 +31,23 @@ namespace TextGame.Controllers
             var room = GameControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(room));
         }
-
-        [HttpGet("inventory")]
-        public IResult GetInventory()
-        {
-            var inventory = GameControllerRepository.GetInventory();
-            return Results.Ok(new SuccessfulResponse(inventory));
-        }
-
         [HttpGet("coins")]
         public IResult GetCoins()
         {
             var coins = GameControllerRepository.GetCoins();
             return Results.Ok(new SuccessfulResponse(coins));
+        }
+        [HttpGet("keys")]
+        public IResult GetKeys()
+        {
+            var keys = GameControllerRepository.GetKeys();
+            return Results.Ok(new SuccessfulResponse(keys));
+        }
+        [HttpGet("inventory")]
+        public IResult GetInventory()
+        {
+            var inventory = GameControllerRepository.GetInventory();
+            return Results.Ok(new SuccessfulResponse(inventory));
         }
     }
 }

@@ -9,6 +9,7 @@
         public Room? CurrentRoom { get; set; }
         public List<Item> Inventory { get; set; } = new List<Item>();
         public int Coins { get; set; }
+        public int Keys { get; set; }
         public bool IsGameStarted { get; set; }
     }
     public class GetCurrentRoomRepository : IGetCurrentRoomRepository
@@ -76,9 +77,11 @@
             if (!Session.IsGameStarted) throw new UnstartedGameException();
 
             Chest chest = GetChestById(roomId, chestId);
-            Key? key = Session.Inventory!.OfType<Key>().FirstOrDefault();
-            if (key == null) throw new NoKeyException();
-            Session.Inventory.Remove(key);
+            //Key? key = Session.Inventory!.OfType<Key>().FirstOrDefault();
+            //if (key == null) throw new NoKeyException();
+            //Session.Inventory.Remove(key);
+            if (Session.Keys > 0) Session.Keys--;
+            else throw new NoKeyException();
             chest.Unlock();
         }
         public List<Item> SearchChest(int roomId, int chestId)
@@ -98,6 +101,7 @@
             if (chest.IsClosed) throw new ClosedException();
             Item item = GetItemByIdRepository.GetItemById(itemId, chest.Items);
             if (item is Coin) Session.Coins++;
+            else if (item is Key) Session.Keys++;
             else Session.Inventory.Add(item);
             chest.Items.Remove(item);
         }
@@ -113,6 +117,7 @@
             foreach (Item item in carryableItems)
             {
                 if (item is Coin) Session.Coins++;
+                else if (item is Key) Session.Keys++;
                 else Session.Inventory.Add(item);
             }
             chest.Items.RemoveAll(x => x.IsCarryable);
@@ -153,7 +158,7 @@
         }
         public GameStatsDTO GetGameStats()
         {
-            return new GameStatsDTO(Session.Coins, Session.Inventory);
+            return new GameStatsDTO(Session.Coins, Session.Keys, Session.Inventory);
         }
     }
     public class GameOverStatsRepository : IGameOverStatsRepository
@@ -165,7 +170,7 @@
         }
         public GameOverStatsDTO GetGameOverStats()
         {
-            return new GameOverStatsDTO(Session.CurrentRoom!.Number, Session.Coins, Session.Inventory);
+            return new GameOverStatsDTO(Session.CurrentRoom!.Number, Session.Coins, Session.Keys, Session.Inventory);
         }
     }
     public class GetRoomByIdRepository : IGetRoomByIdRepository
@@ -229,6 +234,7 @@
         public void ResetGame()
         {
             Session.Coins = 0;
+            Session.Keys = 0;
             Session.Inventory = new List<Item>();
             Session.Rooms = new List<Room>();
             ItemIdFactory.Reset();
@@ -255,6 +261,11 @@
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
             return Session.Coins;
+        }
+        public int GetKeys()
+        {
+            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
+            return Session.Keys;
         }
         public List<MapRoomDTO> GetMap()
         {
@@ -310,6 +321,7 @@
             Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom!.Items);
             if (!item.IsCarryable) throw new UncarryableException();
             if (item is Coin) Session.Coins++;
+            else if (item is Key) Session.Keys++;
             else Session.Inventory.Add(item);
             Session.CurrentRoom!.Items.Remove(item);
         }
@@ -323,6 +335,7 @@
             {
                 if (!item.IsCarryable) continue;
                 if (item is Coin) Session.Coins++;
+                else if (item is Key) Session.Keys++;
                 else Session.Inventory.Add(item);
             }
             room.Items.RemoveAll(x => x.IsCarryable);

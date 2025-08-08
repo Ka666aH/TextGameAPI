@@ -214,7 +214,7 @@
     public class Chest : Item
     {
         public bool IsLocked { get; set; }
-        public bool IsClosed { get; set; }
+        public bool IsClosed { get; set; } = true;
         public bool IsMimic { get; init; }
         public List<Item> Items { get; set; }
         private readonly IChestItemFactory chestItemFactory;

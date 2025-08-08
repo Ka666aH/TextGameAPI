@@ -40,6 +40,7 @@
         void Start();
         List<Item> GetInventory();
         int GetCoins();
+        int GetKeys();
         List<MapRoomDTO> GetMap();
 
     }
