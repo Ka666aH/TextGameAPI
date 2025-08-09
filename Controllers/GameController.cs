@@ -1,74 +1,53 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TextGame;
-
 namespace TextGame.Controllers
 {
     [ApiController]
     [Route("game")]
     public class GameController
     {
-        private readonly IGameRepository gameRepository;
+        private readonly IGameControllerRepository GameControllerRepository;
 
-        public GameController(IGameRepository gameRepository)
+        public GameController(IGameControllerRepository gameControllerRepository)
         {
-            this.gameRepository = gameRepository;
+            GameControllerRepository = gameControllerRepository;
         }
 
-        [HttpPost("start")]
+        [HttpPost("")]
         public IResult Start()
         {
-            try
-            {
-                gameRepository.Start();
-                return Results.Ok("Игра успешно начата.");
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Игра не началась из-за ошибки.\n{ex.Message}.");
-            }
+            GameControllerRepository.Start();
+            //return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
+            var room = GameControllerRepository.GetCurrentRoom();
+            return Results.Ok(new SuccessfulResponse(room));
         }
-
+        [HttpGet("map")]
+        public IResult GetMap()
+        {
+            return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
+        }
         [HttpGet("currentroom")]
-        public IResult ShowCurrentRoom()
+        public IResult GetCurrentRoom()
         {
-            try
-            {
-                var room = gameRepository.ShowCurrentRoom();
-                return Results.Ok(room);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Ошибка при получении текущей комнаты: {ex.Message}");
-            }
+            var room = GameControllerRepository.GetCurrentRoom();
+            return Results.Ok(new SuccessfulResponse(room));
         }
-
-        [HttpGet("inventory")]
-        public IResult ShowInventory()
-        {
-            try
-            {
-                var inventory = gameRepository.ShowInventory();
-                return Results.Ok(inventory);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Ошибка при получении инвентаря: {ex.Message}");
-            }
-        }
-
         [HttpGet("coins")]
-        public IResult ShowCoins()
+        public IResult GetCoins()
         {
-            try
-            {
-                var coins = gameRepository.ShowCoins();
-                return Results.Ok(coins);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Ошибка при получении количества монет: {ex.Message}");
-            }
+            var coins = GameControllerRepository.GetCoins();
+            return Results.Ok(new SuccessfulResponse(coins));
         }
-
+        [HttpGet("keys")]
+        public IResult GetKeys()
+        {
+            var keys = GameControllerRepository.GetKeys();
+            return Results.Ok(new SuccessfulResponse(keys));
+        }
+        [HttpGet("inventory")]
+        public IResult GetInventory()
+        {
+            var inventory = GameControllerRepository.GetInventory();
+            return Results.Ok(new SuccessfulResponse(inventory));
+        }
     }
 }
