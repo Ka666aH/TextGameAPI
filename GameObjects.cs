@@ -32,7 +32,7 @@ namespace TextGame
     }
     public class StartRoom : Room
     {
-        public StartRoom() : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра через которую вы сюда провалились.", 0)
+        public StartRoom() : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра, через которую вы сюда провалились.", 0)
         {
             IsDiscovered = true;
         }
@@ -153,7 +153,7 @@ namespace TextGame
     {
         public int Id { get; init; }
         public bool IsCarryable { get; init; }
-        public int Cost { get; init; }
+        //public int Cost { get; init; }
         public Item(string name, string description, int id, bool isCarryable)
         {
             Name = name;
@@ -201,8 +201,8 @@ namespace TextGame
         public Chest(IItemIdFactory itemIdFactory, IItemFactory itemFactory) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
         {
             var random = new Random();
-            IsLocked = random.Next(LockedProbabilityDivider) == 0 ? false : true;
-            IsMimic = random.Next(MimicProbabilityDivider) == 0 ? false : true;
+            IsLocked = random.Next(LockedProbabilityDivider) == 0;
+            IsMimic = random.Next(MimicProbabilityDivider) == 0;
             Items = new List<Item>();
             var itemsInChest = random.Next(MinChestItemsAmount, MaxChestItemsAmount + 1);
             for (int i = 0; i < itemsInChest; i++)

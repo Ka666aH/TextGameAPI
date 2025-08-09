@@ -276,6 +276,7 @@
         public List<MapRoomDTO> GetMap()
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
+            if (!Session.Inventory.OfType<Map>().Any()) throw new NoMapException();
             return Session.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? "НЕИЗВЕСТНО")).ToList();
         }
     }

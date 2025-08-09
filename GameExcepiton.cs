@@ -45,6 +45,10 @@
     {
         public NoKeyException() : base("NO_KEY_ERROR", "Нет ключа!") { }
     }
+    public class NoMapException : GameException
+    {
+        public NoMapException() : base("NO_MAP_ERROR", "Нет карты!") { }
+    }
     public class ClosedException : GameException
     {
         public ClosedException() : base("CLOSED", "Сундук закрыт!") { }
