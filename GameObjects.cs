@@ -1,4 +1,6 @@
-﻿namespace TextGame
+﻿using System;
+
+namespace TextGame
 {
     public class GameObject
     {
@@ -46,20 +48,20 @@
     public class SmallRoom : Room
     {
 
-        public SmallRoom(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory) : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", roomNumberFactory.GetRoomNumber())
+        public SmallRoom(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory) : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", roomNumberFactory.GetRoomNumber())
         {
-            Item? item = roomItemFactory.CreateItem();
+            Item? item = itemFactory.CreateRoomItem();
             if (item != null) Items.Add(item);
         }
     }
     public class BigRoom : Room
     {
-        public BigRoom(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory) : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumberFactory.GetRoomNumber())
+        public BigRoom(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory) : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumberFactory.GetRoomNumber())
         {
             const int itemsAmount = 3;
             for (int i = 0; i < itemsAmount; i++)
             {
-                Item? item = roomItemFactory.CreateItem();
+                Item? item = itemFactory.CreateRoomItem();
                 if (item != null) Items.Add(item);
             }
         }
@@ -68,7 +70,7 @@
     {
         //private readonly IRoomItemFactory RoomItemFactory;
 
-        public Shop(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory) : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", roomNumberFactory.GetRoomNumber())
+        public Shop(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory) : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", roomNumberFactory.GetRoomNumber())
         {
             //RoomItemFactory = roomItemFactory;
             //DO Настроить магазин
@@ -103,13 +105,13 @@
     public class RoomFactory : IRoomFactory
     {
         private readonly IRoomNumberFactory RoomNumberFactory;
-        private readonly IRoomItemFactory RoomItemFactory;
+        private readonly IItemFactory ItemFactory;
         private readonly Random random = Random.Shared;
 
-        public RoomFactory(IRoomNumberFactory roomNumberFactory, IRoomItemFactory roomItemFactory)
+        public RoomFactory(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory)
         {
             RoomNumberFactory = roomNumberFactory;
-            RoomItemFactory = roomItemFactory;
+            ItemFactory = itemFactory;
         }
 
         public Room CreateRoom()
@@ -137,10 +139,10 @@
 
             return roomType switch
             {
-                RoomType.SmallRoom => new SmallRoom(RoomNumberFactory, RoomItemFactory),
-                RoomType.BigRoom => new BigRoom(RoomNumberFactory, RoomItemFactory),
+                RoomType.SmallRoom => new SmallRoom(RoomNumberFactory, ItemFactory),
+                RoomType.BigRoom => new BigRoom(RoomNumberFactory, ItemFactory),
                 RoomType.EndRoom => new EndRoom(RoomNumberFactory),
-                RoomType.Shop => new Shop(RoomNumberFactory, RoomItemFactory),
+                RoomType.Shop => new Shop(RoomNumberFactory, ItemFactory),
                 _ => new EmptyRoom(RoomNumberFactory),
             };
         }
@@ -172,7 +174,7 @@
     #region Key
     public class Key : Item
     {
-        public Key(IItemIdFactory itemIdFactory) : base("КЛЮЧ", "Что-то открывает.", itemIdFactory!.Id(), true){}
+        public Key(IItemIdFactory itemIdFactory) : base("КЛЮЧ", "Что-то открывает.", itemIdFactory!.Id(), true) { }
     }
     #endregion
     #region Coin
@@ -194,18 +196,18 @@
 
         private readonly int MimicProbabilityDivider = 2; // 1/2
         private readonly int LockedProbabilityDivider = 2; // 1/2
-        
 
-        public Chest(IChestItemFactory chestItemFactory, IItemIdFactory itemIdFactory) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
+
+        public Chest(IItemIdFactory itemIdFactory, IItemFactory itemFactory) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
         {
             var random = new Random();
             IsLocked = random.Next(LockedProbabilityDivider) == 0 ? false : true;
             IsMimic = random.Next(MimicProbabilityDivider) == 0 ? false : true;
             Items = new List<Item>();
-            var itemsInChest = random.Next(MinChestItemsAmount, MaxChestItemsAmount+1);
+            var itemsInChest = random.Next(MinChestItemsAmount, MaxChestItemsAmount + 1);
             for (int i = 0; i < itemsInChest; i++)
             {
-                Item? item = chestItemFactory.CreateItem();
+                Item? item = itemFactory.CreateChestItem();
                 if (item != null) Items.Add(item);
             }
         }
@@ -220,7 +222,14 @@
         public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true) { }
     }
     #endregion
-    #region ChestItems
+    #region ItemFactory
+    public enum RoomItem
+    {
+        None,
+        Key,
+        Coin,
+        Chest,
+    }
     public enum ChestItem
     {
         None,
@@ -229,73 +238,48 @@
         Map,
     }
 
-    public interface IChestItemFactory
+    public interface IItemFactory
     {
-        public Item? CreateItem();
+        public Item? CreateRoomItem();
+        public Item? CreateChestItem();
+        //shop
     }
-    public class ChestItemFactory : IChestItemFactory
+    public class ItemFactory : IItemFactory
     {
-        private readonly IItemIdFactory itemIdFactory;
-        private static readonly ChestItem[] chestItemValues = (ChestItem[])Enum.GetValues(typeof(ChestItem));
-        private Random random = new Random();
-
-        public ChestItemFactory(IItemIdFactory itemIdFactory)
+        private readonly IItemIdFactory ItemIdFactory;
+        private static readonly ChestItem[] ChestItemValues = (ChestItem[])Enum.GetValues(typeof(ChestItem));
+        private static readonly RoomItem[] RoomItemValues = (RoomItem[])Enum.GetValues(typeof(RoomItem));
+        private Random Random = Random.Shared;
+        public ItemFactory(IItemIdFactory itemIdFactory)
         {
-            this.itemIdFactory = itemIdFactory;
+            ItemIdFactory = itemIdFactory;
         }
-        public Item? CreateItem()
+        public Item? CreateRoomItem()
         {
-            var itemNumber = random.Next(chestItemValues.Length);
-            ChestItem chestItem = chestItemValues[itemNumber];
+            var itemNumber = Random.Next(RoomItemValues.Length);
+            RoomItem roomItem = RoomItemValues[itemNumber];
+            return roomItem switch
+            {
+                RoomItem.Key => new Key(ItemIdFactory),
+                RoomItem.Coin => new Coin(ItemIdFactory),
+                RoomItem.Chest => new Chest(ItemIdFactory, this),
+                _ => null,
+            };
+        }
+        public Item? CreateChestItem()
+        {
+            var itemNumber = Random.Next(ChestItemValues.Length);
+            ChestItem chestItem = ChestItemValues[itemNumber];
             return chestItem
                 switch
             {
-                ChestItem.Key => new Key(itemIdFactory),
-                ChestItem.Coin => new Coin(itemIdFactory),
-                ChestItem.Map => new Map(itemIdFactory),
+                ChestItem.Key => new Key(ItemIdFactory),
+                ChestItem.Coin => new Coin(ItemIdFactory),
+                ChestItem.Map => new Map(ItemIdFactory),
                 _ => null,
             };
         }
-    }
-    #endregion
-    #region RoomItems
-    public enum RoomItem
-    {
-        None,
-        Key,
-        Coin,
-        Chest,
-    }
 
-    public interface IRoomItemFactory
-    {
-        public Item? CreateItem();
-    }
-    public class RoomItemFactory : IRoomItemFactory
-    {
-        private readonly IChestItemFactory chestItemFactory;
-        private readonly IItemIdFactory itemIdFactory;
-        private static readonly RoomItem[] roomItemValues = (RoomItem[])Enum.GetValues(typeof(RoomItem));
-        private Random random = new Random();
-
-        public RoomItemFactory(IChestItemFactory chestItemFactory, IItemIdFactory itemIdFactory)
-        {
-            this.chestItemFactory = chestItemFactory;
-            this.itemIdFactory = itemIdFactory;
-        }
-
-        public Item? CreateItem()
-        {
-            var itemNumber = random.Next(roomItemValues.Length);
-            RoomItem roomItem = roomItemValues[itemNumber];
-            return roomItem switch
-            {
-                RoomItem.Key => new Key(itemIdFactory),
-                RoomItem.Coin => new Coin(itemIdFactory),
-                RoomItem.Chest => new Chest(chestItemFactory, itemIdFactory),
-                _ => null,
-            };
-        }
     }
     #endregion
     #region ItemId

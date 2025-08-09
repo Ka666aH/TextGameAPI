@@ -2,9 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using TextGame;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IRoomItemFactory, RoomItemFactory>();
-builder.Services.AddSingleton<IChestItemFactory, ChestItemFactory>();
-
+builder.Services.AddSingleton<IItemFactory, ItemFactory>();
 //Сессионные
 builder.Services.AddSingleton<IRoomNumberFactory, RoomNumberFactory>();
 builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
