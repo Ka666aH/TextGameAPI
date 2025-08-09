@@ -20,7 +20,7 @@
     {
         public int Number { get; init; }
         public List<Item> Items { get; set; } = new List<Item>();
-        public bool IsDiscovered {  get; set; } = false;
+        public bool IsDiscovered { get; set; } = false;
         public Room(string name, string description, int number)
         {
             Name = name;
@@ -30,7 +30,7 @@
     }
     public class StartRoom : Room
     {
-        public StartRoom() : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра через которую вы сюда провалились.", 0) 
+        public StartRoom() : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра через которую вы сюда провалились.", 0)
         {
             IsDiscovered = true;
         }
@@ -159,55 +159,32 @@
         public int Id { get; init; }
         public bool IsCarryable { get; init; }
         public int Cost { get; init; }
+        public Item(string name, string description, int id, bool isCarryable)
+        {
+            Name = name;
+            Description = description;
+            Id = id;
+        }
     }
     public enum ItemType
     {
-        None,
+        //None,
         Key,
         Coin,
         Chest,
+        Map,
     }
 
     #region Key
-    //public enum KeyType
-    //{
-    //    Door,
-    //    Chest,
-    //    Master
-    //}
     public class Key : Item
     {
-        //public KeyType keyType { get; init; }
-
-        //Random random = new Random();
-        //KeyType[] keyTypes = (KeyType[])Enum.GetValues(typeof(KeyType));
-        private readonly IItemIdFactory itemIdFactory;
-        public Key(IItemIdFactory itemIdFactory)
-        {
-            this.itemIdFactory = itemIdFactory;
-
-            Id = itemIdFactory!.Id(ItemType.Key);
-            Name = "КЛЮЧ";
-            Description = "Что-то открывает.";
-            IsCarryable = true;
-            //var randomType = random.Next(keyTypes.Length);
-            //keyType = keyTypes[randomType];
-        }
+        public Key(IItemIdFactory itemIdFactory) : base("КЛЮЧ", "Что-то открывает.", itemIdFactory!.Id(), true){}
     }
     #endregion
     #region Coin
     public class Coin : Item
     {
-        private readonly IItemIdFactory itemIdFactory;
-        public Coin(IItemIdFactory itemIdFactory)
-        {
-            this.itemIdFactory = itemIdFactory;
-
-            Id = itemIdFactory!.Id(ItemType.Coin);
-            Name = "МОНЕТА";
-            Description = "Блестит. Она явно ценная.";
-            IsCarryable = true;
-        }
+        public Coin(IItemIdFactory itemIdFactory) : base("МОНЕТА", "Блестит. Она явно ценная.", itemIdFactory!.Id(), true) { }
     }
     #endregion
     #region Chest
@@ -217,23 +194,21 @@
         public bool IsClosed { get; set; } = true;
         public bool IsMimic { get; init; }
         public List<Item> Items { get; set; }
-        private readonly IChestItemFactory chestItemFactory;
-        private readonly IItemIdFactory itemIdFactory;
 
-        public Chest(IChestItemFactory chestItemFactory, IItemIdFactory itemIdFactory)
+        private readonly int MinChestItemsAmount = 1;
+        private readonly int MaxChestItemsAmount = 3;
+
+        private readonly int MimicProbabilityDivider = 2; // 1/2
+        private readonly int LockedProbabilityDivider = 2; // 1/2
+        
+
+        public Chest(IChestItemFactory chestItemFactory, IItemIdFactory itemIdFactory) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
         {
-            this.chestItemFactory = chestItemFactory;
-            this.itemIdFactory = itemIdFactory;
-
-            Id = itemIdFactory!.Id(ItemType.Chest);
-            Name = "СУНДУК";
-            Description = "Хранит предметы. Может оказаться мимиком.";
-            IsCarryable = false;
             var random = new Random();
-            IsLocked = random.Next(2) == 0 ? false : true;
-            IsMimic = random.Next(2) == 0 ? false : true;
+            IsLocked = random.Next(LockedProbabilityDivider) == 0 ? false : true;
+            IsMimic = random.Next(MimicProbabilityDivider) == 0 ? false : true;
             Items = new List<Item>();
-            var itemsInChest = random.Next(1, 4);
+            var itemsInChest = random.Next(MinChestItemsAmount, MaxChestItemsAmount+1);
             for (int i = 0; i < itemsInChest; i++)
             {
                 Item? item = chestItemFactory.CreateItem();
@@ -243,10 +218,16 @@
         public void Open() => IsClosed = false;
         public void Unlock() => IsLocked = false;
         public List<Item> Search()
-        { 
+        {
             return Items;
         }
 
+    }
+    #endregion
+    #region Map
+    public class Map : Item
+    {
+        public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true) { }
     }
     #endregion
     #region ChestItems
@@ -255,6 +236,7 @@
         None,
         Key,
         Coin,
+        Map,
     }
 
     public interface IChestItemFactory
@@ -280,6 +262,7 @@
             {
                 ChestItem.Key => new Key(itemIdFactory),
                 ChestItem.Coin => new Coin(itemIdFactory),
+                ChestItem.Map => new Map(itemIdFactory),
                 _ => null,
             };
         }
@@ -328,13 +311,13 @@
     #region ItemId
     public interface IItemIdFactory
     {
-        int Id(ItemType item);
+        int Id();
         void Reset();
     }
     public class ItemIdFactory : IItemIdFactory
     {
         private int ItemId = 0;
-        public int Id(ItemType item)
+        public int Id()
         {
             return Interlocked.Increment(ref ItemId);
         }
