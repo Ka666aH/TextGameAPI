@@ -18,7 +18,15 @@
         public bool IsGameStarted { get; set; }
         public void RemoveWeapon()
         {
-            Weapon = Fists.DefaultFists; //кулаки
+            Weapon = Fists.DefaultFists; 
+        }
+        public void RemoveHelm()
+        {
+            Helm = null;
+        }
+        public void RemoveChestplate()
+        {
+            Chestplate = null;
         }
     }
     public class GetCurrentRoomRepository : IGetCurrentRoomRepository

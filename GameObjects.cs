@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace TextGame
@@ -251,7 +252,7 @@ namespace TextGame
         public override int Attack(GameSession gameSession)
         {
             Random random = new Random();
-            double Multiplicator = gameSession.CurrentRoom!.Number / 10; 
+            double Multiplicator = gameSession.CurrentRoom!.Number / 10;
             if (random.Next((int)Math.Round(SelfHarmProbabilityDivider + Multiplicator)) == 0) gameSession.CurrentHealth--;
             int damage = (int)Math.Round((int)Damage! + Multiplicator);
             return damage;
@@ -368,7 +369,7 @@ namespace TextGame
             {
                 Random random = new Random();
                 int damage = (int)Math.Round((int)Damage! * Multiplicator);
-                return random.Next(damage+1);
+                return random.Next(damage + 1);
             }
             return (int)Damage!;
         }
@@ -378,18 +379,117 @@ namespace TextGame
     #region Armor
     public abstract class Armor : Equipment
     {
+        public int DamageBlock;
         public Armor(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
+        public abstract int Block(GameSession gameSession);
     }
     #region Helm
-    public abstract class Helm : Equipment
+    enum HelmType
     {
-        public Helm(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
+        WoodenBucket,
+        Leather,
+        Iron,
+    }
+    public class Helm : Armor
+    {
+        private HelmType HelmType;
+
+        private const int WoodenBucketMax = 70;
+        private const int LeatherMax = 80;
+
+        public Helm(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop)
+        {
+            Random random = new Random();
+            int helmTypeNumber = random.Next(100);
+            HelmType = helmTypeNumber switch
+            {
+                >= 0 and < WoodenBucketMax => HelmType.WoodenBucket,
+                >= WoodenBucketMax and < LeatherMax => HelmType.Leather,
+                >= LeatherMax and < 100 => HelmType.Iron,
+
+                _ => HelmType.WoodenBucket,
+            };
+            switch (HelmType)
+            {
+                case HelmType.WoodenBucket:
+                    Initialize("ДЕРЕВЯННОЕ ВЕДРО", "Старое дырявое ведро. Кто, в своём уме, наденет его на голову?", random.Next(2, 6), random.Next(1, 3));
+                    break;
+                case HelmType.Leather:
+                    Initialize("КОЖАННЫЙ ШЛЕМ", "Изысканный чёрный шлем мастера подземелия.", random.Next(7, 15), random.Next(3, 7));
+                    break;
+                case HelmType.Iron:
+                    Initialize("ЖЕЛЕЗНЫЙ ШЛЕМ", "Крепкий шлем из качественого металла.", random.Next(16, 31), random.Next(8, 12));
+                    break;
+            }
+        }
+        private void Initialize(string name, string description, int durability, int damageBlock)
+        {
+            Name = name;
+            Description = description;
+            Durability = durability;
+            DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
+        }
+        public override int Block(GameSession gameSession)
+        {
+            Durability--;
+            if (Durability <= 0) BreakDown(gameSession);
+            return DamageBlock;
+        }
+        public void BreakDown(GameSession gameSession)
+        {
+            gameSession.RemoveHelm();
+        }
     }
     #endregion
     #region Chestplate
-    public abstract class Chestplate : Equipment
+    enum ChestplateType
     {
-        public Chestplate(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
+        Leather,
+        Iron,
+    }
+    public class Chestplate : Armor
+    {
+        private ChestplateType ChestplateType;
+
+        private const int LeatherMax = 80;
+        public Chestplate(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) 
+        {
+            Random random = new Random();
+            int chestplateTypeNumber = random.Next(100);
+            ChestplateType = chestplateTypeNumber switch
+            {
+                >= 0 and < LeatherMax => ChestplateType.Leather,
+                >= LeatherMax and < 100 => ChestplateType.Iron,
+
+                _ => ChestplateType.Leather,
+            };
+            switch (ChestplateType)
+            {
+                case ChestplateType.Leather:
+                    Initialize("КОЖАННАЯ КУРТКА", "Лёгкая куртка из плотной кожи.", random.Next(5, 16), random.Next(6, 14));
+                    break;
+                case ChestplateType.Iron:
+                    Initialize("ЖЕЛЕЗНАЯ КИРАСА", "Тяжёлая и прочная.", random.Next(20, 51), random.Next(16, 24));
+                    break;
+            }
+        }
+        private void Initialize(string name, string description, int durability, int damageBlock)
+        {
+            Name = name;
+            Description = description;
+            Durability = durability;
+            DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
+        }
+        public override int Block(GameSession gameSession)
+        {
+            Durability--;
+            if (Durability <= 0) BreakDown(gameSession);
+            return DamageBlock;
+        }
+        public void BreakDown(GameSession gameSession)
+        {
+            gameSession.RemoveChestplate();
+        }
     }
     #endregion
     #endregion
