@@ -234,6 +234,7 @@ namespace TextGame
         public Weapon(string? name, string? description, int? id, int? durability, int? damage) : base(name, description, id, durability) { }
         public abstract int Attack(GameSession gameSession);
     }
+    #region Fists
     public class Fists : Weapon
     {
         public static readonly Fists DefaultFists = new Fists();
@@ -246,6 +247,8 @@ namespace TextGame
             return (int)Damage!;
         }
     }
+    #endregion
+    #region Swords
     enum SwordType
     {
         Rust,
@@ -260,7 +263,6 @@ namespace TextGame
         private const int RustSwordMax = 70;
         private const int IronSwordMax = 95;
         private const int SilverSwordMax = 99;
-        private const int GlassSwordMax = 100;
         public Sword(IItemIdFactory itemIdFactory) : base(null, null, itemIdFactory.Id(), null, null)
         {
 
@@ -271,27 +273,27 @@ namespace TextGame
                 >= 0 and < RustSwordMax => SwordType.Rust,
                 >= RustSwordMax and < IronSwordMax => SwordType.Iron,
                 >= IronSwordMax and < SilverSwordMax => SwordType.Silver,
-                >= SilverSwordMax and < GlassSwordMax => SwordType.Glass,
+                >= SilverSwordMax and < 100 => SwordType.Glass,
 
                 _ => SwordType.Rust,
             };
             switch (SwordType)
             {
                 case SwordType.Rust:
-                    InitializeSword("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", random.Next(1, 21), random.Next(3, 8));
+                    Initialize("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", random.Next(1, 21), random.Next(3, 8));
                     break;
                 case SwordType.Iron:
-                    InitializeSword("ЖЕЛЕЗНЫЙ МЕЧ", "Добротное оружие воина.", random.Next(1, 101), random.Next(8, 17));
+                    Initialize("ЖЕЛЕЗНЫЙ МЕЧ", "Добротное оружие воина.", random.Next(1, 101), random.Next(8, 17));
                     break;
                 case SwordType.Silver:
-                    InitializeSword("СЕРЕБРЯНЫЙ МЕЧ", "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.", random.Next(10, 51), random.Next(25, 31));
+                    Initialize("СЕРЕБРЯНЫЙ МЕЧ", "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.", random.Next(10, 51), random.Next(25, 31));
                     break;
                 case SwordType.Glass:
-                    InitializeSword("СТЕКЛЯННЫЙ МЕЧ", "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.", 1, 100);
+                    Initialize("СТЕКЛЯННЫЙ МЕЧ", "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.", 1, 100);
                     break;
             }
         }
-        private void InitializeSword(string name, string description, int durability, int damage)
+        private void Initialize(string name, string description, int durability, int damage)
         {
             Name = name;
             Description = description;
@@ -310,6 +312,58 @@ namespace TextGame
         }
     }
     #endregion
+    #region Wands
+    enum WandType
+    {
+        Magic,
+        Random,
+    }
+    public class Wand : Weapon
+    {
+        private WandType WandType;
+
+        private const int RandomWandMaxDamage = 40;
+
+        private const int MagicWandMax = 90;
+        public Wand(IItemIdFactory itemIdFactory) : base(null, null, itemIdFactory.Id(), null, null)
+        {
+            Random random = new Random();
+            int wandTypeNumber = random.Next(100);
+            WandType = wandTypeNumber switch
+            {
+                >= 0 and < MagicWandMax => WandType.Magic,
+                >= MagicWandMax and < 100 => WandType.Random,
+
+                _ => WandType.Magic,
+            };
+            switch (WandType)
+            {
+                case WandType.Magic:
+                    Initialize("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
+                    break;
+                case WandType.Random:
+                    Initialize("ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие.", null);
+                    break;
+            }
+        }
+        private void Initialize(string name, string description, int? damage)
+        {
+            Name = name;
+            Description = description;
+            Damage = damage;
+        }
+        public override int Attack(GameSession gameSession)
+        {
+            if (WandType == WandType.Random)
+            {
+                Random random = new Random();
+                return random.Next(RandomWandMaxDamage + 1);
+            }
+            return (int)Damage!;
+        }
+    }
+    #endregion
+    #endregion
     #region Armor
     public abstract class Armor : Equipment
     {
@@ -321,7 +375,7 @@ namespace TextGame
         public Helm(string name, string description, int id, int durability) : base(name, description, id, durability) { }
     }
     #endregion
-    #region Helm
+    #region Chestplate
     public abstract class Chestplate : Equipment
     {
         public Chestplate(string name, string description, int id, int durability) : base(name, description, id, durability) { }
@@ -408,6 +462,5 @@ namespace TextGame
 
     }
     #endregion
-
+    #endregion
 }
-#endregion
