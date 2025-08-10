@@ -1,4 +1,5 @@
 ﻿using System;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TextGame
 {
@@ -225,13 +226,20 @@ namespace TextGame
     public abstract class Equipment : Item
     {
         public int? Durability;
-        public Equipment(string? name, string? description, int? id, int? durability) : base(name, description, id, true) { }
+        protected double Multiplicator;
+
+        private const double FromShopMultiplicator = 1.2;
+        public Equipment(string? name, string? description, int? id, int? durability, int roomId, bool fromShop) : base(name, description, id, true)
+        {
+            Multiplicator = fromShop ? (1 + (roomId / 100)) * FromShopMultiplicator : (1 + (roomId / 100));
+        }
     }
     #region Weapon
     public abstract class Weapon : Equipment
     {
         public int? Damage;
-        public Weapon(string? name, string? description, int? id, int? durability, int? damage) : base(name, description, id, durability) { }
+        public Weapon(string? name, string? description, int? id, int? durability, int? damage, int roomId, bool fromShop)
+            : base(name, description, id, durability, roomId, fromShop) { }
         public abstract int Attack(GameSession gameSession);
     }
     #region Fists
@@ -239,12 +247,14 @@ namespace TextGame
     {
         public static readonly Fists DefaultFists = new Fists();
         public static readonly int SelfHarmProbabilityDivider = 2;
-        public Fists() : base("КУЛАКИ", "То, что есть (почти) у каждого. Базовое оружие самозащиты. Может быть больно.", null, null, 1) { }
+        public Fists() : base("КУЛАКИ", "То, что есть (почти) у каждого. Базовое оружие самозащиты. Может быть больно.", null, null, 1, 1, false) { }
         public override int Attack(GameSession gameSession)
         {
             Random random = new Random();
-            if (random.Next(SelfHarmProbabilityDivider) == 0) gameSession.CurrentHealth--;
-            return (int)Damage!;
+            double Multiplicator = gameSession.CurrentRoom!.Number / 10; 
+            if (random.Next((int)Math.Round(SelfHarmProbabilityDivider + Multiplicator)) == 0) gameSession.CurrentHealth--;
+            int damage = (int)Math.Round((int)Damage! + Multiplicator);
+            return damage;
         }
     }
     #endregion
@@ -263,9 +273,8 @@ namespace TextGame
         private const int RustSwordMax = 70;
         private const int IronSwordMax = 95;
         private const int SilverSwordMax = 99;
-        public Sword(IItemIdFactory itemIdFactory) : base(null, null, itemIdFactory.Id(), null, null)
+        public Sword(IItemIdFactory itemIdFactory, int roomId, bool fromShop) : base(null, null, itemIdFactory.Id(), null, null, roomId, fromShop)
         {
-
             Random random = new Random();
             int swordTypeNumber = random.Next(100);
             SwordType = swordTypeNumber switch
@@ -298,7 +307,7 @@ namespace TextGame
             Name = name;
             Description = description;
             Durability = durability;
-            Damage = damage;
+            Damage = (int)Math.Round(damage * Multiplicator);
         }
         public override int Attack(GameSession gameSession)
         {
@@ -325,7 +334,7 @@ namespace TextGame
         private const int RandomWandMaxDamage = 40;
 
         private const int MagicWandMax = 90;
-        public Wand(IItemIdFactory itemIdFactory) : base(null, null, itemIdFactory.Id(), null, null)
+        public Wand(IItemIdFactory itemIdFactory, int roomId, bool fromShop) : base(null, null, itemIdFactory.Id(), null, null, roomId, fromShop)
         {
             Random random = new Random();
             int wandTypeNumber = random.Next(100);
@@ -342,22 +351,24 @@ namespace TextGame
                     Initialize("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
                     break;
                 case WandType.Random:
-                    Initialize("ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие.", null);
+                    Initialize("ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие. Становится сильнее со временем.", RandomWandMaxDamage);
                     break;
             }
         }
-        private void Initialize(string name, string description, int? damage)
+        private void Initialize(string name, string description, int damage)
         {
             Name = name;
             Description = description;
-            Damage = damage;
+            if (WandType == WandType.Random) Damage = RandomWandMaxDamage;
+            else Damage = (int)Math.Round(damage * Multiplicator);
         }
         public override int Attack(GameSession gameSession)
         {
             if (WandType == WandType.Random)
             {
                 Random random = new Random();
-                return random.Next(RandomWandMaxDamage + 1);
+                int damage = (int)Math.Round((int)Damage! * Multiplicator);
+                return random.Next(damage+1);
             }
             return (int)Damage!;
         }
@@ -367,18 +378,18 @@ namespace TextGame
     #region Armor
     public abstract class Armor : Equipment
     {
-        public Armor(string name, string description, int id, int durability) : base(name, description, id, durability) { }
+        public Armor(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
     }
     #region Helm
     public abstract class Helm : Equipment
     {
-        public Helm(string name, string description, int id, int durability) : base(name, description, id, durability) { }
+        public Helm(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
     }
     #endregion
     #region Chestplate
     public abstract class Chestplate : Equipment
     {
-        public Chestplate(string name, string description, int id, int durability) : base(name, description, id, durability) { }
+        public Chestplate(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
     }
     #endregion
     #endregion
