@@ -17,9 +17,13 @@
     {
         public InvalidIdException(string code, string message) : base(code, message) { }
     }
-    public class NullIdException : GameException
+    public class NullItemIdException : GameException
     {
-        public NullIdException(string code, string message) : base(code, message) { }
+        public NullItemIdException() : base("ITEM_NOT_FOUND", "Предмет с таким ID не найден.") { }
+    }
+    public class NullRoomIdException : GameException
+    {
+        public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната с таким номером не найдена.") { }
     }
     public class UnstartedGameException : GameException
     {
@@ -44,6 +48,10 @@
     public class NoKeyException : GameException
     {
         public NoKeyException() : base("NO_KEY_ERROR", "Нет ключа!") { }
+    }
+    public class NoMapException : GameException
+    {
+        public NoMapException() : base("NO_MAP_ERROR", "Нет карты!") { }
     }
     public class ClosedException : GameException
     {
