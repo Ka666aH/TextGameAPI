@@ -6,4 +6,7 @@
     public record GameStatsDTO(int coins, int keys, List<Item> Inventory);
     public record GameOverStatsDTO(int roomNumber, int coins, int keys, List<Item> Inventory);
     public record GameOverDTO(string message, GameOverStatsDTO gameOverStats);
+    public record EquipmentListDTO(Weapon weapon, Armor helm, Armor chestplate);
+
+    
 }

@@ -13,7 +13,7 @@ builder.Services.AddSingleton<IItemIdFactory, ItemIdFactory>();
 builder.Services.AddSingleton<GameSession>();
 builder.Services.AddSingleton<IGetCurrentRoomRepository, GetCurrentRoomRepository>();
 builder.Services.AddSingleton<IChestRepository, ChestRepository>();
-//builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
+builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
 builder.Services.AddSingleton<IGameStatsRepository, GameStatsRepository>();
 builder.Services.AddSingleton<IGameOverStatsRepository, GameOverStatsRepository>();
 builder.Services.AddSingleton<IGetRoomByIdRepository, GetRoomByIdRepository>();
@@ -56,7 +56,7 @@ app.UseExceptionHandler(exceptionHandlerApp =>
 
                 switch (gameEx)
                 {
-                    case NullIdException or EmptyException:
+                    case NullRoomIdException or NullItemIdException or EmptyException:
                         result = Results.NotFound(new ErrorResponse(gameEx));
                         break;
                     case InvalidIdException or UncarryableException:

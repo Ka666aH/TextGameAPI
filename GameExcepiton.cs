@@ -17,9 +17,13 @@
     {
         public InvalidIdException(string code, string message) : base(code, message) { }
     }
-    public class NullIdException : GameException
+    public class NullItemIdException : GameException
     {
-        public NullIdException(string code, string message) : base(code, message) { }
+        public NullItemIdException() : base("ITEM_NOT_FOUND", "Предмет с таким ID не найден.") { }
+    }
+    public class NullRoomIdException : GameException
+    {
+        public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната с таким номером не найдена.") { }
     }
     public class UnstartedGameException : GameException
     {

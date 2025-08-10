@@ -14,11 +14,16 @@
         void TakeItemFromChest(int roomId, int chestId, int itemId);
         void TakeAllItemsFromChest(int roomId, int chestId);
     }
-    //public interface IInventoryRepository
-    //{
-    //    Item GetInventoryItem(int itemId);
-    //    List<Item> GetInventoryItems(List<int> itemIds);
-    //}
+    public interface IInventoryRepository
+    {
+        Item GetInventoryItem(int itemId);
+        EquipmentListDTO EquipInventoryItem(int itemId);
+        EquipmentListDTO GetEquipment();
+        EquipmentListDTO UnequipWeapon();
+        EquipmentListDTO UnequipHelm();
+        EquipmentListDTO UnequipChestplate();
+        //List<Item> GetInventoryItems(List<int> itemIds);
+    }
     public interface IGameStatsRepository
     {
         GameStatsDTO GetGameStats();
@@ -35,7 +40,7 @@
     {
         Item GetItemById(int itemId, List<Item> items);
     }
-    public interface IGameControllerRepository : IGetCurrentRoomRepository
+    public interface IGameControllerRepository : IGetCurrentRoomRepository, IInventoryRepository
     {
         void Start();
         List<Item> GetInventory();

@@ -49,5 +49,41 @@ namespace TextGame.Controllers
             var inventory = GameControllerRepository.GetInventory();
             return Results.Ok(new SuccessfulResponse(inventory));
         }
+        [HttpGet("inventory/{itemId}")]
+        public IResult GetInventoryItem(int itemId)
+        {
+            var item = GameControllerRepository.GetInventoryItem(itemId);
+            return Results.Ok(new SuccessfulResponse(item));
+        }
+        [HttpGet("equipment")]
+        public IResult GetEquipment()
+        {
+            var equipmentDTO = GameControllerRepository.GetEquipment();
+            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+        }
+        [HttpPost("equipment/{itemId}/equip")]
+        public IResult EquipInventoryItem(int itemId)
+        {
+            var equipmentDTO = GameControllerRepository.EquipInventoryItem(itemId);
+            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+        }
+        [HttpPost("equipment/weapon/unequip")]
+        public IResult UnequipWeapon()
+        {
+            var equipmentDTO = GameControllerRepository.UnequipWeapon();
+            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+        }
+        [HttpPost("equipment/helm/unequip")]
+        public IResult UnequipHelm()
+        {
+            var equipmentDTO = GameControllerRepository.UnequipHelm();
+            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+        }
+        [HttpPost("equipment/chestplate/unequip")]
+        public IResult UnequipChestplate()
+        {
+            var equipmentDTO = GameControllerRepository.UnequipChestplate();
+            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+        }
     }
 }

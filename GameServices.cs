@@ -10,15 +10,16 @@
         public int Coins { get; set; }
         public int Keys { get; set; }
         public List<Item> Inventory { get; set; } = new List<Item>();
-        public Weapon? Weapon { get; set; } = Fists.DefaultFists;
+        public Weapon Weapon { get; set; } = Fists.DefaultFists;
         public Helm? Helm { get; set; }
         public Chestplate? Chestplate { get; set; }
-        public int MaxHealth { get; set; } = 10;
-        public int CurrentHealth { get; set; } = 10;
+        public static readonly int DefaultMaxHealth = 10;
+        public int MaxHealth { get; set; } = DefaultMaxHealth;
+        public int CurrentHealth { get; set; } = DefaultMaxHealth;
         public bool IsGameStarted { get; set; }
         public void RemoveWeapon()
         {
-            Weapon = Fists.DefaultFists; 
+            Weapon = Fists.DefaultFists;
         }
         public void RemoveHelm()
         {
@@ -40,6 +41,85 @@
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
             return new CurrentRoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!);
+        }
+    }
+    public class InventoryRepository : IInventoryRepository
+    {
+        private GameSession Session { get; set; }
+        public InventoryRepository(GameSession session)
+        {
+            Session = session;
+        }
+
+        public Item GetInventoryItem(int itemId)
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+
+            Item? item = Session.Inventory.FirstOrDefault(i => i.Id == itemId);
+            if (item == null) throw new NullItemIdException();
+            return item;
+        }
+        public EquipmentListDTO GetEquipment()
+        {
+            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+        }
+        public EquipmentListDTO EquipInventoryItem(int itemId)
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+
+            Item item = GetInventoryItem(itemId);
+            if (item is not Equipment equipment) throw new InvalidIdException("NOT_EQUIPMENT", "Это не снаряжение.");
+            switch (equipment)
+            {
+                case Weapon weapon:
+                    if (Session.Weapon != Fists.DefaultFists) Session.Inventory.Add(Session.Weapon);
+                    Session.Weapon = weapon;
+                    Session.Inventory.Remove(weapon);
+                    break;
+                case Armor armor:
+                    switch (armor)
+                    {
+                        case Helm helm:
+                            if (Session.Helm != null) Session.Inventory.Add(Session.Helm);
+                            Session.Helm = helm;
+                            Session.Inventory.Remove(helm);
+                            break;
+                        case Chestplate chestplate:
+                            if (Session.Chestplate != null) Session.Inventory.Add(Session.Chestplate);
+                            Session.Chestplate = chestplate;
+                            Session.Inventory.Remove(chestplate);
+                            break;
+                    }
+                    break;
+            }
+            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+        }
+        public EquipmentListDTO UnequipWeapon()
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+
+            if (Session.Weapon == Fists.DefaultFists) throw new EmptyException();
+            Session.Inventory.Add(Session.Weapon);
+            Session.Weapon = Fists.DefaultFists;
+            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+        }
+        public EquipmentListDTO UnequipHelm()
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+
+            if (Session.Helm == null) throw new EmptyException();
+            Session.Inventory.Add(Session.Helm!);
+            Session.Helm = null;
+            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+        }
+        public EquipmentListDTO UnequipChestplate()
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+
+            if (Session.Chestplate == null) throw new EmptyException();
+            Session.Inventory.Add(Session.Chestplate!);
+            Session.Chestplate = null;
+            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
         }
     }
     public class ChestRepository : IChestRepository
@@ -207,7 +287,7 @@
             /*//Старый вариант
             Room? room = Rooms.FirstOrDefault(r => r.Number == roomId);
             if (room == null) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");*/
-            if (roomId < 0 || roomId > Session.Rooms.Count) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");
+            if (roomId < 0 || roomId > Session.Rooms.Count) throw new NullRoomIdException();
             Room room = Session.Rooms[roomId];
             if (!room.IsDiscovered) throw new UndiscoveredRoomException();
             Session.CurrentRoom = room;
@@ -220,7 +300,7 @@
         public Item GetItemById(int itemId, List<Item> items)
         {
             Item? item = items.FirstOrDefault(i => i.Id == itemId);
-            if (item == null) throw new NullIdException("ITEM_NOT_FOUND", "Предмет с таким ID не найден.");
+            if (item == null) throw new NullItemIdException();
             return item;
         }
     }
@@ -232,12 +312,15 @@
         private readonly IRoomNumberFactory RoomNumberFactory;
         private readonly IRoomFactory RoomFactory;
         private readonly IItemIdFactory ItemIdFactory;
+
+        private readonly IInventoryRepository InventoryRepository;
         public GameControllerRepository(
             GameSession session,
             IGetCurrentRoomRepository getCurrentRoomRepository,
             IRoomNumberFactory roomNumberFactory,
             IRoomFactory roomFactory,
-            IItemIdFactory itemIdFactory
+            IItemIdFactory itemIdFactory,
+            IInventoryRepository inventoryRepository
             )
         {
             Session = session;
@@ -245,6 +328,7 @@
             RoomNumberFactory = roomNumberFactory;
             RoomFactory = roomFactory;
             ItemIdFactory = itemIdFactory;
+            InventoryRepository = inventoryRepository;
         }
         public CurrentRoomDTO GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
         public void Start()
@@ -258,8 +342,17 @@
         {
             Session.Coins = 0;
             Session.Keys = 0;
+
+            Session.Weapon = Fists.DefaultFists;
+            Session.Helm = null;
+            Session.Chestplate = null;
+
             Session.Inventory = new List<Item>();
             Session.Rooms = new List<Room>();
+
+            Session.MaxHealth = GameSession.DefaultMaxHealth;
+            Session.CurrentHealth = GameSession.DefaultMaxHealth;
+
             ItemIdFactory.Reset();
             RoomNumberFactory.Reset();
         }
@@ -296,6 +389,14 @@
             if (!Session.Inventory.OfType<Map>().Any()) throw new NoMapException();
             return Session.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? "НЕИЗВЕСТНО")).ToList();
         }
+
+        public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
+        public EquipmentListDTO GetEquipment() => InventoryRepository.GetEquipment();
+        public EquipmentListDTO EquipInventoryItem(int itemId) => InventoryRepository.EquipInventoryItem(itemId);
+        public EquipmentListDTO UnequipWeapon() => InventoryRepository.UnequipWeapon();
+        public EquipmentListDTO UnequipHelm() => InventoryRepository.UnequipHelm();
+        public EquipmentListDTO UnequipChestplate() => InventoryRepository.UnequipChestplate();
+
     }
     public class RoomControllerRepository : IRoomControllerRepository
     {
