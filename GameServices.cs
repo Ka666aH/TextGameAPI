@@ -7,9 +7,14 @@
                 new StartRoom(),
             };
         public Room? CurrentRoom { get; set; }
-        public List<Item> Inventory { get; set; } = new List<Item>();
         public int Coins { get; set; }
         public int Keys { get; set; }
+        public List<Item> Inventory { get; set; } = new List<Item>();
+        public Weapon? Weapon { get; set; }
+        public Helm? Helm { get; set; }
+        public Chestplate? Chestplate { get; set; }
+        public int MaxHealth { get; set; }
+        public int CurrentHealth { get; set; }
         public bool IsGameStarted { get; set; }
     }
     public class GetCurrentRoomRepository : IGetCurrentRoomRepository
