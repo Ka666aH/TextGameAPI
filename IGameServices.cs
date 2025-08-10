@@ -2,7 +2,7 @@
 {
     public interface IGetCurrentRoomRepository
     {
-        CurrentRoomDTO GetCurrentRoom();
+        Room GetCurrentRoom();
     }
     public interface IChestRepository
     {

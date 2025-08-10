@@ -37,10 +37,10 @@
         {
             Session = session;
         }
-        public CurrentRoomDTO GetCurrentRoom()
+        public Room GetCurrentRoom()
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            return new CurrentRoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!);
+            return Session.CurrentRoom!;
         }
     }
     public class InventoryRepository : IInventoryRepository
@@ -255,7 +255,7 @@
         }
         public GameStatsDTO GetGameStats()
         {
-            return new GameStatsDTO(Session.Coins, Session.Keys, Session.Inventory);
+            return new GameStatsDTO(Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
         }
     }
     public class GameOverStatsRepository : IGameOverStatsRepository
@@ -267,7 +267,7 @@
         }
         public GameOverStatsDTO GetGameOverStats()
         {
-            return new GameOverStatsDTO(Session.CurrentRoom!.Number, Session.Coins, Session.Keys, Session.Inventory);
+            return new GameOverStatsDTO(Session.CurrentRoom!.Number, Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
         }
     }
     public class GetRoomByIdRepository : IGetRoomByIdRepository
@@ -330,7 +330,7 @@
             ItemIdFactory = itemIdFactory;
             InventoryRepository = inventoryRepository;
         }
-        public CurrentRoomDTO GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
+        public Room GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
         public void Start()
         {
             ResetGame();
@@ -425,7 +425,7 @@
             GetItemByIdRepository = getItemByIdRepository;
             GameOverStatsRepository = getGameOverStatsRepository;
         }
-        public CurrentRoomDTO GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
+        public Room GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
         public void GoNextRoom()
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
