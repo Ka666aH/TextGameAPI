@@ -4,8 +4,8 @@ namespace TextGame
 {
     public class GameObject
     {
-        public string? Name { get; init; }
-        public string? Description { get; init; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
     }
     #region Room
     public enum RoomType
@@ -151,10 +151,10 @@ namespace TextGame
     #region Item
     public class Item : GameObject
     {
-        public int Id { get; init; }
+        public int? Id { get; init; }
         public bool IsCarryable { get; init; }
         //public int Cost { get; init; }
-        public Item(string name, string description, int id, bool isCarryable)
+        public Item(string? name, string? description, int? id, bool isCarryable)
         {
             Name = name;
             Description = description;
@@ -170,7 +170,6 @@ namespace TextGame
     //    Chest,
     //    Map,
     //}
-
     #region Key
     public class Key : Item
     {
@@ -220,6 +219,133 @@ namespace TextGame
     public class Map : Item
     {
         public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true) { }
+    }
+    #endregion
+    #region Equipment
+    public abstract class Equipment : Item
+    {
+        public int? Durability;
+        public Equipment(string? name, string? description, int? id, int? durability) : base(name, description, id, true) { }
+    }
+    #region Weapon
+    public abstract class Weapon : Equipment
+    {
+        public int? Damage;
+        public Weapon(string? name, string? description, int? id, int? durability, int? damage) : base(name, description, id, durability) { }
+        public abstract int Attack(GameSession gameSession);
+    }
+    public class Fists : Weapon
+    {
+        public static readonly Fists DefaultFists = new Fists();
+        public static readonly int SelfHarmProbabilityDivider = 2;
+        public Fists() : base("КУЛАКИ", "То, что есть (почти) у каждого. Базовое оружие самозащиты. Может быть больно.", null, null, 1) { }
+        public override int Attack(GameSession gameSession)
+        {
+            Random random = new Random();
+            if (random.Next(SelfHarmProbabilityDivider) == 0) gameSession.CurrentHealth--;
+            return (int)Damage!;
+        }
+    }
+    enum SwordType
+    {
+        Rust,
+        Iron,
+        Silver,
+        Glass,
+    }
+    public class Sword : Weapon
+    {
+        private SwordType SwordType;
+
+        private const int RustSwordMax = 70;
+        private const int IronSwordMax = 95;
+        private const int SilverSwordMax = 99;
+        private const int GlassSwordMax = 100;
+        public Sword(IItemIdFactory itemIdFactory) : base(null, null, itemIdFactory.Id(), null, null)
+        {
+
+            Random random = new Random();
+            int swordTypeNumber = random.Next(100);
+            SwordType = swordTypeNumber switch
+            {
+                >= 0 and < RustSwordMax => SwordType.Rust,
+                >= RustSwordMax and < IronSwordMax => SwordType.Iron,
+                >= IronSwordMax and < SilverSwordMax => SwordType.Silver,
+                >= SilverSwordMax and < GlassSwordMax => SwordType.Glass,
+
+                _ => SwordType.Rust,
+            };
+            switch (SwordType)
+            {
+                case SwordType.Rust:
+                    InitializeSword("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", random.Next(1, 21), random.Next(3, 8));
+                    break;
+                case SwordType.Iron:
+                    InitializeSword("ЖЕЛЕЗНЫЙ МЕЧ", "Добротное оружие воина.", random.Next(1, 101), random.Next(8, 17));
+                    break;
+                case SwordType.Silver:
+                    InitializeSword("СЕРЕБРЯНЫЙ МЕЧ", "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.", random.Next(10, 51), random.Next(25, 31));
+                    break;
+                case SwordType.Glass:
+                    InitializeSword("СТЕКЛЯННЫЙ МЕЧ", "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.", 1, 100);
+                    break;
+            }
+        }
+        private void InitializeSword(string name, string description, int durability, int damage)
+        {
+            Name = name;
+            Description = description;
+            Durability = durability;
+            Damage = damage;
+        }
+        public override int Attack(GameSession gameSession)
+        {
+            Durability--;
+            if (Durability <= 0) BreakDown(gameSession);
+            return (int)Damage!;
+        }
+        public void BreakDown(GameSession gameSession)
+        {
+            gameSession.RemoveWeapon();
+        }
+    }
+    #endregion
+    #region Armor
+    public abstract class Armor : Equipment
+    {
+        public Armor(string name, string description, int id, int durability) : base(name, description, id, durability) { }
+    }
+    #region Helm
+    public abstract class Helm : Equipment
+    {
+        public Helm(string name, string description, int id, int durability) : base(name, description, id, durability) { }
+    }
+    #endregion
+    #region Helm
+    public abstract class Chestplate : Equipment
+    {
+        public Chestplate(string name, string description, int id, int durability) : base(name, description, id, durability) { }
+    }
+    #endregion
+    #endregion
+    #endregion
+    #region ItemId
+    public interface IItemIdFactory
+    {
+        int Id();
+        void Reset();
+    }
+    public class ItemIdFactory : IItemIdFactory
+    {
+        private int ItemId = 0;
+        public int Id()
+        {
+            return Interlocked.Increment(ref ItemId);
+        }
+        public void Reset()
+        {
+            ItemId = 0;
+        }
     }
     #endregion
     #region ItemFactory
@@ -282,24 +408,6 @@ namespace TextGame
 
     }
     #endregion
-    #region ItemId
-    public interface IItemIdFactory
-    {
-        int Id();
-        void Reset();
-    }
-    public class ItemIdFactory : IItemIdFactory
-    {
-        private int ItemId = 0;
-        public int Id()
-        {
-            return Interlocked.Increment(ref ItemId);
-        }
-        public void Reset()
-        {
-            ItemId = 0;
-        }
-    }
-    #endregion
+
 }
 #endregion

@@ -10,12 +10,16 @@
         public int Coins { get; set; }
         public int Keys { get; set; }
         public List<Item> Inventory { get; set; } = new List<Item>();
-        public Weapon? Weapon { get; set; }
+        public Weapon? Weapon { get; set; } = Fists.DefaultFists;
         public Helm? Helm { get; set; }
         public Chestplate? Chestplate { get; set; }
-        public int MaxHealth { get; set; }
-        public int CurrentHealth { get; set; }
+        public int MaxHealth { get; set; } = 10;
+        public int CurrentHealth { get; set; } = 10;
         public bool IsGameStarted { get; set; }
+        public void RemoveWeapon()
+        {
+            Weapon = Fists.DefaultFists; //кулаки
+        }
     }
     public class GetCurrentRoomRepository : IGetCurrentRoomRepository
     {
