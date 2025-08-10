@@ -52,7 +52,7 @@ namespace TextGame
 
         public SmallRoom(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory) : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", roomNumberFactory.GetRoomNumber())
         {
-            Item? item = itemFactory.CreateRoomItem();
+            Item? item = itemFactory.CreateRoomItem(Number);
             if (item != null) Items.Add(item);
         }
     }
@@ -63,7 +63,7 @@ namespace TextGame
             const int itemsAmount = 3;
             for (int i = 0; i < itemsAmount; i++)
             {
-                Item? item = itemFactory.CreateRoomItem();
+                Item? item = itemFactory.CreateRoomItem(Number);
                 if (item != null) Items.Add(item);
             }
         }
@@ -199,7 +199,7 @@ namespace TextGame
         private readonly int LockedProbabilityDivider = 2; // 1/2
 
 
-        public Chest(IItemIdFactory itemIdFactory, IItemFactory itemFactory) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
+        public Chest(IItemIdFactory itemIdFactory, IItemFactory itemFactory, int roomId, bool isShop) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
         {
             var random = new Random();
             IsLocked = random.Next(LockedProbabilityDivider) == 0;
@@ -208,7 +208,7 @@ namespace TextGame
             var itemsInChest = random.Next(MinChestItemsAmount, MaxChestItemsAmount + 1);
             for (int i = 0; i < itemsInChest; i++)
             {
-                Item? item = itemFactory.CreateChestItem();
+                Item? item = itemFactory.CreateChestItem(roomId, isShop);
                 if (item != null) Items.Add(item);
             }
         }
@@ -380,7 +380,7 @@ namespace TextGame
     public abstract class Armor : Equipment
     {
         public int DamageBlock;
-        public Armor(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
+        public Armor(string? name, string? description, int id, int? durability, int? damageBlock, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
         public abstract int Block(GameSession gameSession);
     }
     #region Helm
@@ -397,7 +397,7 @@ namespace TextGame
         private const int WoodenBucketMax = 70;
         private const int LeatherMax = 80;
 
-        public Helm(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop)
+        public Helm(IItemIdFactory itemIdFactory, int roomId, bool fromShop) : base(null, null, itemIdFactory.Id(), null, null, roomId, fromShop)
         {
             Random random = new Random();
             int helmTypeNumber = random.Next(100);
@@ -412,7 +412,7 @@ namespace TextGame
             switch (HelmType)
             {
                 case HelmType.WoodenBucket:
-                    Initialize("ДЕРЕВЯННОЕ ВЕДРО", "Старое дырявое ведро. Кто, в своём уме, наденет его на голову?", random.Next(2, 6), random.Next(1, 3));
+                    Initialize("ДЕРЕВЯННОЕ ВЕДРО", "Старое дырявое ведро. Кто в своём уме наденет его на голову?", random.Next(2, 6), random.Next(1, 3));
                     break;
                 case HelmType.Leather:
                     Initialize("КОЖАННЫЙ ШЛЕМ", "Изысканный чёрный шлем мастера подземелия.", random.Next(7, 15), random.Next(3, 7));
@@ -452,7 +452,7 @@ namespace TextGame
         private ChestplateType ChestplateType;
 
         private const int LeatherMax = 80;
-        public Chestplate(string name, string description, int id, int durability, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) 
+        public Chestplate(IItemIdFactory itemIdFactory, int roomId, bool fromShop) : base(null, null, itemIdFactory.Id(), null, null, roomId, fromShop)
         {
             Random random = new Random();
             int chestplateTypeNumber = random.Next(100);
@@ -514,63 +514,125 @@ namespace TextGame
     }
     #endregion
     #region ItemFactory
-    public enum RoomItem
+    enum Items
     {
-        None,
-        Key,
+        None, 
+        Key, 
         Coin,
         Chest,
-    }
-    public enum ChestItem
-    {
-        None,
-        Key,
-        Coin,
         Map,
-    }
 
+        Sword, 
+        Wand, 
+        
+        Helm, 
+        Chestplate, 
+    }
     public interface IItemFactory
     {
-        public Item? CreateRoomItem();
-        public Item? CreateChestItem();
+        public Item? CreateRoomItem(int roomId, bool isShop = false);
+        public Item? CreateChestItem(int roomId, bool isShop = false);
         //shop
     }
     public class ItemFactory : IItemFactory
     {
         private readonly IItemIdFactory ItemIdFactory;
-        private static readonly ChestItem[] ChestItemValues = (ChestItem[])Enum.GetValues(typeof(ChestItem));
-        private static readonly RoomItem[] RoomItemValues = (RoomItem[])Enum.GetValues(typeof(RoomItem));
         private Random Random = Random.Shared;
+
+        #region RoomItemsConts
+        private const int RoomNoneMax = 25;
+        private const int RoomKeyMax = 40;
+        private const int RoomCoinMax = 55;
+        private const int RoomChestMax = 70;
+        private const int RoomSwordMax = 80;
+        private const int RoomWandMax = 85;
+        private const int RoomHelmMax = 95;
+        //private const int RoomChestplateMax = 100;
+        #endregion
+        #region ChestItemsConts
+        private const int ChestNoneMax = 10;
+        private const int ChestKeyMax = 20;
+        private const int ChestCoinMax = 50;
+        private const int ChestMapMax = 55;
+        private const int ChestSwordMax = 65;
+        private const int ChestWandMax = 80;
+        private const int ChestHelmMax = 90;
+        //private const int ChestChestplateMax = 100;
+        #endregion
         public ItemFactory(IItemIdFactory itemIdFactory)
         {
             ItemIdFactory = itemIdFactory;
         }
-        public Item? CreateRoomItem()
+        public Item? CreateRoomItem(int roomId, bool isShop = false)
         {
-            var itemNumber = Random.Next(RoomItemValues.Length);
-            RoomItem roomItem = RoomItemValues[itemNumber];
+            var itemNumber = Random.Next(100);
+
+            Items roomItem = itemNumber switch
+            {
+                >= 0 and <= RoomNoneMax => Items.None,
+                >= RoomNoneMax and < RoomKeyMax => Items.Key,
+                >= RoomKeyMax and < RoomCoinMax => Items.Coin,
+                >= RoomCoinMax and < RoomChestMax => Items.Chest,
+
+                >= RoomChestMax and < RoomSwordMax => Items.Sword,
+                >= RoomSwordMax and < RoomWandMax => Items.Wand,
+
+                >= RoomWandMax and < RoomHelmMax => Items.Helm,
+                >= RoomHelmMax and < 100 => Items.Chestplate,
+
+                _ => Items.None,
+            };
+
             return roomItem switch
             {
-                RoomItem.Key => new Key(ItemIdFactory),
-                RoomItem.Coin => new Coin(ItemIdFactory),
-                RoomItem.Chest => new Chest(ItemIdFactory, this),
-                _ => null,
-            };
-        }
-        public Item? CreateChestItem()
-        {
-            var itemNumber = Random.Next(ChestItemValues.Length);
-            ChestItem chestItem = ChestItemValues[itemNumber];
-            return chestItem
-                switch
-            {
-                ChestItem.Key => new Key(ItemIdFactory),
-                ChestItem.Coin => new Coin(ItemIdFactory),
-                ChestItem.Map => new Map(ItemIdFactory),
-                _ => null,
-            };
-        }
+                Items.Key => new Key(ItemIdFactory),
+                Items.Coin => new Coin(ItemIdFactory),
+                Items.Chest => new Chest(ItemIdFactory, this, roomId, isShop),
 
+                Items.Sword => new Sword(ItemIdFactory, roomId, isShop),
+                Items.Wand => new Wand(ItemIdFactory, roomId, isShop),
+
+                Items.Helm => new Helm(ItemIdFactory, roomId, isShop),
+                Items.Chestplate => new Chestplate(ItemIdFactory, roomId, isShop),
+
+                _ => null,
+            };
+        }
+        public Item? CreateChestItem(int roomId, bool isShop = false)
+        {
+            var itemNumber = Random.Next(100);
+
+            Items chestItem = itemNumber switch
+            {
+                >= 0 and <= ChestNoneMax => Items.None,
+                >= ChestNoneMax and < ChestKeyMax => Items.Key,
+                >= ChestKeyMax and < ChestCoinMax => Items.Coin,
+                >= ChestCoinMax and < ChestMapMax => Items.Map,
+
+                >= ChestMapMax and < ChestSwordMax => Items.Sword,
+                >= ChestSwordMax and < ChestWandMax => Items.Wand,
+
+                >= ChestWandMax and < ChestHelmMax => Items.Helm,
+                >= ChestHelmMax and < 100 => Items.Chestplate,
+
+                _ => Items.None,
+            };
+            return chestItem switch
+            {
+                Items.Key => new Key(ItemIdFactory),
+                Items.Coin => new Coin(ItemIdFactory),
+                Items.Map => new Map(ItemIdFactory),
+
+                Items.Sword => new Sword(ItemIdFactory, roomId, isShop),
+                Items.Wand => new Wand(ItemIdFactory, roomId, isShop),
+
+                Items.Helm => new Helm(ItemIdFactory, roomId, isShop),
+                Items.Chestplate => new Chestplate(ItemIdFactory, roomId, isShop),
+
+
+                _ => null,
+            };
+        }
     }
     #endregion
     #endregion
