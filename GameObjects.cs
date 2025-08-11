@@ -231,6 +231,99 @@ namespace TextGame
         public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true) { }
     }
     #endregion
+    #region Heal
+    public abstract class Heal : Item
+    {
+        protected int? MaxHealthBoost = 0;
+        protected int? CurrentHealthBoost = 0;
+        protected double Multiplicator = 1;
+        private readonly int MultiplicatorDivider = 20;
+        public Heal(string name, string description, int id, int roomId) : base(name, description, id, true)
+        {
+            Multiplicator = 1 + (roomId / MultiplicatorDivider);
+        }
+        protected virtual void Initialize(int? maxHealthBoost, int? currentHealthBoost)
+        {
+            if (maxHealthBoost == null) MaxHealthBoost = null;
+            else MaxHealthBoost = (int)Math.Round((int)maxHealthBoost * Multiplicator);
+
+            if (currentHealthBoost == null) CurrentHealthBoost = null;
+            else CurrentHealthBoost = (int)Math.Round((int)currentHealthBoost * Multiplicator);
+        }
+        public virtual void Use(GameSession gameSession)
+        {
+            if (MaxHealthBoost != 0)
+            {
+                gameSession.MaxHealth += (int)MaxHealthBoost!;
+                gameSession.CurrentHealth += (int)MaxHealthBoost!;
+                if (gameSession.MaxHealth <= 0) gameSession.MaxHealth = 1;
+            }
+            if (CurrentHealthBoost != 0)
+            {
+                if ((gameSession.CurrentHealth + (int)CurrentHealthBoost!) >= gameSession.MaxHealth)
+                    gameSession.CurrentHealth = gameSession.MaxHealth;
+                else
+                    gameSession.CurrentHealth += (int)CurrentHealthBoost!;
+            }
+        }
+    }
+    public class Bandage : Heal
+    {
+        public Bandage(IItemIdFactory itemIdFactory, int roomId) : base("ПОВЯЗКА", "Менее грязная тряпка, из тех, что здесь обычно встречаются.", itemIdFactory.Id(), roomId)
+        {
+            Initialize(0, 2);
+        }
+
+        public override void Use(GameSession gameSession)
+        {
+            if ((gameSession.CurrentHealth + CurrentHealthBoost) >= gameSession.MaxHealth)
+                gameSession.CurrentHealth = gameSession.MaxHealth;
+            else
+                gameSession.CurrentHealth += (int)CurrentHealthBoost!;
+        }
+    }
+    public class RegenPotion : Heal
+    {
+        public RegenPotion(IItemIdFactory itemIdFactory, int roomId) : base("ЗЕЛЬЕ РЕГЕНЕРАЦИИ", "Пыльный бутылёк с субстанцией тёмного цвета.", itemIdFactory.Id(), roomId)
+        {
+            Initialize(0, 6);
+        }
+    }
+    public class PowerPotion : Heal
+    {
+        public PowerPotion(IItemIdFactory itemIdFactory, int roomId) : base("ЗЕЛЬЕ СИЛЫ", "Не только восстанавливает силы, но и придаёт новых.", itemIdFactory.Id(), roomId)
+        {
+            Initialize(2, 4);
+        }
+    }
+    public class RandomPotion : Heal
+    {
+        private Random Random = new Random();
+        public RandomPotion(IItemIdFactory itemIdFactory, int roomId) : base("НЕИЗВЕСТНОЕ ЗЕЛЬЕ", "Пробирка с жижей непонятного цвета.", itemIdFactory.Id(), roomId)
+        {
+            Initialize(null, null);
+        }
+        public override void Use(GameSession gameSession) //дублирование кода
+        {
+            int maxHealthBoost = (int)Math.Round((Random.Next(11) - 5) * Multiplicator);
+            int currentHealthBoost = (int)Math.Round((Random.Next(11) - 5) * Multiplicator);
+
+            if (maxHealthBoost != 0)
+            {
+                gameSession.MaxHealth += maxHealthBoost!;
+                gameSession.CurrentHealth += maxHealthBoost!;
+                if (gameSession.MaxHealth <= 0) gameSession.MaxHealth = 1;
+            }
+            if (currentHealthBoost != 0)
+            {
+                if ((gameSession.CurrentHealth + currentHealthBoost!) >= gameSession.MaxHealth)
+                    gameSession.CurrentHealth = gameSession.MaxHealth;
+                else
+                    gameSession.CurrentHealth += currentHealthBoost!;
+            }
+        }
+    }
+    #endregion
     #region Equipment
     public abstract class Equipment : Item
     {
