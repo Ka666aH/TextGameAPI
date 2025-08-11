@@ -3,11 +3,12 @@ using TextGame;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<IItemFactory, ItemFactory>();
+builder.Services.AddSingleton<IEnemyFactory, EnemyFactory>();
 //Сессионные
 builder.Services.AddSingleton<IRoomNumberFactory, RoomNumberFactory>();
 builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
-builder.Services.AddSingleton<IItemIdFactory, ItemIdFactory>();
 builder.Services.AddSingleton<IEnemyIdFactory, EnemyIdFactory>();
+builder.Services.AddSingleton<IItemIdFactory, ItemIdFactory>();
 
 //Контроллерные
 //builder.Services.AddSingleton<IGameRepository, GameRepository>();
