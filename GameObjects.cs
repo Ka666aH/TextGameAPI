@@ -234,8 +234,8 @@ namespace TextGame
     #region Heal
     public abstract class Heal : Item
     {
-        protected int? MaxHealthBoost = 0;
-        protected int? CurrentHealthBoost = 0;
+        public int? MaxHealthBoost { get; protected set; } = 0;
+        public int? CurrentHealthBoost { get; protected set; } = 0;
         protected double Multiplicator = 1;
         private readonly int MultiplicatorDivider = 20;
         public Heal(string name, string description, int id, int roomId) : base(name, description, id, true)
@@ -596,12 +596,15 @@ namespace TextGame
     #endregion
     #endregion
     #endregion
-    #region ItemId
-    public interface IItemIdFactory
+    #region IdFactory
+    public interface IIdFactory
     {
         int Id();
         void Reset();
     }
+    #endregion
+    #region ItemIdFactory
+    public interface IItemIdFactory : IIdFactory { };
     public class ItemIdFactory : IItemIdFactory
     {
         private int ItemId = 0;
@@ -739,8 +742,23 @@ namespace TextGame
     #endregion
     #endregion
     #region Enemy
+    public interface IEnemyIdFactory : IIdFactory { };
+    public class EnemyIdFactory : IEnemyIdFactory
+    {
+        private int EnemyId = 0;
+        public int Id()
+        {
+            return Interlocked.Increment(ref EnemyId);
+        }
+        public void Reset()
+        {
+            EnemyId = 0;
+        }
+    }
     public abstract class Enemy : GameObject
     {
+        private readonly IEnemyIdFactory EnemyIdFactory;
+        public int Id { get; protected set; }
         public int Health { get; protected set; } = 0;
         public int Damage { get; protected set; } = 0;
         public int DamageBlock { get; protected set; } = 0;
@@ -750,6 +768,7 @@ namespace TextGame
 
         public Enemy(string name, string description, int roomId)
         {
+            Id = EnemyIdFactory!.Id();
             Multiplicator = 1 + (roomId / MultiplicatorDivider);
         }
         public virtual void Initialize(int health, int damage, int damageBlock)

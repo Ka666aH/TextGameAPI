@@ -7,6 +7,7 @@ builder.Services.AddSingleton<IItemFactory, ItemFactory>();
 builder.Services.AddSingleton<IRoomNumberFactory, RoomNumberFactory>();
 builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
 builder.Services.AddSingleton<IItemIdFactory, ItemIdFactory>();
+builder.Services.AddSingleton<IEnemyIdFactory, EnemyIdFactory>();
 
 //Контроллерные
 //builder.Services.AddSingleton<IGameRepository, GameRepository>();
