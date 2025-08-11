@@ -189,7 +189,7 @@ namespace TextGame
     {
         public bool IsLocked { get; set; }
         public bool IsClosed { get; set; } = true;
-        public bool IsMimic { get; init; }
+        public bool IsMimic { get; private set; }
         public List<Item> Items { get; set; }
 
         private readonly int MinChestItemsAmount = 1;
@@ -215,6 +215,14 @@ namespace TextGame
         public void Open() => IsClosed = false;
         public void Unlock() => IsLocked = false;
         public List<Item> Search() => Items;
+        public void KillMimic()
+        {
+            IsMimic = false;
+            Name = "МЁРТВЫЙ МИМИК";
+            Description = "Мёртвый сундук с руками и зубами. Интересно, что у него внутри.";
+            IsLocked = false;
+            IsClosed = false;
+        }
     }
     #endregion
     #region Map
@@ -230,9 +238,10 @@ namespace TextGame
         protected double Multiplicator;
 
         private const double FromShopMultiplicator = 1.2;
+        private const int MultiplicatorDivider = 100;
         public Equipment(string? name, string? description, int? id, int? durability, int roomId, bool fromShop) : base(name, description, id, true)
         {
-            Multiplicator = fromShop ? (1 + (roomId / 100)) * FromShopMultiplicator : (1 + (roomId / 100));
+            Multiplicator = fromShop ? (1 + (roomId / MultiplicatorDivider)) * FromShopMultiplicator : (1 + (roomId / MultiplicatorDivider));
         }
     }
     #region Weapon
@@ -516,17 +525,17 @@ namespace TextGame
     #region ItemFactory
     enum Items
     {
-        None, 
-        Key, 
+        None,
+        Key,
         Coin,
         Chest,
         Map,
 
-        Sword, 
-        Wand, 
-        
-        Helm, 
-        Chestplate, 
+        Sword,
+        Wand,
+
+        Helm,
+        Chestplate,
     }
     public interface IItemFactory
     {
@@ -636,4 +645,111 @@ namespace TextGame
     }
     #endregion
     #endregion
+    #region Enemy
+    public abstract class Enemy : GameObject
+    {
+        public int Health { get; protected set; } = 0;
+        public int Damage { get; protected set; } = 0;
+        public int DamageBlock { get; protected set; } = 0;
+
+        private double Multiplicator;
+        private const int MultiplicatorDivider = 50;
+
+        public Enemy(string name, string description, int roomId)
+        {
+            Multiplicator = 1 + (roomId / MultiplicatorDivider);
+        }
+        public virtual void Initialize(int health, int damage, int damageBlock)
+        {
+            Health = (int)Math.Round(health * Multiplicator);
+            Damage = (int)Math.Round(damage * Multiplicator);
+            DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
+        }
+        public virtual int DealDamage()
+        {
+            return Damage;
+        }
+        public virtual int GetDamage(int damage)
+        {
+            if (damage > DamageBlock) Health -= damage - DamageBlock;
+            return Health;
+        }
+    }
+    public class Skeletor : Enemy
+    {
+        public Skeletor(int roomId) : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId)
+        {
+            Random random = new Random();
+            int health = random.Next(2, 5);
+            int damage = random.Next(1, 3);
+            Initialize(health, damage, 0);
+        }
+    }
+    public class SkeletorArcher : Enemy
+    {
+        public SkeletorArcher(int roomId) : base("СКЕЛЕТОР-ЛУЧНИК", "Из тех, кто при жизни умел обращаться с луком.", roomId)
+        {
+            Random random = new Random();
+            int health = random.Next(1, 3);
+            int damage = random.Next(3, 5);
+            Initialize(health, damage, 0);
+        }
+    }
+    public class Deadman : Enemy
+    {
+        public Deadman(int roomId) : base("МЕРТВЯК", "Мёртвое полуразложившееся тело. Источник жуткого смрада.", roomId)
+        {
+            Random random = new Random();
+            int health = random.Next(4, 7);
+            int damage = random.Next(1, 3);
+            int damageBlock = random.Next(1, 3);
+            Initialize(health, damage, damageBlock);
+        }
+    }
+    public class Ghost : Enemy
+    {
+        private Random Random = new Random();
+        public Ghost(int roomId) : base("ПРИЗРАК", "Злой полуматериальный дух. Попробуй попади.", roomId)
+        {
+            int health = Random.Next(3, 5);
+            int damage = Random.Next(2, 5);
+            Initialize(health, damage, 0);
+        }
+        public override int GetDamage(int damage)
+        {
+            if (Random.Next(2) == 0) Health -= damage;
+            return Health;
+        }
+    }
+    public class Lich : Enemy
+    {
+        public Lich(int roomId) : base("ЛИЧ", "Тебя ждёт вечный параЛИЧ. Ха-ха.", roomId)
+        {
+            Random random = new Random();
+            int health = random.Next(5, 13);
+            int damage = random.Next(4, 8);
+            int damageBlock = random.Next(4, 7);
+            Initialize(health, damage, damageBlock);
+        }
+    }
+    public class Mimic : Enemy
+    {
+        private Chest Chest;
+        public Mimic(int roomId, Chest chest) : base("МИМИК", "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.", roomId)
+        {
+            Chest = chest;
+            Random random = new Random();
+            int health = random.Next(3, 6);
+            int damage = random.Next(3, 5);
+            int damageBlock = random.Next(2, 4);
+            Initialize(health, damage, damageBlock);
+        }
+        public override int GetDamage(int damage)
+        {
+            if (damage > DamageBlock) Health -= damage - DamageBlock;
+            if (Health <= 0) Chest.KillMimic();
+            return Health;
+        }
+    }
+    #endregion 
 }
