@@ -1,6 +1,5 @@
 ﻿namespace TextGame
 {
-    //public record RoomDTO(int number, string name, string description);
     public record MapRoomDTO(int number, string name);
     public record ChestDTO(string name, string description, bool isLocked, bool isClosed);
     public record GameStatsDTO(int coins, int keys, List<object> Inventory);
@@ -15,6 +14,8 @@
     public record EquipmentDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability);
     public record WeaponDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability, int? Damage);
     public record ArmorDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability, int? DamageBlock);
+    public record HealDTO(int? Id, string Name, string Description, bool IsCarryable, int? MaxHealthBoost, int? CurrentHealthBoost);
+    public record EnemyDTO(int? Id, string Name, string Description, int Health, int Damage, int DamageBlock);
 
     public static class GameObjectMapper
     {
@@ -23,28 +24,17 @@
             return gameObject switch
             {
                 Room room => new RoomDTO(room.Number, room.Name!, room.Description!),
+                Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name!, enemy.Description!, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>
                 item switch
                 {
+                    Heal heal => new HealDTO(heal.Id, heal.Name!, heal.Description!, heal.IsCarryable, heal.MaxHealthBoost, heal.CurrentHealthBoost),
                     Equipment equipment =>
                     equipment switch
                     {
-                        Weapon weapon => new WeaponDTO(
-                    weapon.Id,
-                    weapon.Name!,
-                    weapon.Description!,
-                    weapon.IsCarryable,
-                    weapon.Durability,
-                    weapon.Damage
-                ),
-                        Armor armor => new ArmorDTO(
-                            armor.Id,
-                            armor.Name!,
-                            armor.Description!,
-                            armor.IsCarryable,
-                            armor.Durability,
-                            armor.DamageBlock
-                        ),
+                        Weapon weapon => new WeaponDTO(weapon.Id, weapon.Name!, weapon.Description!, weapon.IsCarryable, weapon.Durability, weapon.Damage),
+                        Armor armor => new ArmorDTO(armor.Id, armor.Name!, armor.Description!, armor.IsCarryable, armor.Durability, armor.DamageBlock),
+
                         _ => new EquipmentDTO(equipment.Id, equipment.Name!, equipment.Description!, equipment.IsCarryable, equipment.Durability),
                     },
 
