@@ -627,6 +627,11 @@ namespace TextGame
         Chest,
         Map,
 
+        Bandage,
+        RegenPotion,
+        PowerPotion,
+        RandomPotion,
+
         Sword,
         Wand,
 
@@ -645,24 +650,36 @@ namespace TextGame
         private Random Random = Random.Shared;
 
         #region RoomItemsConts
-        private const int RoomNoneMax = 25;
-        private const int RoomKeyMax = 40;
-        private const int RoomCoinMax = 55;
-        private const int RoomChestMax = 70;
-        private const int RoomSwordMax = 80;
-        private const int RoomWandMax = 85;
-        private const int RoomHelmMax = 95;
-        //private const int RoomChestplateMax = 100;
+        //62/100
+        private const int RoomNoneMax = 23; // 23/100
+        private const int RoomKeyMax = 36; // 13/100
+        private const int RoomCoinMax = 49; // 13/100
+        private const int RoomChestMax = 62; // 13/100
+        //8/100
+        private const int RoomBondageMax = 70;
+        //13/100
+        private const int RoomSwordMax = 80; // 10/100
+        private const int RoomWandMax = 85; // 5/100
+        //13/100
+        private const int RoomHelmMax = 95; // 10/100
+        //private const int RoomChestplateMax = 100; // 5/100
         #endregion
         #region ChestItemsConts
-        private const int ChestNoneMax = 10;
-        private const int ChestKeyMax = 20;
-        private const int ChestCoinMax = 50;
-        private const int ChestMapMax = 55;
-        private const int ChestSwordMax = 65;
-        private const int ChestWandMax = 80;
-        private const int ChestHelmMax = 90;
-        //private const int ChestChestplateMax = 100;
+        // 50/100
+        private const int ChestNoneMax = 10; // 10/100
+        private const int ChestKeyMax = 20; // 10/100
+        private const int ChestCoinMax = 45; // 25/100
+        private const int ChestMapMax = 50; // 5/100
+        // 15/100
+        private const int ChestRegenPotionMax = 58; // 8/100
+        private const int ChestPowerPotionMax = 63; // 5/100
+        private const int ChestRandomPotionMax = 65; // 2/100
+        // 20/100
+        private const int ChestSwordMax = 72; // 7/100
+        private const int ChestWandMax = 85; // 13/100
+        // 15/100
+        private const int ChestHelmMax = 93; // 8/100
+        //private const int ChestChestplateMax = 100; // 7/100
         #endregion
         public ItemFactory(IItemIdFactory itemIdFactory)
         {
@@ -678,8 +695,9 @@ namespace TextGame
                 >= RoomNoneMax and < RoomKeyMax => Items.Key,
                 >= RoomKeyMax and < RoomCoinMax => Items.Coin,
                 >= RoomCoinMax and < RoomChestMax => Items.Chest,
+                >= RoomChestMax and < RoomBondageMax => Items.Bandage,
 
-                >= RoomChestMax and < RoomSwordMax => Items.Sword,
+                >= RoomBondageMax and < RoomSwordMax => Items.Sword,
                 >= RoomSwordMax and < RoomWandMax => Items.Wand,
 
                 >= RoomWandMax and < RoomHelmMax => Items.Helm,
@@ -693,6 +711,7 @@ namespace TextGame
                 Items.Key => new Key(ItemIdFactory),
                 Items.Coin => new Coin(ItemIdFactory),
                 Items.Chest => new Chest(ItemIdFactory, this, roomId, isShop),
+                Items.Bandage => new Bandage(ItemIdFactory, roomId),
 
                 Items.Sword => new Sword(ItemIdFactory, roomId, isShop),
                 Items.Wand => new Wand(ItemIdFactory, roomId, isShop),
@@ -714,7 +733,11 @@ namespace TextGame
                 >= ChestKeyMax and < ChestCoinMax => Items.Coin,
                 >= ChestCoinMax and < ChestMapMax => Items.Map,
 
-                >= ChestMapMax and < ChestSwordMax => Items.Sword,
+                >= ChestMapMax and < ChestRegenPotionMax => Items.RegenPotion,
+                >= ChestRegenPotionMax and < ChestPowerPotionMax => Items.PowerPotion,
+                >= ChestPowerPotionMax and < ChestRandomPotionMax => Items.RandomPotion,
+
+                >= ChestRandomPotionMax and < ChestSwordMax => Items.Sword,
                 >= ChestSwordMax and < ChestWandMax => Items.Wand,
 
                 >= ChestWandMax and < ChestHelmMax => Items.Helm,
