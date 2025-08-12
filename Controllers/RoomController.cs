@@ -47,6 +47,11 @@ namespace TextGame.Controllers
             return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
         }
         #region CHEST
+        [HttpPost("{roomId}/items/{chestId}/chest/hit")]
+        public IResult HitChest(int roomId, int chestId)
+        {
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.HitChest(roomId, chestId)));
+        }
         [HttpPost("{roomId}/items/{chestId}/chest/open")]
         public IResult OpenChest(int roomId, int chestId)
         {
@@ -79,6 +84,28 @@ namespace TextGame.Controllers
         {
             RoomControllerRepository.TakeAllItemsFromChest(roomId, chestId);
             return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+        }
+        #endregion
+        #region ENEMIES
+        [HttpGet("{roomId}/enemies")]
+        public IResult GetEnemies(int roomId)
+        {
+            List<Enemy> enemies = RoomControllerRepository.GetEnemies(roomId);
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemies)));
+        }
+        [HttpGet("{roomId}/enemy/{enemyId}")]
+        public IResult GetEnemy(int roomId, int enemyId)
+        {
+            Enemy enemy = RoomControllerRepository.GetEnemy(roomId,enemyId);
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemy)));
+        }
+        [HttpPost("{roomId}/enemy/{enemyId}/attack")]
+        public IResult AttackEnemy(int roomId, int enemyId)
+        {
+            List<BattleLog> battleLogs = new List<BattleLog>();
+            battleLogs.Add(RoomControllerRepository.DealDamage(enemyId));
+            battleLogs.Add(RoomControllerRepository.GetDamage(enemyId));
+            return Results.Ok(new SuccessfulResponse(battleLogs));
         }
         #endregion
     }

@@ -2,14 +2,15 @@
 {
     public record MapRoomDTO(int number, string name);
     public record ChestDTO(string name, string description, bool isLocked, bool isClosed);
-    public record GameStatsDTO(int coins, int keys, List<object> Inventory);
-    public record GameOverStatsDTO(int roomNumber, int coins, int keys, List<object> Inventory);
+    public record GameStatsDTO(Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
+    public record GameOverStatsDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     public record GameOverDTO(string message, GameOverStatsDTO gameOverStats);
     public record EquipmentListDTO(Weapon weapon, Armor helm, Armor chestplate);
+    public record BattleLog(string target, int damage, int? healthBeforeAttack, int? healthAfterAttack);
 
 
     public record GameObjectDTO(string Name, string Description);
-    public record RoomDTO(int Number, string Name, string Description);
+    public record RoomDTO(int Number, string Name, string Description, List<Enemy> Enemies);
     public record ItemDTO(int? Id, string Name, string Description, bool IsCarryable);
     public record EquipmentDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability);
     public record WeaponDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability, int? Damage);
@@ -23,7 +24,7 @@
         {
             return gameObject switch
             {
-                Room room => new RoomDTO(room.Number, room.Name!, room.Description!),
+                Room room => new RoomDTO(room.Number, room.Name!, room.Description!, room.Enemies),
                 Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name!, enemy.Description!, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>
                 item switch

@@ -21,6 +21,10 @@
     {
         public NullItemIdException() : base("ITEM_NOT_FOUND", "Предмет с таким ID не найден.") { }
     }
+    public class NullEnemyIdException : GameException
+    {
+        public NullEnemyIdException() : base("ENEMY_NOT_FOUND", "Противник с таким ID не найден.") { }
+    }
     public class NullRoomIdException : GameException
     {
         public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната с таким номером не найдена.") { }
@@ -56,6 +60,14 @@
     public class ClosedException : GameException
     {
         public ClosedException() : base("CLOSED", "Сундук закрыт!") { }
+    }
+    public class InBattleException : GameException
+    {
+        public InBattleException() : base("IN_BATTLE", "В бою!") { }
+    }
+    public class BattleWinException : GameException
+    {
+        public BattleWinException(string message) : base("IN_BATTLE", message) { }
     }
     public class EndExeption : GameException
     {

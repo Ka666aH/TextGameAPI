@@ -8,6 +8,7 @@
     {
         ChestDTO ReturnChestDTO(Chest chest);
         ChestDTO ReturnChestDTO(int roomId, int chestId);
+        BattleLog HitChest(int roomId, int chestId);
         void OpenChest(int roomId, int chestId);
         void UnlockChest(int roomId, int chestId);
         List<Item> SearchChest(int roomId, int chestId);
@@ -40,6 +41,16 @@
     {
         Item GetItemById(int itemId, List<Item> items);
     }
+    public interface IGetEnemyByIdRepository
+    {
+        Enemy GetEnemyById(int enemyId);
+        List<Enemy> GetEnemies();
+    }
+    public interface ICombatRepository
+    {
+        BattleLog DealDamage(int enemyId);
+        BattleLog GetDamage(int enemyId);
+    }
     public interface IGameControllerRepository : IGetCurrentRoomRepository, IInventoryRepository
     {
         void Start();
@@ -49,9 +60,12 @@
         List<MapRoomDTO> GetMap();
 
     }
-    public interface IRoomControllerRepository : IGetCurrentRoomRepository, IChestRepository, /*IInventoryRepository,*/ IGetRoomByIdRepository,IGameStatsRepository
+    public interface IRoomControllerRepository :
+        IGetCurrentRoomRepository, IChestRepository, IGetRoomByIdRepository, IGameStatsRepository, ICombatRepository
     {
         void GoNextRoom();
+        List<Enemy> GetEnemies(int roomId);
+        Enemy GetEnemy(int roomId, int enemyId);
         List<Item> Search(int roomId);
         void TakeItem(int roomId, int itemId);
         void TakeAllItems(int roomId);

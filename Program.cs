@@ -22,6 +22,8 @@ builder.Services.AddSingleton<IGetRoomByIdRepository, GetRoomByIdRepository>();
 builder.Services.AddSingleton<IGetItemByIdRepository, GetItemByIdRepository>();
 builder.Services.AddSingleton<IGameControllerRepository, GameControllerRepository>();
 builder.Services.AddSingleton<IRoomControllerRepository, RoomControllerRepository>();
+builder.Services.AddSingleton<IGetEnemyByIdRepository, GetEnemyByIdRepository>();
+builder.Services.AddSingleton<ICombatRepository, CombatRepository>();
 
 
 // Add services to the container.
@@ -64,7 +66,7 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                     case InvalidIdException or UncarryableException:
                         result = Results.UnprocessableEntity(new ErrorResponse(gameEx));
                         break;
-                    case LockedException or NoKeyException or NoMapException or ClosedException or UndiscoveredRoomException:
+                    case LockedException or NoKeyException or NoMapException or ClosedException or UndiscoveredRoomException or InBattleException:
                         result = Results.Json(new ErrorResponse(gameEx), statusCode: 403);
                         break;
                     case DefeatException or WinException:
@@ -72,6 +74,9 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                         result = Results.Ok(new SuccessfulResponse(
                             new GameOverDTO(endEx.Message, endEx.GameOverStats)
                         ));
+                        break;
+                    case BattleWinException:
+                        result = Results.Ok(new SuccessfulResponse(gameEx.Message));
                         break;
                     default: //UnstartedGameException
                         result = Results.BadRequest(new ErrorResponse(gameEx));

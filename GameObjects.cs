@@ -359,6 +359,7 @@ namespace TextGame
         public Equipment(string? name, string? description, int? id, int? durability, int roomId, bool fromShop) : base(name, description, id, true)
         {
             Multiplicator = fromShop ? (1 + (roomId / MultiplicatorDivider)) * FromShopMultiplicator : (1 + (roomId / MultiplicatorDivider));
+            Durability = durability;
         }
     }
     #region Weapon
@@ -366,7 +367,10 @@ namespace TextGame
     {
         public int? Damage;
         public Weapon(string? name, string? description, int? id, int? durability, int? damage, int roomId, bool fromShop)
-            : base(name, description, id, durability, roomId, fromShop) { }
+            : base(name, description, id, durability, roomId, fromShop)
+        {
+            Damage = damage;
+        }
         public abstract int Attack(GameSession gameSession);
     }
     #region Fists
@@ -825,11 +829,11 @@ namespace TextGame
             Damage = (int)Math.Round(damage * Multiplicator);
             DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
         }
-        public virtual int DealDamage()
+        public virtual int Attack()
         {
             return Damage;
         }
-        public virtual int GetDamage(int damage)
+        public virtual int GetDamage(int damage, Room? room = null)
         {
             if (damage > DamageBlock) Health -= damage - DamageBlock;
             return Health;
@@ -875,7 +879,7 @@ namespace TextGame
             int damage = random.Next(2, 5);
             Initialize(health, damage, 0);
         }
-        public override int GetDamage(int damage)
+        public override int GetDamage(int damage, Room? room = null)
         {
             if (Random.Shared.Next(2) == 0) Health -= damage;
             return Health;
@@ -904,10 +908,14 @@ namespace TextGame
             int damageBlock = random.Next(2, 4);
             Initialize(health, damage, damageBlock);
         }
-        public override int GetDamage(int damage)
+        public override int GetDamage(int damage, Room? room = null)
         {
             if (damage > DamageBlock) Health -= damage - DamageBlock;
-            if (Health <= 0) Chest.KillMimic();
+            if (Health <= 0)
+            {
+                Chest.KillMimic();
+                room!.Items.Add(Chest);
+            }
             return Health;
         }
     }
@@ -915,6 +923,7 @@ namespace TextGame
     public interface IEnemyFactory
     {
         Enemy? CreateEnemy(int roomId);
+        Mimic CreateMimic(int roomId, Chest chest);
     }
     public class EnemyFactory : IEnemyFactory
     {
@@ -933,7 +942,6 @@ namespace TextGame
         {
             EnemyIdFactory = enemyIdFactory;
         }
-
         public Enemy? CreateEnemy(int roomId)
         {
             double multiplicator = 1 + (roomId / MultiplicatorDivider);
@@ -949,6 +957,10 @@ namespace TextGame
 
                 _ => null,
             };
+        }
+        public Mimic CreateMimic(int roomId, Chest chest)
+        {
+            return new Mimic(roomId, chest, EnemyIdFactory);
         }
     }
     #endregion 
