@@ -378,11 +378,13 @@ namespace TextGame
     {
         public static readonly Fists DefaultFists = new Fists();
         public static readonly int SelfHarmProbabilityDivider = 2;
+        public static readonly int FistsDamageIncreaseDivider = 20;
+
         public Fists() : base("КУЛАКИ", "То, что есть (почти) у каждого. Базовое оружие самозащиты. Может быть больно.", null, null, 1, 1, false) { }
         public override int Attack(GameSession gameSession)
         {
             Random random = new Random();
-            double Multiplicator = gameSession.CurrentRoom!.Number / 10;
+            double Multiplicator = gameSession.CurrentRoom!.Number / FistsDamageIncreaseDivider;
             if (random.Next((int)Math.Round(SelfHarmProbabilityDivider + Multiplicator)) == 0) gameSession.CurrentHealth--;
             int damage = (int)Math.Round((int)Damage! + Multiplicator);
             return damage;
@@ -420,7 +422,7 @@ namespace TextGame
             switch (SwordType)
             {
                 case SwordType.Rust:
-                    Initialize("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", random.Next(1, 21), random.Next(3, 8));
+                    Initialize("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", random.Next(1, 11), random.Next(3, 8));
                     break;
                 case SwordType.Iron:
                     Initialize("ЖЕЛЕЗНЫЙ МЕЧ", "Добротное оружие воина.", random.Next(1, 101), random.Next(8, 17));
@@ -548,7 +550,7 @@ namespace TextGame
                     Initialize("КОЖАННЫЙ ШЛЕМ", "Изысканный чёрный шлем мастера подземелия.", random.Next(7, 15), random.Next(3, 7));
                     break;
                 case HelmType.Iron:
-                    Initialize("ЖЕЛЕЗНЫЙ ШЛЕМ", "Крепкий шлем из качественого металла.", random.Next(16, 31), random.Next(8, 12));
+                    Initialize("ЖЕЛЕЗНЫЙ ШЛЕМ", "Крепкий шлем из качественного металла.", random.Next(16, 31), random.Next(8, 12));
                     break;
             }
         }

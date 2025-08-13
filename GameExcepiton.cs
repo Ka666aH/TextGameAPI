@@ -19,15 +19,15 @@
     }
     public class NullItemIdException : GameException
     {
-        public NullItemIdException() : base("ITEM_NOT_FOUND", "Предмет с таким ID не найден.") { }
+        public NullItemIdException() : base("ITEM_NOT_FOUND", "Предмет не найден.") { }
     }
     public class NullEnemyIdException : GameException
     {
-        public NullEnemyIdException() : base("ENEMY_NOT_FOUND", "Противник с таким ID не найден.") { }
+        public NullEnemyIdException() : base("ENEMY_NOT_FOUND", "Противник не найден.") { }
     }
     public class NullRoomIdException : GameException
     {
-        public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната с таким номером не найдена.") { }
+        public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната не найдена.") { }
     }
     public class UnstartedGameException : GameException
     {
