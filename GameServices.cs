@@ -72,8 +72,8 @@
             int chestplateBlock = Session.Chestplate != null ? Session.Chestplate.Block(Session) : 0;
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
             int playerHealthBeforeAttack = Session.CurrentHealth;
-            if (Session.CurrentHealth <= damageAfterBlock) throw new DefeatException($"Вы были повержены противником \"{enemy.Name}\".", GameOverStatsRepository.GetGameOverStats());
             if (damageAfterBlock > 0) Session.CurrentHealth -= damageAfterBlock;
+            if (Session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", GameOverStatsRepository.GetGameOverStats());
 
             return new BattleLog("ВЫ", damage, playerHealthBeforeAttack, Session.CurrentHealth);
         }
