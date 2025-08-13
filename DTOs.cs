@@ -5,7 +5,6 @@
     public record GameStatsDTO(Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     public record GameOverStatsDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     public record GameOverDTO(string message, GameOverStatsDTO gameOverStats);
-    public record EquipmentListDTO(Weapon weapon, Armor helm, Armor chestplate);
     public record BattleLog(string target, int damage, int? healthBeforeAttack, int? healthAfterAttack);
 
 
@@ -41,7 +40,7 @@
 
                     _ => new ItemDTO(item.Id, item.Name!, item.Description!, item.IsCarryable),
                 },
-                _ => new GameObjectDTO(gameObject.Name ?? "", gameObject.Description ?? "")
+                _ => new GameObjectDTO(gameObject.Name ?? "НЕИЗВЕСТНО", gameObject.Description ?? "НЕИЗВЕСТНО")
             };
         }
         public static List<object> ToDTO<T>(List<T> gameObjects) where T : GameObject

@@ -47,8 +47,7 @@ namespace TextGame.Controllers
         public IResult GetInventory()
         {
             var inventory = GameControllerRepository.GetInventory();
-            var inventoryDTOs = inventory.Select(item => GameObjectMapper.ToDTO(item)).ToList();
-            return Results.Ok(new SuccessfulResponse(inventoryDTOs));
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(inventory)));
         }
         [HttpGet("inventory/{itemId}")]
         public IResult GetInventoryItem(int itemId)
@@ -59,32 +58,32 @@ namespace TextGame.Controllers
         [HttpGet("equipment")]
         public IResult GetEquipment()
         {
-            var equipmentDTO = GameControllerRepository.GetEquipment();
-            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+            var equipment = GameControllerRepository.GetEquipment();
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
         }
         [HttpPost("equipment/{itemId}/equip")]
         public IResult EquipInventoryItem(int itemId)
         {
-            var equipmentDTO = GameControllerRepository.EquipInventoryItem(itemId);
-            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+            var equipment = GameControllerRepository.EquipInventoryItem(itemId);
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
         }
         [HttpPost("equipment/weapon/unequip")]
         public IResult UnequipWeapon()
         {
-            var equipmentDTO = GameControllerRepository.UnequipWeapon();
-            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+            var equipment = GameControllerRepository.UnequipWeapon();
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
         }
         [HttpPost("equipment/helm/unequip")]
         public IResult UnequipHelm()
         {
-            var equipmentDTO = GameControllerRepository.UnequipHelm();
-            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+            var equipment = GameControllerRepository.UnequipHelm();
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
         }
         [HttpPost("equipment/chestplate/unequip")]
         public IResult UnequipChestplate()
         {
-            var equipmentDTO = GameControllerRepository.UnequipChestplate();
-            return Results.Ok(new SuccessfulResponse(equipmentDTO));
+            var equipment = GameControllerRepository.UnequipChestplate();
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
         }
     }
 }

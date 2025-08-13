@@ -135,11 +135,14 @@
             if (item == null) throw new NullItemIdException();
             return item;
         }
-        public EquipmentListDTO GetEquipment()
+        public List<Equipment> GetEquipment()
         {
-            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+            List<Equipment> equipmentList = new List<Equipment>(){Session.Weapon};
+            if(Session.Helm != null) equipmentList.Add(Session.Helm);
+            if(Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            return equipmentList;
         }
-        public EquipmentListDTO EquipInventoryItem(int itemId)
+        public List<Equipment> EquipInventoryItem(int itemId)
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
 
@@ -168,34 +171,46 @@
                     }
                     break;
             }
-            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
+            if (Session.Helm != null) equipmentList.Add(Session.Helm);
+            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            return equipmentList;
         }
-        public EquipmentListDTO UnequipWeapon()
+        public List<Equipment> UnequipWeapon()
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
 
             if (Session.Weapon == Fists.DefaultFists) throw new EmptyException();
             Session.Inventory.Add(Session.Weapon);
             Session.Weapon = Fists.DefaultFists;
-            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
+            if (Session.Helm != null) equipmentList.Add(Session.Helm);
+            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            return equipmentList;
         }
-        public EquipmentListDTO UnequipHelm()
+        public List<Equipment> UnequipHelm()
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
 
             if (Session.Helm == null) throw new EmptyException();
             Session.Inventory.Add(Session.Helm!);
             Session.Helm = null;
-            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
+            if (Session.Helm != null) equipmentList.Add(Session.Helm);
+            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            return equipmentList;
         }
-        public EquipmentListDTO UnequipChestplate()
+        public List<Equipment> UnequipChestplate()
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
 
             if (Session.Chestplate == null) throw new EmptyException();
             Session.Inventory.Add(Session.Chestplate!);
             Session.Chestplate = null;
-            return new EquipmentListDTO(Session.Weapon, Session.Helm!, Session.Chestplate!);
+            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
+            if (Session.Helm != null) equipmentList.Add(Session.Helm);
+            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            return equipmentList;
         }
     }
     public class ChestRepository : IChestRepository
@@ -515,11 +530,11 @@
         }
 
         public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
-        public EquipmentListDTO GetEquipment() => InventoryRepository.GetEquipment();
-        public EquipmentListDTO EquipInventoryItem(int itemId) => InventoryRepository.EquipInventoryItem(itemId);
-        public EquipmentListDTO UnequipWeapon() => InventoryRepository.UnequipWeapon();
-        public EquipmentListDTO UnequipHelm() => InventoryRepository.UnequipHelm();
-        public EquipmentListDTO UnequipChestplate() => InventoryRepository.UnequipChestplate();
+        public List<Equipment> GetEquipment() => InventoryRepository.GetEquipment();
+        public List<Equipment> EquipInventoryItem(int itemId) => InventoryRepository.EquipInventoryItem(itemId);
+        public List<Equipment> UnequipWeapon() => InventoryRepository.UnequipWeapon();
+        public List<Equipment> UnequipHelm() => InventoryRepository.UnequipHelm();
+        public List<Equipment> UnequipChestplate() => InventoryRepository.UnequipChestplate();
 
     }
 

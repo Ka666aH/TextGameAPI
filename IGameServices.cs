@@ -18,11 +18,11 @@
     public interface IInventoryRepository
     {
         Item GetInventoryItem(int itemId);
-        EquipmentListDTO EquipInventoryItem(int itemId);
-        EquipmentListDTO GetEquipment();
-        EquipmentListDTO UnequipWeapon();
-        EquipmentListDTO UnequipHelm();
-        EquipmentListDTO UnequipChestplate();
+        List<Equipment> EquipInventoryItem(int itemId);
+        List<Equipment> GetEquipment();
+        List<Equipment> UnequipWeapon();
+        List<Equipment> UnequipHelm();
+        List<Equipment> UnequipChestplate();
         //List<Item> GetInventoryItems(List<int> itemIds);
     }
     public interface IGameStatsRepository
