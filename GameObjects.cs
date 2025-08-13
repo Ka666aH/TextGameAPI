@@ -280,7 +280,7 @@ namespace TextGame
             {
                 gameSession.MaxHealth += (int)MaxHealthBoost!;
                 gameSession.CurrentHealth += (int)MaxHealthBoost!;
-                if (gameSession.MaxHealth <= 0) gameSession.MaxHealth = 1;
+                //if (gameSession.MaxHealth <= 0) gameSession.MaxHealth = 1;
             }
             if (CurrentHealthBoost != 0)
             {

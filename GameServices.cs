@@ -35,16 +35,16 @@
     {
         private GameSession Session;
         private IGetEnemyByIdRepository GetEnemyByIdRepository;
-        private IGameOverInfoRepository GameOverInfoRepository;
+        private IGameInfoRepository GameInfoRepository;
         public CombatRepository(
             GameSession gameSession,
             IGetEnemyByIdRepository getEnemyByIdRepository,
-            IGameOverInfoRepository gameOverInfoRepository
+            IGameInfoRepository gameInfoRepository
             )
         {
             Session = gameSession;
             GetEnemyByIdRepository = getEnemyByIdRepository;
-            GameOverInfoRepository = gameOverInfoRepository;
+            GameInfoRepository = gameInfoRepository;
         }
         public BattleLog DealDamage()
         {
@@ -73,7 +73,7 @@
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
             int playerHealthBeforeAttack = Session.CurrentHealth;
             if (damageAfterBlock > 0) Session.CurrentHealth -= damageAfterBlock;
-            if (Session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", GameOverInfoRepository.GetGameOverInfo());
+            if (Session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", GameInfoRepository.GetGameInfo());
 
             return new BattleLog("ВЫ", damage, playerHealthBeforeAttack, Session.CurrentHealth);
         }
@@ -136,9 +136,9 @@
         }
         public List<Equipment> GetEquipment()
         {
-            List<Equipment> equipmentList = new List<Equipment>(){Session.Weapon};
-            if(Session.Helm != null) equipmentList.Add(Session.Helm);
-            if(Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
+            if (Session.Helm != null) equipmentList.Add(Session.Helm);
+            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
             return equipmentList;
         }
         public List<Equipment> EquipInventoryItem(int itemId)
@@ -216,7 +216,7 @@
     {
         private GameSession Session;
 
-        private IGameOverInfoRepository GameOverInfoRepository;
+        private IGameInfoRepository GameInfoRepository;
         private IGetRoomByIdRepository GetRoomByIdRepository;
         private IGetItemByIdRepository GetItemByIdRepository;
         private ICombatRepository CombatRepository;
@@ -224,7 +224,7 @@
         private IEnemyFactory EnemyFactory;
         public ChestRepository(
             GameSession session,
-            IGameOverInfoRepository gameOverInfoRepository,
+            IGameInfoRepository gameInfoRepository,
             IGetRoomByIdRepository getRoomByIdRepository,
             IGetItemByIdRepository getItemByIdRepository,
             IEnemyFactory enemyFactory,
@@ -232,7 +232,7 @@
             )
         {
             Session = session;
-            GameOverInfoRepository = gameOverInfoRepository;
+            GameInfoRepository = gameInfoRepository;
             GetRoomByIdRepository = getRoomByIdRepository;
             GetItemByIdRepository = getItemByIdRepository;
             EnemyFactory = enemyFactory;
@@ -289,7 +289,7 @@
             if (chest.IsMimic)
             {
                 Session.IsGameStarted = false;
-                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameOverInfoRepository.GetGameOverInfo());
+                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameInfoRepository.GetGameInfo());
             }
             chest.Open();
         }
@@ -381,33 +381,21 @@
         public GameInfoDTO GetGameInfo()
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-
-            return new GameInfoDTO(Session.Weapon, Session.Helm, Session.Chestplate, Session.MaxHealth, Session.CurrentHealth, Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
-        }
-    }
-    public class GameOverInfoRepository : IGameOverInfoRepository
-    {
-        private GameSession Session;
-        public GameOverInfoRepository(GameSession session)
-        {
-            Session = session;
-        }
-        public GameOvernInfoDTO GetGameOverInfo()
-        {
-            return new GameOvernInfoDTO(Session.CurrentRoom!.Number, Session.Weapon, Session.Helm, Session.Chestplate, Session.MaxHealth, Session.CurrentHealth, Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
+            RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
+            return new GameInfoDTO(roomDTO, Session.Weapon, Session.Helm, Session.Chestplate, Session.MaxHealth, Session.CurrentHealth, Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
         }
     }
     public class GetRoomByIdRepository : IGetRoomByIdRepository
     {
         private GameSession Session;
-        IGameOverInfoRepository GameOverInfoRepository;
+        IGameInfoRepository GameInfoRepository;
         public GetRoomByIdRepository(
             GameSession session,
-            IGameOverInfoRepository gameOverInfoRepository
+            IGameInfoRepository gameInfoRepository
             )
         {
             Session = session;
-            GameOverInfoRepository = gameOverInfoRepository;
+            GameInfoRepository = gameInfoRepository;
         }
         public Room GetRoomById(int roomId)
         {
@@ -421,7 +409,7 @@
             Room room = Session.Rooms[roomId];
             if (!room.IsDiscovered) throw new UndiscoveredRoomException();
             Session.CurrentRoom = room;
-            if (Session.CurrentRoom is EndRoom) throw new WinException(GameOverInfoRepository.GetGameOverInfo());
+            if (Session.CurrentRoom is EndRoom) throw new WinException(GameInfoRepository.GetGameInfo());
             return room;
         }
     }
@@ -528,6 +516,16 @@
             if (!Session.Inventory.OfType<Map>().Any()) throw new NoMapException();
             return Session.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? "НЕИЗВЕСТНО")).ToList();
         }
+        public void UseInventoryItem(int itemId)
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+
+            Item item = GetInventoryItem(itemId);
+            if (item is not Heal heal) throw new InvalidIdException("NOT_HEAL", "Это не предмет лечения.");
+            Session.Inventory.Remove(heal);
+            heal.Use(Session);
+            if (Session.CurrentHealth <= 0) throw new DefeatException($"{heal.Name} приводит Вас к гибели!", GetGameInfo());
+        }
 
         public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
         public List<Equipment> GetEquipment() => InventoryRepository.GetEquipment();
@@ -535,7 +533,7 @@
         public List<Equipment> UnequipWeapon() => InventoryRepository.UnequipWeapon();
         public List<Equipment> UnequipHelm() => InventoryRepository.UnequipHelm();
         public List<Equipment> UnequipChestplate() => InventoryRepository.UnequipChestplate();
-        public GameInfoDTO GetGameInfo() =>  GameInfoRepository.GetGameInfo();
+        public GameInfoDTO GetGameInfo() => GameInfoRepository.GetGameInfo();
     }
 
     public class RoomControllerRepository : IRoomControllerRepository
@@ -546,7 +544,6 @@
         private IGameInfoRepository GameInfoRepository;
         private IGetRoomByIdRepository GetRoomByIdRepository;
         private IGetItemByIdRepository GetItemByIdRepository;
-        private IGameOverInfoRepository GameOverInfoRepository;
         private IGetEnemyByIdRepository GetEnemyByIdRepository;
         private ICombatRepository CombatRepository;
         public RoomControllerRepository(
@@ -556,7 +553,6 @@
             IGameInfoRepository gameInfoRepository,
             IGetRoomByIdRepository getRoomByIdRepository,
             IGetItemByIdRepository getItemByIdRepository,
-            IGameOverInfoRepository getGameOverInfoRepository,
             IGetEnemyByIdRepository getEnemyByIdRepository,
             ICombatRepository combatRepository
             )
@@ -567,7 +563,6 @@
             GameInfoRepository = gameInfoRepository;
             GetRoomByIdRepository = getRoomByIdRepository;
             GetItemByIdRepository = getItemByIdRepository;
-            GameOverInfoRepository = getGameOverInfoRepository;
             CombatRepository = combatRepository;
             GetEnemyByIdRepository = getEnemyByIdRepository;
         }
@@ -579,7 +574,7 @@
 
             Session.CurrentRoom = Session.Rooms[Session.CurrentRoom!.Number + 1];
             Session.CurrentRoom.IsDiscovered = true;
-            if (Session.CurrentRoom is EndRoom) throw new WinException(GameOverInfoRepository.GetGameOverInfo());
+            if (Session.CurrentRoom is EndRoom) throw new WinException(GameInfoRepository.GetGameInfo());
             if (Session.CurrentRoom.Enemies.Any()) Session.IsInBattle = true;
         }
         public List<Item> Search()

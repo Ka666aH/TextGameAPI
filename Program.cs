@@ -17,7 +17,6 @@ builder.Services.AddSingleton<IGetCurrentRoomRepository, GetCurrentRoomRepositor
 builder.Services.AddSingleton<IChestRepository, ChestRepository>();
 builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
 builder.Services.AddSingleton<IGameInfoRepository, GameInfoRepository>();
-builder.Services.AddSingleton<IGameOverInfoRepository, GameOverInfoRepository>();
 builder.Services.AddSingleton<IGetRoomByIdRepository, GetRoomByIdRepository>();
 builder.Services.AddSingleton<IGetItemByIdRepository, GetItemByIdRepository>();
 builder.Services.AddSingleton<IGameControllerRepository, GameControllerRepository>();
@@ -72,7 +71,7 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                     case DefeatException or WinException:
                         EndExeption endEx = (EndExeption)gameEx;
                         result = Results.Ok(new SuccessfulResponse(
-                            new GameOverDTO(endEx.Message, endEx.GameOverStats)
+                            new GameOverDTO(endEx.Message, endEx.GameInfo)
                         ));
                         break;
                     case BattleWinException:

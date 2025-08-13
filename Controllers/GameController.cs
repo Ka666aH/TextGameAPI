@@ -26,6 +26,11 @@ namespace TextGame.Controllers
             var info = GameControllerRepository.GetGameInfo();
             return Results.Ok(new SuccessfulResponse(info));
         }
+        [HttpGet("map")]
+        public IResult GetMap()
+        {
+            return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
+        }
         [HttpGet("currentroom")]
         public IResult GetCurrentRoom()
         {
@@ -56,21 +61,22 @@ namespace TextGame.Controllers
             var item = GameControllerRepository.GetInventoryItem(itemId);
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(item)));
         }
-        [HttpGet("map")]
-        public IResult GetMap()
+        [HttpPost("inventory/{itemId}/use")]
+        public IResult UseInventoryItem(int itemId)
         {
-            return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
+            GameControllerRepository.UseInventoryItem(itemId);
+            return GetInfo();
+        }
+        [HttpPost("inventory/{itemId}/equip")]
+        public IResult EquipInventoryItem(int itemId)
+        {
+            var equipment = GameControllerRepository.EquipInventoryItem(itemId);
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
         }
         [HttpGet("equipment")]
         public IResult GetEquipment()
         {
             var equipment = GameControllerRepository.GetEquipment();
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
-        }
-        [HttpPost("equipment/{itemId}/equip")]
-        public IResult EquipInventoryItem(int itemId)
-        {
-            var equipment = GameControllerRepository.EquipInventoryItem(itemId);
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(equipment)));
         }
         [HttpPost("equipment/weapon/unequip")]

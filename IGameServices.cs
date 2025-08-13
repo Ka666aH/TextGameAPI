@@ -29,10 +29,6 @@
     {
         GameInfoDTO GetGameInfo();
     }
-    public interface IGameOverInfoRepository
-    {
-        GameOvernInfoDTO GetGameOverInfo();
-    }
     public interface IGetRoomByIdRepository
     {
         Room GetRoomById(int roomId);
@@ -58,6 +54,7 @@
         int GetCoins();
         int GetKeys();
         List<MapRoomDTO> GetMap();
+        void UseInventoryItem(int itemId);
 
     }
     public interface IRoomControllerRepository :
