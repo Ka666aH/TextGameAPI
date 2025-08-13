@@ -7,13 +7,13 @@
     public interface IChestRepository
     {
         ChestDTO ReturnChestDTO(Chest chest);
-        ChestDTO ReturnChestDTO(int roomId, int chestId);
-        BattleLog HitChest(int roomId, int chestId);
-        void OpenChest(int roomId, int chestId);
-        void UnlockChest(int roomId, int chestId);
-        List<Item> SearchChest(int roomId, int chestId);
-        void TakeItemFromChest(int roomId, int chestId, int itemId);
-        void TakeAllItemsFromChest(int roomId, int chestId);
+        ChestDTO ReturnChestDTO(int chestId);
+        BattleLog HitChest(int chestId);
+        void OpenChest(int chestId);
+        void UnlockChest(int chestId);
+        List<Item> SearchChest(int chestId);
+        void TakeItemFromChest(int chestId, int itemId);
+        void TakeAllItemsFromChest(int chestId);
     }
     public interface IInventoryRepository
     {
@@ -43,13 +43,13 @@
     }
     public interface IGetEnemyByIdRepository
     {
-        Enemy GetEnemyById(int enemyId);
-        List<Enemy> GetEnemies();
+        Enemy GetEnemyById();
+        //List<Enemy> GetEnemies();
     }
     public interface ICombatRepository
     {
-        BattleLog DealDamage(int enemyId);
-        BattleLog GetDamage(int enemyId);
+        BattleLog DealDamage();
+        BattleLog GetDamage();
     }
     public interface IGameControllerRepository : IGetCurrentRoomRepository, IInventoryRepository
     {
@@ -61,13 +61,11 @@
 
     }
     public interface IRoomControllerRepository :
-        IGetCurrentRoomRepository, IChestRepository, IGetRoomByIdRepository, IGameStatsRepository, ICombatRepository
+        IGetCurrentRoomRepository, IChestRepository, IGetRoomByIdRepository, IGameStatsRepository, IGetEnemyByIdRepository, ICombatRepository
     {
         void GoNextRoom();
-        List<Enemy> GetEnemies(int roomId);
-        Enemy GetEnemy(int roomId, int enemyId);
-        List<Item> Search(int roomId);
-        void TakeItem(int roomId, int itemId);
-        void TakeAllItems(int roomId);
+        List<Item> Search();
+        void TakeItem(int itemId);
+        void TakeAllItems();
     }
 }
