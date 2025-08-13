@@ -25,13 +25,13 @@
         List<Equipment> UnequipChestplate();
         //List<Item> GetInventoryItems(List<int> itemIds);
     }
-    public interface IGameStatsRepository
+    public interface IGameInfoRepository
     {
-        GameStatsDTO GetGameStats();
+        GameInfoDTO GetGameInfo();
     }
-    public interface IGameOverStatsRepository
+    public interface IGameOverInfoRepository
     {
-        GameOverStatsDTO GetGameOverStats();
+        GameOvernInfoDTO GetGameOverInfo();
     }
     public interface IGetRoomByIdRepository
     {
@@ -51,7 +51,7 @@
         BattleLog DealDamage();
         BattleLog GetDamage();
     }
-    public interface IGameControllerRepository : IGetCurrentRoomRepository, IInventoryRepository
+    public interface IGameControllerRepository : IGetCurrentRoomRepository, IInventoryRepository, IGameInfoRepository
     {
         void Start();
         List<Item> GetInventory();
@@ -61,7 +61,7 @@
 
     }
     public interface IRoomControllerRepository :
-        IGetCurrentRoomRepository, IChestRepository, IGetRoomByIdRepository, IGameStatsRepository, IGetEnemyByIdRepository, ICombatRepository
+        IGetCurrentRoomRepository, IChestRepository, IGetRoomByIdRepository, IGameInfoRepository, IGetEnemyByIdRepository, ICombatRepository
     {
         void GoNextRoom();
         List<Item> Search();

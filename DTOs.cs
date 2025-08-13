@@ -2,19 +2,19 @@
 {
     public record MapRoomDTO(int number, string name);
     public record ChestDTO(string name, string description, bool isLocked, bool isClosed);
-    public record GameStatsDTO(Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
-    public record GameOverStatsDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
-    public record GameOverDTO(string message, GameOverStatsDTO gameOverStats);
+    public record GameInfoDTO(Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
+    public record GameOvernInfoDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
+    public record GameOverDTO(string message, GameOvernInfoDTO gameOverStats);
     public record BattleLog(string target, int damage, int? healthBeforeAttack, int? healthAfterAttack);
 
 
     public record GameObjectDTO(string Name, string Description);
     public record RoomDTO(int Number, string Name, string Description, List<Enemy> Enemies);
     public record ItemDTO(int? Id, string Name, string Description, bool IsCarryable);
+    public record HealDTO(int? Id, string Name, string Description, bool IsCarryable, int? MaxHealthBoost, int? CurrentHealthBoost);
     public record EquipmentDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability);
     public record WeaponDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability, int? Damage);
     public record ArmorDTO(int? Id, string Name, string Description, bool IsCarryable, int? Durability, int? DamageBlock);
-    public record HealDTO(int? Id, string Name, string Description, bool IsCarryable, int? MaxHealthBoost, int? CurrentHealthBoost);
     public record EnemyDTO(int? Id, string Name, string Description, int Health, int Damage, int DamageBlock);
 
     public static class GameObjectMapper

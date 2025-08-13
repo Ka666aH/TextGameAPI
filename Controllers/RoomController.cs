@@ -38,13 +38,13 @@ namespace TextGame.Controllers
         public IResult TakeItem(int itemId)
         {
             RoomControllerRepository.TakeItem(itemId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
         [HttpPost("current/items/takeall")]
         public IResult TakeAllItems()
         {
             RoomControllerRepository.TakeAllItems();
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
         #region CHEST
         [HttpPost("current/items/{chestId}/chest/hit")]
@@ -77,13 +77,13 @@ namespace TextGame.Controllers
         public IResult TakeItemFromChest(int chestId, int itemId)
         {
             RoomControllerRepository.TakeItemFromChest(chestId, itemId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
         [HttpPost("current/items/{chestId}/chest/items/takeall")]
         public IResult TakeAllItemsFromChest(int chestId)
         {
             RoomControllerRepository.TakeAllItemsFromChest(chestId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
         #endregion
         #region ENEMIES

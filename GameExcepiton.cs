@@ -71,18 +71,18 @@
     }
     public class EndExeption : GameException
     {
-        public GameOverStatsDTO GameOverStats { get; }
-        public EndExeption(string code, string message, GameOverStatsDTO gameOverStats) : base(code, message)
+        public GameOvernInfoDTO GameOverStats { get; }
+        public EndExeption(string code, string message, GameOvernInfoDTO gameOverStats) : base(code, message)
         {
             this.GameOverStats = gameOverStats;
         }
     }
     public class DefeatException : EndExeption
     {
-        public DefeatException(string message, GameOverStatsDTO gameOverStats) : base("DEFEAT", message, gameOverStats) { }
+        public DefeatException(string message, GameOvernInfoDTO gameOverStats) : base("DEFEAT", message, gameOverStats) { }
     }
     public class WinException : EndExeption
     {
-        public WinException(GameOverStatsDTO gameOverStats) : base("WIN", "Вы нашли выход и выбрались наружу.", gameOverStats) { }
+        public WinException(GameOvernInfoDTO gameOverStats) : base("WIN", "Вы нашли выход и выбрались наружу.", gameOverStats) { }
     }
 }

@@ -20,10 +20,11 @@ namespace TextGame.Controllers
             var room = GameControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
         }
-        [HttpGet("map")]
-        public IResult GetMap()
+        [HttpGet("info")]
+        public IResult GetInfo()
         {
-            return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
+            var info = GameControllerRepository.GetGameInfo();
+            return Results.Ok(new SuccessfulResponse(info));
         }
         [HttpGet("currentroom")]
         public IResult GetCurrentRoom()
@@ -54,6 +55,11 @@ namespace TextGame.Controllers
         {
             var item = GameControllerRepository.GetInventoryItem(itemId);
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(item)));
+        }
+        [HttpGet("map")]
+        public IResult GetMap()
+        {
+            return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
         }
         [HttpGet("equipment")]
         public IResult GetEquipment()
