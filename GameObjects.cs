@@ -71,9 +71,9 @@ namespace TextGame
     }
     public class BigRoom : Room
     {
+        private const int itemsAmount = 3;
         public BigRoom(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory, IEnemyFactory enemyFactory) : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumberFactory.GetRoomNumber(), enemyFactory)
         {
-            const int itemsAmount = 3;
             for (int i = 0; i < itemsAmount; i++)
             {
                 Item? item = itemFactory.CreateRoomItem(Number);
@@ -90,7 +90,9 @@ namespace TextGame
             for (int i = 0; i < itemsAmount; i++)
             {
                 Item? item = itemFactory.CreateShopItem(Number);
-                if (item != null) Items.Add(item);
+                if (item == null) continue;
+                item.AddStoreMargin();
+                Items.Add(item);
             }
         }
     }
@@ -164,6 +166,7 @@ namespace TextGame
             Id = id;
             IsCarryable = isCarryable;
         }
+        public virtual void AddStoreMargin() => Cost *= 2;
     }
     public class Key : Item
     {
@@ -179,7 +182,7 @@ namespace TextGame
         private double FromChestMultiplitator = 1.5;
         public BagOfCoins(IItemIdFactory itemIdFactory, int roomId, bool isFromChest) : base("МЕШОЧЕК С МОНЕТАМИ", "Потрёпанный кусок ткани с разными монетами внутри.", itemIdFactory!.Id(), true)
         {
-            Multiplitator =  isFromChest ? (1 + (roomId / MultiplitatorDivider)) * FromChestMultiplitator : 1 + (roomId / MultiplitatorDivider);
+            Multiplitator = isFromChest ? (1 + (roomId / MultiplitatorDivider)) * FromChestMultiplitator : 1 + (roomId / MultiplitatorDivider);
             Random random = new Random();
             Cost = (int)Math.Round(random.Next(5, 21) * Multiplitator);
         }
@@ -244,20 +247,19 @@ namespace TextGame
         }
         protected virtual void Initialize(int? maxHealthBoost, int? currentHealthBoost)
         {
-            if (maxHealthBoost == null && currentHealthBoost == null) Cost = 10;
-
+            Cost = 1;
             if (maxHealthBoost == null) MaxHealthBoost = null;
             else
             {
                 MaxHealthBoost = (int)Math.Round((int)maxHealthBoost * Multiplicator);
-                Cost += maxHealthBoost * 2;
+                Cost += MaxHealthBoost * 2;
             }
 
             if (currentHealthBoost == null) CurrentHealthBoost = null;
             else
             {
                 CurrentHealthBoost = (int)Math.Round((int)currentHealthBoost * Multiplicator);
-                Cost += currentHealthBoost;
+                Cost += CurrentHealthBoost;
             }
         }
         public virtual void Use(GameSession gameSession)
@@ -417,7 +419,7 @@ namespace TextGame
         }
         private void CalculateCost()
         {
-            Cost = (Durability * Damage) / 10;
+            Cost = 1 + ((Durability * Damage) / 10);
         }
     }
     enum WandType
@@ -438,14 +440,14 @@ namespace TextGame
             switch (wandTypeNumber)
             {
                 case >= 0 and < MagicWandMax:
-                    Initialize(WandType.Magic,"ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
+                    Initialize(WandType.Magic, "ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
                     break;
                 case >= MagicWandMax and < 100:
                     Initialize(WandType.Random, "ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие. Становится сильнее со временем.", RandomWandMaxDamage);
                     break;
             }
         }
-        private void Initialize(WandType type,string name, string description, int damage)
+        private void Initialize(WandType type, string name, string description, int damage)
         {
             WandType = type;
             Name = name;
@@ -488,7 +490,7 @@ namespace TextGame
         protected abstract void BreakDown(GameSession gameSession);
         private void CalculateCost()
         {
-            Cost = (Durability * DamageBlock) / 10;
+            Cost = 1 + ((Durability * DamageBlock) / 10);
         }
     }
     public class Helm : Armor

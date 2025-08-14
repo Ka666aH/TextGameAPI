@@ -6,8 +6,8 @@
     }
     public interface IChestRepository
     {
-        ChestDTO ReturnChestDTO(Chest chest);
-        ChestDTO ReturnChestDTO(int chestId);
+        ChestStateDTO ReturnChestDTO(Chest chest);
+        ChestStateDTO ReturnChestDTO(int chestId);
         BattleLog HitChest(int chestId);
         void OpenChest(int chestId);
         void UnlockChest(int chestId);

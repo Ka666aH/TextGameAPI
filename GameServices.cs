@@ -243,14 +243,14 @@
             EnemyFactory = enemyFactory;
             CombatRepository = combatRepository;
         }
-        public ChestDTO ReturnChestDTO(Chest chest)
+        public ChestStateDTO ReturnChestDTO(Chest chest)
         {
-            return new ChestDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
+            return new ChestStateDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
         }
-        public ChestDTO ReturnChestDTO(int chestId)
+        public ChestStateDTO ReturnChestDTO(int chestId)
         {
             Chest chest = GetChestById(chestId);
-            return new ChestDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
+            return new ChestStateDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
         }
         public Chest GetChestById(int chestId)
         {
@@ -636,8 +636,8 @@
         public BattleLog DealDamage() => CombatRepository.DealDamage();
         public BattleLog GetDamage() => CombatRepository.GetDamage();
 
-        public ChestDTO ReturnChestDTO(Chest chest) => ChestRepository.ReturnChestDTO(chest);
-        public ChestDTO ReturnChestDTO(int chestId) => ChestRepository.ReturnChestDTO(chestId);
+        public ChestStateDTO ReturnChestDTO(Chest chest) => ChestRepository.ReturnChestDTO(chest);
+        public ChestStateDTO ReturnChestDTO(int chestId) => ChestRepository.ReturnChestDTO(chestId);
         public BattleLog HitChest(int chestId) => ChestRepository.HitChest(chestId);
         public void OpenChest(int chestId) => ChestRepository.OpenChest(chestId);
         public void UnlockChest(int chestId) => ChestRepository.UnlockChest(chestId);

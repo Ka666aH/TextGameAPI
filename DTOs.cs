@@ -1,7 +1,7 @@
 ﻿namespace TextGame
 {
     public record MapRoomDTO(int number, string name);
-    public record ChestDTO(string name, string description, bool isLocked, bool isClosed);
+    public record ChestStateDTO(string name, string description, bool isLocked, bool isClosed);
     public record GameInfoDTO(RoomDTO room, WeaponDTO Weapon, ArmorDTO? Helm, ArmorDTO? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     //public record GameOvernInfoDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     public record GameOverDTO(string message, GameInfoDTO gameInfo);
@@ -11,12 +11,14 @@
 
     public record GameObjectDTO(string Name, string Description);
     public record RoomDTO(int Number, string Name, string Description, List<Enemy> Enemies);
-    public record ItemDTO(int? Id, string Name, string Description);
-    public record HealDTO(int? Id, string Name, string Description, int? MaxHealthBoost, int? CurrentHealthBoost);
-    public record EquipmentDTO(int? Id, string Name, string Description, int? Durability);
-    public record WeaponDTO(int? Id, string Name, string Description, int? Durability, int? Damage);
-    public record ArmorDTO(int? Id, string Name, string Description, int? Durability, int? DamageBlock);
+    public record RoomWithoutEnemiesDTO(int Number, string Name, string Description);
     public record EnemyDTO(int? Id, string Name, string Description, int Health, int Damage, int DamageBlock);
+    public record ItemDTO(int? Id, string Name, string Description, int? cost);
+    public record ChestDTO(int? Id, string Name, string Description);
+    public record HealDTO(int? Id, string Name, string Description, int? cost, int? MaxHealthBoost, int? CurrentHealthBoost);
+    public record EquipmentDTO(int? Id, string Name, string Description, int? cost, int? Durability);
+    public record WeaponDTO(int? Id, string Name, string Description, int? cost, int? Durability, int? Damage);
+    public record ArmorDTO(int? Id, string Name, string Description, int? cost, int? Durability, int? DamageBlock);
 
     public static class GameObjectMapper
     {
@@ -24,22 +26,28 @@
         {
             return gameObject switch
             {
-                Room room => new RoomDTO(room.Number, room.Name!, room.Description!, room.Enemies),
+                Room room =>
+                room switch
+                {
+                    StartRoom or EndRoom or Shop => new RoomWithoutEnemiesDTO(room.Number, room.Name!, room.Description!),
+                    _ => new RoomDTO(room.Number, room.Name!, room.Description!, room.Enemies),
+                },
                 Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name!, enemy.Description!, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>
                 item switch
                 {
-                    Heal heal => new HealDTO(heal.Id, heal.Name!, heal.Description!, heal.MaxHealthBoost, heal.CurrentHealthBoost),
+                    Chest chest => new ChestDTO(chest.Id, chest.Name!, chest.Description!),
+                    Heal heal => new HealDTO(heal.Id, heal.Name!, heal.Description!, heal.Cost, heal.MaxHealthBoost, heal.CurrentHealthBoost),
                     Equipment equipment =>
                     equipment switch
                     {
-                        Weapon weapon => new WeaponDTO(weapon.Id, weapon.Name!, weapon.Description!, weapon.Durability, weapon.Damage),
-                        Armor armor => new ArmorDTO(armor.Id, armor.Name!, armor.Description!, armor.Durability, armor.DamageBlock),
+                        Weapon weapon => new WeaponDTO(weapon.Id, weapon.Name!, weapon.Description!, weapon.Cost, weapon.Durability, weapon.Damage),
+                        Armor armor => new ArmorDTO(armor.Id, armor.Name!, armor.Description!, armor.Cost, armor.Durability, armor.DamageBlock),
 
-                        _ => new EquipmentDTO(equipment.Id, equipment.Name!, equipment.Description!, equipment.Durability),
+                        _ => new EquipmentDTO(equipment.Id, equipment.Name!, equipment.Description!, equipment.Cost, equipment.Durability),
                     },
 
-                    _ => new ItemDTO(item.Id, item.Name!, item.Description!),
+                    _ => new ItemDTO(item.Id, item.Name!, item.Description!, item.Cost),
                 },
                 _ => new GameObjectDTO(gameObject.Name ?? "НЕИЗВЕСТНО", gameObject.Description ?? "НЕИЗВЕСТНО")
             };
