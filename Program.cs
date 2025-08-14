@@ -74,8 +74,10 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                             new GameOverDTO(endEx.Message, endEx.GameInfo)
                         ));
                         break;
-                    case BattleWinException:
-                        result = Results.Ok(new SuccessfulResponse(gameEx.Message));
+                    case BattleWinException battleWinEx:
+                        result = Results.Ok(new SuccessfulResponse(
+                            new BattleWinDTO(battleWinEx.Message, battleWinEx.BattleLog)
+                            ));
                         break;
                     default: //UnstartedGameException
                         result = Results.BadRequest(new ErrorResponse(gameEx));

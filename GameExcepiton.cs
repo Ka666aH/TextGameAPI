@@ -67,7 +67,11 @@
     }
     public class BattleWinException : GameException
     {
-        public BattleWinException(string message) : base("IN_BATTLE", message) { }
+        public BattleLog BattleLog { get; }
+        public BattleWinException(string message, BattleLog battleLog) : base("YOU_WIN_IN_BATTLE", message)
+        {
+            BattleLog = battleLog;
+        }
     }
     public class EndExeption : GameException
     {

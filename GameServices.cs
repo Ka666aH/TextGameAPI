@@ -55,15 +55,16 @@
             int damage = Session.Weapon.Attack(Session);
             int enemyHealthBeforeAttack = enemy.Health;
             int enemyHealthAfterAttack = enemy.GetDamage(damage, Session.CurrentRoom!);
+            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
             if (enemyHealthAfterAttack <= 0)
             {
                 Session.CurrentRoom!.Enemies.Remove(enemy);
                 if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo());//дубль
                 if (!Session.CurrentRoom.Enemies.Any()) Session.IsInBattle = false;
-                throw new BattleWinException($"{enemy.Name!} повержен.");
+                throw new BattleWinException($"{enemy.Name!} повержен.", battleLog);
             }
             if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo()); //дубль
-            return new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
+            return battleLog;
         }
         public BattleLog GetDamage()
         {

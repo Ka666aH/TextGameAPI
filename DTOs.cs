@@ -6,6 +6,7 @@
     //public record GameOvernInfoDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     public record GameOverDTO(string message, GameInfoDTO gameInfo);
     public record BattleLog(string target, int damage, int? targetHealthBeforeAttack, int? targetHealthAfterAttack, string attacker, int? healthBeforeAttack, int? healthAfterAttack);
+    public record BattleWinDTO(string message, BattleLog BattleLog);
 
 
     public record GameObjectDTO(string Name, string Description);
