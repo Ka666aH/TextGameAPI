@@ -27,6 +27,7 @@ namespace TextGame
         public List<Item> Items { get; set; } = new List<Item>();
         public List<Enemy> Enemies { get; set; } = new List<Enemy>();
         public bool IsDiscovered { get; set; } = false;
+        public bool IsSearched { get; set; } = false;
 
         public Room(string name, string description, int number)
         {

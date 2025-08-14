@@ -65,7 +65,7 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                     case InvalidIdException or UncarryableException:
                         result = Results.UnprocessableEntity(new ErrorResponse(gameEx));
                         break;
-                    case LockedException or NoKeyException or NoMapException or ClosedException or UndiscoveredRoomException or InBattleException:
+                    case LockedException or NoKeyException or NoMapException or ClosedException or UndiscoveredRoomException or InBattleException or UnsearchedRoomException:
                         result = Results.Json(new ErrorResponse(gameEx), statusCode: 403);
                         break;
                     case DefeatException or WinException:
@@ -80,7 +80,8 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                             ));
                         break;
                     default: //UnstartedGameException
-                        result = Results.BadRequest(new ErrorResponse(gameEx));
+                        //result = Results.BadRequest(new ErrorResponse(gameEx));
+                        result = Results.Json(new ErrorResponse(gameEx), statusCode: 401);
                         break;
                 }
                 break;

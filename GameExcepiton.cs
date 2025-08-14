@@ -33,6 +33,10 @@
     {
         public UnstartedGameException() : base("NOT_STARTED", "Игра ещё не начата!") { }
     }
+    public class UnsearchedRoomException : GameException
+    {
+        public UnsearchedRoomException() : base("ROOM_NOT_SEARCHED", "Комната ещё не обыскана!") { }
+    }
     public class UndiscoveredRoomException : GameException
     {
         public UndiscoveredRoomException() : base("UNDISCOVERED_ROOM_ERROR", "Комната ещё не открыта.") { }

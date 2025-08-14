@@ -594,12 +594,14 @@
 
             //Room room = GetRoomById(roomId);
             Room room = Session.CurrentRoom!;
+            room.IsSearched = true;
             return room!.Items;
         }
         public void TakeItem(int itemId)
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             if (Session.IsInBattle) throw new InBattleException();
+            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
 
             //Room room = GetRoomById(roomId);
             //Room room = Session.CurrentRoom!;
@@ -614,6 +616,7 @@
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             if (Session.IsInBattle) throw new InBattleException();
+            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
 
             //Room room = GetRoomById(roomId);
             List<Item> carryableItems = Session.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
