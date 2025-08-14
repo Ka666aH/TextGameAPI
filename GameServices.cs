@@ -50,6 +50,7 @@
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
 
+            int playerHealthBeforeAttack = Session.CurrentHealth;
             Enemy enemy = GetEnemyByIdRepository.GetEnemyById();
             int damage = Session.Weapon.Attack(Session);
             int enemyHealthBeforeAttack = enemy.Health;
@@ -57,16 +58,19 @@
             if (enemyHealthAfterAttack <= 0)
             {
                 Session.CurrentRoom!.Enemies.Remove(enemy);
+                if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo());//дубль
                 if (!Session.CurrentRoom.Enemies.Any()) Session.IsInBattle = false;
                 throw new BattleWinException($"{enemy.Name!} повержен.");
             }
-            return new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack);
+            if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo()); //дубль
+            return new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
         }
         public BattleLog GetDamage()
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
 
             Enemy enemy = GetEnemyByIdRepository.GetEnemyById();
+            int enemyHealthBeforeAttack = enemy.Health;
             int damage = enemy.Attack();
             int helmBlock = Session.Helm != null ? Session.Helm.Block(Session) : 0;
             int chestplateBlock = Session.Chestplate != null ? Session.Chestplate.Block(Session) : 0;
@@ -75,7 +79,7 @@
             if (damageAfterBlock > 0) Session.CurrentHealth -= damageAfterBlock;
             if (Session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", GameInfoRepository.GetGameInfo());
 
-            return new BattleLog("ВЫ", damage, playerHealthBeforeAttack, Session.CurrentHealth);
+            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, Session.CurrentHealth, enemy.Name!, enemyHealthBeforeAttack, enemy.Health);
         }
     }
     public class GetEnemyByIdRepository : IGetEnemyByIdRepository
@@ -274,8 +278,9 @@
             }
             else
             {
+                int playerHealthBeforeAttack = Session.CurrentHealth;
                 int damage = Session.Weapon.Attack(Session);
-                battleLog = new BattleLog("СУНДУК", damage, null, null);
+                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
             }
             return battleLog;
         }
