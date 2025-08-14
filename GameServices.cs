@@ -387,8 +387,12 @@
         public GameInfoDTO GetGameInfo()
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
-            return new GameInfoDTO(roomDTO, Session.Weapon, Session.Helm, Session.Chestplate, Session.MaxHealth, Session.CurrentHealth, Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
+            //RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
+            RoomDTO roomDTO = (RoomDTO)GameObjectMapper.ToDTO(Session.CurrentRoom!);
+            WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(Session.Weapon);
+            ArmorDTO? helmDTO = Session.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Helm) : null;
+            ArmorDTO? chestplateDTO = Session.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Chestplate) : null;
+            return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, Session.MaxHealth, Session.CurrentHealth, Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
         }
     }
     public class GetRoomByIdRepository : IGetRoomByIdRepository

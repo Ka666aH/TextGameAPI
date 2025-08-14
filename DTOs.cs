@@ -2,7 +2,7 @@
 {
     public record MapRoomDTO(int number, string name);
     public record ChestDTO(string name, string description, bool isLocked, bool isClosed);
-    public record GameInfoDTO(RoomDTO room, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
+    public record GameInfoDTO(RoomDTO room, WeaponDTO Weapon, ArmorDTO? Helm, ArmorDTO? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     //public record GameOvernInfoDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     public record GameOverDTO(string message, GameInfoDTO gameInfo);
     public record BattleLog(string target, int damage, int? targetHealthBeforeAttack, int? targetHealthAfterAttack, string attacker, int? healthBeforeAttack, int? healthAfterAttack);
