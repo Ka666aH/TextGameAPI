@@ -11,16 +11,6 @@ namespace TextGame
         public string? Description { get; set; }
     }
     #region Room
-    public enum RoomType
-    {
-        EndRoom, //1:100
-
-        EmptyRoom, //25:100
-        SmallRoom, //44:100
-        BigRoom, //25:100
-
-        Shop, //5:100
-    }
     public class Room : GameObject
     {
         private readonly IEnemyFactory? EnemyFactory;
@@ -132,6 +122,11 @@ namespace TextGame
         private readonly IEnemyFactory EnemyFactory;
         private readonly Random random = Random.Shared;
 
+        private const int EmptyRoomMax = 25;
+        private const int SmallRoomMax = 70;
+        private const int BigRoomMax = 95;
+        //private const int ShopMax = 100;
+
         public RoomFactory(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory, IEnemyFactory enemyFactory)
         {
             RoomNumberFactory = roomNumberFactory;
@@ -141,33 +136,16 @@ namespace TextGame
 
         public Room CreateRoom()
         {
-            const int EndRoomMin = 0;
-            const int EndRoomMax = 0;
-            const int SmallRoomMin = 26;
-            const int SmallRoomMax = 69;
-            const int BigRoomMin = 70;
-            const int BigRoomMax = 94;
-            //const int ShopMin = 95;
-            //const int ShopMax = 99;
 
 
             var roomTypeNumber = random.Next(100);
-            RoomType roomType = roomTypeNumber switch
+            return roomTypeNumber switch
             {
-                >= EndRoomMin and <= EndRoomMax => RoomType.EndRoom,
-                >= SmallRoomMin and <= SmallRoomMax => RoomType.SmallRoom,
-                >= BigRoomMin and <= BigRoomMax => RoomType.BigRoom,
-                //>= ShopMin and <= ShopMax => RoomType.Shop,
+                0 => new EndRoom(RoomNumberFactory),
+                >= EmptyRoomMax and < SmallRoomMax => new SmallRoom(RoomNumberFactory, ItemFactory, EnemyFactory),
+                >= SmallRoomMax and < BigRoomMax => new BigRoom(RoomNumberFactory, ItemFactory, EnemyFactory),
+                >= BigRoomMax and < 100 => new Shop(RoomNumberFactory, ItemFactory),
 
-                _ => RoomType.EmptyRoom
-            };
-
-            return roomType switch
-            {
-                RoomType.SmallRoom => new SmallRoom(RoomNumberFactory, ItemFactory, EnemyFactory),
-                RoomType.BigRoom => new BigRoom(RoomNumberFactory, ItemFactory, EnemyFactory),
-                RoomType.EndRoom => new EndRoom(RoomNumberFactory),
-                RoomType.Shop => new Shop(RoomNumberFactory, ItemFactory),
                 _ => new EmptyRoom(RoomNumberFactory, EnemyFactory),
             };
         }
@@ -187,22 +165,25 @@ namespace TextGame
             IsCarryable = isCarryable;
         }
     }
-    #region Key
     public class Key : Item
     {
-        public Key(IItemIdFactory itemIdFactory) : base("КЛЮЧ", "Что-то открывает.", itemIdFactory!.Id(), true)
+        public Key(IItemIdFactory itemIdFactory) : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemIdFactory!.Id(), true)
         {
             Cost = 5;
         }
     }
-    #endregion
-    #region Coin
-    public class Coin : Item //rework
+    public class BagOfCoins : Item
     {
-        public Coin(IItemIdFactory itemIdFactory) : base("МОНЕТА", "Блестит. Она явно ценная.", itemIdFactory!.Id(), true) { }
+        private double Multiplitator;
+        private double MultiplitatorDivider = 20;
+        private double FromChestMultiplitator = 1.5;
+        public BagOfCoins(IItemIdFactory itemIdFactory, int roomId, bool isFromChest) : base("МЕШОЧЕК С МОНЕТАМИ", "Потрёпанный кусок ткани с разными монетами внутри.", itemIdFactory!.Id(), true)
+        {
+            Multiplitator =  isFromChest ? (1 + (roomId / MultiplitatorDivider)) * FromChestMultiplitator : 1 + (roomId / MultiplitatorDivider);
+            Random random = new Random();
+            Cost = (int)Math.Round(random.Next(5, 21) * Multiplitator);
+        }
     }
-    #endregion
-    #region Chest
     public class Chest : Item
     {
         public bool IsLocked { get; set; }
@@ -210,11 +191,11 @@ namespace TextGame
         public bool IsMimic { get; private set; }
         public List<Item> Items { get; set; }
 
-        private readonly int MinChestItemsAmount = 1;
-        private readonly int MaxChestItemsAmount = 3;
+        private const int MinChestItemsAmount = 1;
+        private const int MaxChestItemsAmount = 3;
 
-        private readonly int MimicProbabilityDivider = 2; // 1/2
-        private readonly int LockedProbabilityDivider = 2; // 1/2
+        private const int MimicProbabilityDivider = 2; // 1/2
+        private const int LockedProbabilityDivider = 2; // 1/2
 
 
         public Chest(IItemIdFactory itemIdFactory, IItemFactory itemFactory, int roomId) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
@@ -243,8 +224,6 @@ namespace TextGame
             IsClosed = false;
         }
     }
-    #endregion
-    #region Map
     public class Map : Item
     {
         public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true)
@@ -252,14 +231,13 @@ namespace TextGame
             Cost = 20;
         }
     }
-    #endregion
     #region Heal
     public abstract class Heal : Item
     {
         public int? MaxHealthBoost { get; protected set; } = 0;
         public int? CurrentHealthBoost { get; protected set; } = 0;
         protected double Multiplicator = 1;
-        private readonly double MultiplicatorDivider = 20;
+        private const double MultiplicatorDivider = 20;
         public Heal(string name, string description, int id, int roomId) : base(name, description, id, true)
         {
             Multiplicator = 1 + (roomId / MultiplicatorDivider);
@@ -373,7 +351,6 @@ namespace TextGame
         }
         public abstract int Attack(GameSession gameSession);
     }
-    #region Fists
     public class Fists : Weapon
     {
         public static readonly Fists DefaultFists = new Fists();
@@ -390,15 +367,6 @@ namespace TextGame
             return damage;
         }
     }
-    #endregion
-    #region Swords
-    //enum SwordType
-    //{
-    //    Rust,
-    //    Iron,
-    //    Silver,
-    //    Glass,
-    //}
     public class Sword : Weapon
     {
         private const int RustSwordMax = 70;
@@ -452,10 +420,14 @@ namespace TextGame
             Cost = (Durability * Damage) / 10;
         }
     }
-    #endregion
-    #region Wands
+    enum WandType
+    {
+        Magic,
+        Random
+    }
     public class Wand : Weapon
     {
+        private WandType WandType;
         private const int RandomWandMaxDamage = 40;
 
         private const int MagicWandMax = 90;
@@ -466,18 +438,16 @@ namespace TextGame
             switch (wandTypeNumber)
             {
                 case >= 0 and < MagicWandMax:
-                    Initialize("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
+                    Initialize(WandType.Magic,"ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
                     break;
                 case >= MagicWandMax and < 100:
-                    Initialize("ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие. Становится сильнее со временем.", RandomWandMaxDamage);
-                    break;
-                default:
-                    Initialize("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
+                    Initialize(WandType.Random, "ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие. Становится сильнее со временем.", RandomWandMaxDamage);
                     break;
             }
         }
-        private void Initialize(string name, string description, int damage)
+        private void Initialize(WandType type,string name, string description, int damage)
         {
+            WandType = type;
             Name = name;
             Description = description;
             Damage = (int)Math.Round(damage * Multiplicator);
@@ -485,7 +455,7 @@ namespace TextGame
         }
         public override int Attack(GameSession gameSession)
         {
-            if (Name == "ЖЕЗЛ СЛУЧАЙНОСТЕЙ")
+            if (WandType == WandType.Random)
             {
                 Random random = new Random();
                 int damage = (int)Math.Round((int)Damage! * Multiplicator);
@@ -494,7 +464,6 @@ namespace TextGame
             return (int)Damage!;
         }
     }
-    #endregion
     #endregion
     #region Armor
     public abstract class Armor : Equipment
@@ -522,7 +491,6 @@ namespace TextGame
             Cost = (Durability * DamageBlock) / 10;
         }
     }
-    #region Helm
     public class Helm : Armor
     {
         private const int WoodenBucketMax = 70;
@@ -553,8 +521,6 @@ namespace TextGame
             gameSession.RemoveHelm();
         }
     }
-    #endregion
-    #region Chestplate
     public class Chestplate : Armor
     {
         private const int LeatherMax = 80;
@@ -577,7 +543,6 @@ namespace TextGame
             gameSession.RemoveChestplate();
         }
     }
-    #endregion
     #endregion
     #endregion
     #region IdFactory
@@ -641,7 +606,7 @@ namespace TextGame
             {
                 >= 0 and <= RoomNoneMax => null,
                 >= RoomNoneMax and < RoomKeyMax => new Key(ItemIdFactory),
-                >= RoomKeyMax and < RoomCoinMax => new Coin(ItemIdFactory),
+                >= RoomKeyMax and < RoomCoinMax => new BagOfCoins(ItemIdFactory, roomId, false),
                 >= RoomCoinMax and < RoomChestMax => new Chest(ItemIdFactory, this, roomId),
                 >= RoomChestMax and < RoomBondageMax => new Bandage(ItemIdFactory, roomId),
 
@@ -679,7 +644,7 @@ namespace TextGame
             {
                 >= 0 and <= ChestNoneMax => null,
                 >= ChestNoneMax and < ChestKeyMax => new Key(ItemIdFactory),
-                >= ChestKeyMax and < ChestCoinMax => new Coin(ItemIdFactory),
+                >= ChestKeyMax and < ChestCoinMax => new BagOfCoins(ItemIdFactory, roomId, true),
                 >= ChestCoinMax and < ChestMapMax => new Map(ItemIdFactory),
 
                 >= ChestMapMax and < ChestRegenPotionMax => new RegenPotion(ItemIdFactory, roomId),

@@ -327,7 +327,7 @@
             if (chest.IsLocked) throw new LockedException();
             if (chest.IsClosed) throw new ClosedException();
             Item item = GetItemByIdRepository.GetItemById(itemId, chest.Items);
-            if (item is Coin) Session.Coins++;
+            if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
             else if (item is Key) Session.Keys++;
             else Session.Inventory.Add(item);
             chest.Items.Remove(item);
@@ -344,7 +344,7 @@
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
             {
-                if (item is Coin) Session.Coins++;
+                if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
                 else if (item is Key) Session.Keys++;
                 else Session.Inventory.Add(item);
             }
@@ -607,7 +607,7 @@
             //Room room = Session.CurrentRoom!;
             Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom!.Items);
             if (!item.IsCarryable) throw new UncarryableException();
-            if (item is Coin) Session.Coins++;
+            if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
             else if (item is Key) Session.Keys++;
             else Session.Inventory.Add(item);
             Session.CurrentRoom!.Items.Remove(item);
@@ -624,7 +624,7 @@
             foreach (Item item in carryableItems)
             {
                 if (!item.IsCarryable) continue;
-                if (item is Coin) Session.Coins++;
+                if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
                 else if (item is Key) Session.Keys++;
                 else Session.Inventory.Add(item);
             }
