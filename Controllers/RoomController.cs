@@ -27,58 +27,92 @@ namespace TextGame.Controllers
             var room = RoomControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
         }
-        [HttpPost("{roomId}/items")]
-        public IResult Search(int roomId)
+        [HttpPost("current/items")]
+        public IResult Search()
         {
-            var items = RoomControllerRepository.Search(roomId);
+            var items = RoomControllerRepository.Search();
             var itemsDTOs = items.Select(item => GameObjectMapper.ToDTO(item)).ToList();
             return Results.Ok(new SuccessfulResponse(itemsDTOs));
         }
-        [HttpPost("{roomId}/items/{itemId}/take")]
-        public IResult TakeItem(int roomId, int itemId)
+        [HttpPost("current/items/{itemId}/take")]
+        public IResult TakeItem(int itemId)
         {
-            RoomControllerRepository.TakeItem(roomId, itemId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            RoomControllerRepository.TakeItem(itemId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
-        [HttpPost("{roomId}/items/takeall")]
-        public IResult TakeAllItems(int roomId)
+        [HttpPost("current/items/takeall")]
+        public IResult TakeAllItems()
         {
-            RoomControllerRepository.TakeAllItems(roomId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            RoomControllerRepository.TakeAllItems();
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
         #region CHEST
-        [HttpPost("{roomId}/items/{chestId}/chest/open")]
-        public IResult OpenChest(int roomId, int chestId)
+        [HttpPost("current/items/{chestId}/chest/hit")]
+        public IResult HitChest(int chestId)
         {
-            RoomControllerRepository.OpenChest(roomId, chestId);
-            var items = RoomControllerRepository.SearchChest(roomId, chestId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.HitChest(chestId)));
+        }
+        [HttpPost("current/items/{chestId}/chest/open")]
+        public IResult OpenChest(int chestId)
+        {
+            RoomControllerRepository.OpenChest(chestId);
+            var items = RoomControllerRepository.SearchChest(chestId);
             var itemsDTOs = items.Select(item => GameObjectMapper.ToDTO(item)).ToList();
             return Results.Ok(new SuccessfulResponse(itemsDTOs));
         }
-        [HttpPost("{roomId}/items/{chestId}/chest/unlock")]
-        public IResult UnlockChest(int roomId, int chestId)
+        [HttpPost("current/items/{chestId}/chest/unlock")]
+        public IResult UnlockChest(int chestId)
         {
-            RoomControllerRepository.UnlockChest(roomId, chestId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.ReturnChestDTO(roomId, chestId)));
+            RoomControllerRepository.UnlockChest(chestId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.ReturnChestDTO(chestId)));
         }
-        [HttpPost("{roomId}/items/{chestId}/chest/items")]
-        public IResult SearchChest(int roomId, int chestId)
+        [HttpPost("current/items/{chestId}/chest/items")]
+        public IResult SearchChest(int chestId)
         {
-            var items = RoomControllerRepository.SearchChest(roomId, chestId);
+            var items = RoomControllerRepository.SearchChest(chestId);
             var itemsDTOs = items.Select(item => GameObjectMapper.ToDTO(item)).ToList();
             return Results.Ok(new SuccessfulResponse(itemsDTOs));
         }
-        [HttpPost("{roomId}/items/{chestId}/chest/items/{itemId}/take")]
-        public IResult TakeItemFromChest(int roomId, int chestId, int itemId)
+        [HttpPost("current/items/{chestId}/chest/items/{itemId}/take")]
+        public IResult TakeItemFromChest(int chestId, int itemId)
         {
-            RoomControllerRepository.TakeItemFromChest(roomId, chestId, itemId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            RoomControllerRepository.TakeItemFromChest(chestId, itemId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
-        [HttpPost("{roomId}/items/{chestId}/chest/items/takeall")]
-        public IResult TakeAllItemsFromChest(int roomId, int chestId)
+        [HttpPost("current/items/{chestId}/chest/items/takeall")]
+        public IResult TakeAllItemsFromChest(int chestId)
         {
-            RoomControllerRepository.TakeAllItemsFromChest(roomId, chestId);
-            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameStats()));
+            RoomControllerRepository.TakeAllItemsFromChest(chestId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
+        }
+        #endregion
+        #region ENEMIES
+        //[HttpGet("current/enemy/{enemyId}")]
+        //public IResult GetEnemy(int enemyId)
+        //{
+        //    Enemy enemy = RoomControllerRepository.GetEnemy(enemyId);
+        //    return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemy)));
+        //}
+        //[HttpGet("current/enemies")]
+        //public IResult GetEnemies()
+        //{
+        //    List<Enemy> enemies = RoomControllerRepository.GetEnemies();
+        //    return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemies)));
+        //}
+        [HttpGet("current/enemy")]
+        public IResult GetEnemy()
+        {
+            Enemy enemy = RoomControllerRepository.GetEnemyById();
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemy)));
+        }
+        //[HttpPost("current/enemy/{enemyId}/attack")]
+        [HttpPost("current/enemy/attack")]
+        public IResult AttackEnemy()
+        {
+            List<BattleLog> battleLogs = new List<BattleLog>();
+            battleLogs.Add(RoomControllerRepository.DealDamage());
+            battleLogs.Add(RoomControllerRepository.GetDamage());
+            return Results.Ok(new SuccessfulResponse(battleLogs));
         }
         #endregion
     }

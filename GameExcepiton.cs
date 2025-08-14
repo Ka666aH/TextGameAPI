@@ -19,11 +19,15 @@
     }
     public class NullItemIdException : GameException
     {
-        public NullItemIdException() : base("ITEM_NOT_FOUND", "Предмет с таким ID не найден.") { }
+        public NullItemIdException() : base("ITEM_NOT_FOUND", "Предмет не найден.") { }
+    }
+    public class NullEnemyIdException : GameException
+    {
+        public NullEnemyIdException() : base("ENEMY_NOT_FOUND", "Противник не найден.") { }
     }
     public class NullRoomIdException : GameException
     {
-        public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната с таким номером не найдена.") { }
+        public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната не найдена.") { }
     }
     public class UnstartedGameException : GameException
     {
@@ -57,20 +61,32 @@
     {
         public ClosedException() : base("CLOSED", "Сундук закрыт!") { }
     }
+    public class InBattleException : GameException
+    {
+        public InBattleException() : base("IN_BATTLE", "В бою!") { }
+    }
+    public class BattleWinException : GameException
+    {
+        public BattleLog BattleLog { get; }
+        public BattleWinException(string message, BattleLog battleLog) : base("YOU_WIN_IN_BATTLE", message)
+        {
+            BattleLog = battleLog;
+        }
+    }
     public class EndExeption : GameException
     {
-        public GameOverStatsDTO GameOverStats { get; }
-        public EndExeption(string code, string message, GameOverStatsDTO gameOverStats) : base(code, message)
+        public GameInfoDTO GameInfo { get; }
+        public EndExeption(string code, string message, GameInfoDTO gameInfo) : base(code, message)
         {
-            this.GameOverStats = gameOverStats;
+            GameInfo = gameInfo;
         }
     }
     public class DefeatException : EndExeption
     {
-        public DefeatException(string message, GameOverStatsDTO gameOverStats) : base("DEFEAT", message, gameOverStats) { }
+        public DefeatException(string message, GameInfoDTO gameInfo) : base("DEFEAT", message, gameInfo) { }
     }
     public class WinException : EndExeption
     {
-        public WinException(GameOverStatsDTO gameOverStats) : base("WIN", "Вы нашли выход и выбрались наружу.", gameOverStats) { }
+        public WinException(GameInfoDTO gameInfo) : base("WIN", "Вы нашли выход и выбрались наружу.", gameInfo) { }
     }
 }

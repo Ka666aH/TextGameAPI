@@ -7,30 +7,27 @@
     public interface IChestRepository
     {
         ChestDTO ReturnChestDTO(Chest chest);
-        ChestDTO ReturnChestDTO(int roomId, int chestId);
-        void OpenChest(int roomId, int chestId);
-        void UnlockChest(int roomId, int chestId);
-        List<Item> SearchChest(int roomId, int chestId);
-        void TakeItemFromChest(int roomId, int chestId, int itemId);
-        void TakeAllItemsFromChest(int roomId, int chestId);
+        ChestDTO ReturnChestDTO(int chestId);
+        BattleLog HitChest(int chestId);
+        void OpenChest(int chestId);
+        void UnlockChest(int chestId);
+        List<Item> SearchChest(int chestId);
+        void TakeItemFromChest(int chestId, int itemId);
+        void TakeAllItemsFromChest(int chestId);
     }
     public interface IInventoryRepository
     {
         Item GetInventoryItem(int itemId);
-        EquipmentListDTO EquipInventoryItem(int itemId);
-        EquipmentListDTO GetEquipment();
-        EquipmentListDTO UnequipWeapon();
-        EquipmentListDTO UnequipHelm();
-        EquipmentListDTO UnequipChestplate();
+        List<Equipment> EquipInventoryItem(int itemId);
+        List<Equipment> GetEquipment();
+        List<Equipment> UnequipWeapon();
+        List<Equipment> UnequipHelm();
+        List<Equipment> UnequipChestplate();
         //List<Item> GetInventoryItems(List<int> itemIds);
     }
-    public interface IGameStatsRepository
+    public interface IGameInfoRepository
     {
-        GameStatsDTO GetGameStats();
-    }
-    public interface IGameOverStatsRepository
-    {
-        GameOverStatsDTO GetGameOverStats();
+        GameInfoDTO GetGameInfo();
     }
     public interface IGetRoomByIdRepository
     {
@@ -40,20 +37,32 @@
     {
         Item GetItemById(int itemId, List<Item> items);
     }
-    public interface IGameControllerRepository : IGetCurrentRoomRepository, IInventoryRepository
+    public interface IGetEnemyByIdRepository
+    {
+        Enemy GetEnemyById();
+        //List<Enemy> GetEnemies();
+    }
+    public interface ICombatRepository
+    {
+        BattleLog DealDamage();
+        BattleLog GetDamage();
+    }
+    public interface IGameControllerRepository : IGetCurrentRoomRepository, IInventoryRepository, IGameInfoRepository
     {
         void Start();
         List<Item> GetInventory();
         int GetCoins();
         int GetKeys();
         List<MapRoomDTO> GetMap();
+        void UseInventoryItem(int itemId);
 
     }
-    public interface IRoomControllerRepository : IGetCurrentRoomRepository, IChestRepository, /*IInventoryRepository,*/ IGetRoomByIdRepository,IGameStatsRepository
+    public interface IRoomControllerRepository :
+        IGetCurrentRoomRepository, IChestRepository, IGetRoomByIdRepository, IGameInfoRepository, IGetEnemyByIdRepository, ICombatRepository
     {
         void GoNextRoom();
-        List<Item> Search(int roomId);
-        void TakeItem(int roomId, int itemId);
-        void TakeAllItems(int roomId);
+        List<Item> Search();
+        void TakeItem(int itemId);
+        void TakeAllItems();
     }
 }
