@@ -31,12 +31,6 @@ namespace TextGame.Controllers
         {
             return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
         }
-        [HttpGet("currentroom")]
-        public IResult GetCurrentRoom()
-        {
-            var room = GameControllerRepository.GetCurrentRoom();
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
-        }
         [HttpGet("coins")]
         public IResult GetCoins()
         {
