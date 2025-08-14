@@ -261,7 +261,7 @@ namespace TextGame
         public int? MaxHealthBoost { get; protected set; } = 0;
         public int? CurrentHealthBoost { get; protected set; } = 0;
         protected double Multiplicator = 1;
-        private readonly int MultiplicatorDivider = 20;
+        private readonly double MultiplicatorDivider = 20;
         public Heal(string name, string description, int id, int roomId) : base(name, description, id, true)
         {
             Multiplicator = 1 + (roomId / MultiplicatorDivider);
@@ -355,7 +355,7 @@ namespace TextGame
         protected double Multiplicator;
 
         private const double FromShopMultiplicator = 1.2;
-        private const int MultiplicatorDivider = 100;
+        private const double MultiplicatorDivider = 100;
         public Equipment(string? name, string? description, int? id, int? durability, int roomId, bool fromShop) : base(name, description, id, true)
         {
             Multiplicator = fromShop ? (1 + (roomId / MultiplicatorDivider)) * FromShopMultiplicator : (1 + (roomId / MultiplicatorDivider));
@@ -384,7 +384,7 @@ namespace TextGame
         public override int Attack(GameSession gameSession)
         {
             Random random = new Random();
-            double Multiplicator = gameSession.CurrentRoom!.Number / FistsDamageIncreaseDivider;
+            Multiplicator = gameSession.CurrentRoom!.Number / FistsDamageIncreaseDivider;
             if (random.Next((int)Math.Round(SelfHarmProbabilityDivider + Multiplicator)) == 0) gameSession.CurrentHealth--;
             int damage = (int)Math.Round((int)Damage! + Multiplicator);
             return damage;
@@ -784,6 +784,10 @@ namespace TextGame
                 Items.Sword => new Sword(ItemIdFactory, roomId, isShop),
                 Items.Wand => new Wand(ItemIdFactory, roomId, isShop),
 
+                Items.RegenPotion => new RegenPotion(ItemIdFactory,roomId),
+                Items.PowerPotion => new PowerPotion(ItemIdFactory,roomId),
+                Items.RandomPotion => new RandomPotion(ItemIdFactory,roomId),
+
                 Items.Helm => new Helm(ItemIdFactory, roomId, isShop),
                 Items.Chestplate => new Chestplate(ItemIdFactory, roomId, isShop),
 
@@ -816,7 +820,7 @@ namespace TextGame
         public int DamageBlock { get; protected set; } = 0;
 
         private double Multiplicator;
-        private const int MultiplicatorDivider = 50;
+        private const double MultiplicatorDivider = 50;
 
         public Enemy(string name, string description, int roomId, IEnemyIdFactory enemyIdFactory)
         {
@@ -932,7 +936,7 @@ namespace TextGame
         private readonly IEnemyIdFactory EnemyIdFactory;
         private Random Random = Random.Shared;
 
-        private int MultiplicatorDivider = 100;
+        private double MultiplicatorDivider = 100;
 
         private const int NoneMax = 60; // 60/100
         private const int SkeletorMax = 77; // 17/100
