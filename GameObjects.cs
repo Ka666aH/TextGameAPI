@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
 using System.Linq.Expressions;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -176,8 +177,8 @@ namespace TextGame
     public class Item : GameObject
     {
         public int? Id { get; init; }
+        public int? Cost { get; protected set; }
         public bool IsCarryable { get; init; }
-        //public int Cost { get; init; }
         public Item(string? name, string? description, int? id, bool isCarryable)
         {
             Name = name;
@@ -186,22 +187,17 @@ namespace TextGame
             IsCarryable = isCarryable;
         }
     }
-    //public enum ItemType
-    //{
-    //    //None,
-    //    Key,
-    //    Coin,
-    //    Chest,
-    //    Map,
-    //}
     #region Key
     public class Key : Item
     {
-        public Key(IItemIdFactory itemIdFactory) : base("КЛЮЧ", "Что-то открывает.", itemIdFactory!.Id(), true) { }
+        public Key(IItemIdFactory itemIdFactory) : base("КЛЮЧ", "Что-то открывает.", itemIdFactory!.Id(), true)
+        {
+            Cost = 5;
+        }
     }
     #endregion
     #region Coin
-    public class Coin : Item
+    public class Coin : Item //rework
     {
         public Coin(IItemIdFactory itemIdFactory) : base("МОНЕТА", "Блестит. Она явно ценная.", itemIdFactory!.Id(), true) { }
     }
@@ -223,6 +219,7 @@ namespace TextGame
 
         public Chest(IItemIdFactory itemIdFactory, IItemFactory itemFactory, int roomId) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
         {
+            Cost = null;
             var random = new Random();
             IsLocked = random.Next(LockedProbabilityDivider) == 0;
             IsMimic = random.Next(MimicProbabilityDivider) == 0;
@@ -250,7 +247,10 @@ namespace TextGame
     #region Map
     public class Map : Item
     {
-        public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true) { }
+        public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true)
+        {
+            Cost = 20;
+        }
     }
     #endregion
     #region Heal
@@ -266,11 +266,21 @@ namespace TextGame
         }
         protected virtual void Initialize(int? maxHealthBoost, int? currentHealthBoost)
         {
+            if (maxHealthBoost == null && currentHealthBoost == null) Cost = 10;
+
             if (maxHealthBoost == null) MaxHealthBoost = null;
-            else MaxHealthBoost = (int)Math.Round((int)maxHealthBoost * Multiplicator);
+            else
+            {
+                MaxHealthBoost = (int)Math.Round((int)maxHealthBoost * Multiplicator);
+                Cost += maxHealthBoost * 2;
+            }
 
             if (currentHealthBoost == null) CurrentHealthBoost = null;
-            else CurrentHealthBoost = (int)Math.Round((int)currentHealthBoost * Multiplicator);
+            else
+            {
+                CurrentHealthBoost = (int)Math.Round((int)currentHealthBoost * Multiplicator);
+                Cost += currentHealthBoost;
+            }
         }
         public virtual void Use(GameSession gameSession)
         {
@@ -294,14 +304,6 @@ namespace TextGame
         public Bandage(IItemIdFactory itemIdFactory, int roomId) : base("ПОВЯЗКА", "Менее грязная тряпка, из тех, что здесь обычно встречаются.", itemIdFactory.Id(), roomId)
         {
             Initialize(0, 2);
-        }
-
-        public override void Use(GameSession gameSession)
-        {
-            if ((gameSession.CurrentHealth + CurrentHealthBoost) >= gameSession.MaxHealth)
-                gameSession.CurrentHealth = gameSession.MaxHealth;
-            else
-                gameSession.CurrentHealth += (int)CurrentHealthBoost!;
         }
     }
     public class RegenPotion : Heal
@@ -390,17 +392,15 @@ namespace TextGame
     }
     #endregion
     #region Swords
-    enum SwordType
-    {
-        Rust,
-        Iron,
-        Silver,
-        Glass,
-    }
+    //enum SwordType
+    //{
+    //    Rust,
+    //    Iron,
+    //    Silver,
+    //    Glass,
+    //}
     public class Sword : Weapon
     {
-        private SwordType SwordType;
-
         private const int RustSwordMax = 70;
         private const int IronSwordMax = 95;
         private const int SilverSwordMax = 99;
@@ -408,28 +408,23 @@ namespace TextGame
         {
             Random random = new Random();
             int swordTypeNumber = random.Next(100);
-            SwordType = swordTypeNumber switch
+            switch (swordTypeNumber)
             {
-                >= 0 and < RustSwordMax => SwordType.Rust,
-                >= RustSwordMax and < IronSwordMax => SwordType.Iron,
-                >= IronSwordMax and < SilverSwordMax => SwordType.Silver,
-                >= SilverSwordMax and < 100 => SwordType.Glass,
-
-                _ => SwordType.Rust,
-            };
-            switch (SwordType)
-            {
-                case SwordType.Rust:
+                case >= 0 and < RustSwordMax:
                     Initialize("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", random.Next(1, 11), random.Next(3, 8));
                     break;
-                case SwordType.Iron:
+                case >= RustSwordMax and < IronSwordMax:
                     Initialize("ЖЕЛЕЗНЫЙ МЕЧ", "Добротное оружие воина.", random.Next(1, 101), random.Next(8, 17));
                     break;
-                case SwordType.Silver:
+                case >= IronSwordMax and < SilverSwordMax:
                     Initialize("СЕРЕБРЯНЫЙ МЕЧ", "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.", random.Next(10, 51), random.Next(25, 31));
                     break;
-                case SwordType.Glass:
+                case >= SilverSwordMax and < 100:
                     Initialize("СТЕКЛЯННЫЙ МЕЧ", "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.", 1, 100);
+                    break;
+
+                default:
+                    Initialize("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", random.Next(1, 11), random.Next(3, 8));
                     break;
             }
         }
@@ -439,10 +434,12 @@ namespace TextGame
             Description = description;
             Durability = durability;
             Damage = (int)Math.Round(damage * Multiplicator);
+            CalculateCost();
         }
         public override int Attack(GameSession gameSession)
         {
             Durability--;
+            CalculateCost();
             if (Durability <= 0) BreakDown(gameSession);
             return (int)Damage!;
         }
@@ -450,18 +447,15 @@ namespace TextGame
         {
             gameSession.RemoveWeapon();
         }
+        private void CalculateCost()
+        {
+            Cost = (Durability * Damage) / 10;
+        }
     }
     #endregion
     #region Wands
-    enum WandType
-    {
-        Magic,
-        Random,
-    }
     public class Wand : Weapon
     {
-        private WandType WandType;
-
         private const int RandomWandMaxDamage = 40;
 
         private const int MagicWandMax = 90;
@@ -469,20 +463,16 @@ namespace TextGame
         {
             Random random = new Random();
             int wandTypeNumber = random.Next(100);
-            WandType = wandTypeNumber switch
+            switch (wandTypeNumber)
             {
-                >= 0 and < MagicWandMax => WandType.Magic,
-                >= MagicWandMax and < 100 => WandType.Random,
-
-                _ => WandType.Magic,
-            };
-            switch (WandType)
-            {
-                case WandType.Magic:
+                case >= 0 and < MagicWandMax:
                     Initialize("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
                     break;
-                case WandType.Random:
+                case >= MagicWandMax and < 100:
                     Initialize("ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие. Становится сильнее со временем.", RandomWandMaxDamage);
+                    break;
+                default:
+                    Initialize("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", random.Next(7, 14));
                     break;
             }
         }
@@ -490,12 +480,12 @@ namespace TextGame
         {
             Name = name;
             Description = description;
-            if (WandType == WandType.Random) Damage = RandomWandMaxDamage;
-            else Damage = (int)Math.Round(damage * Multiplicator);
+            Damage = (int)Math.Round(damage * Multiplicator);
+            Cost = Damage * 3;
         }
         public override int Attack(GameSession gameSession)
         {
-            if (WandType == WandType.Random)
+            if (Name == "ЖЕЗЛ СЛУЧАЙНОСТЕЙ")
             {
                 Random random = new Random();
                 int damage = (int)Math.Round((int)Damage! * Multiplicator);
@@ -511,19 +501,30 @@ namespace TextGame
     {
         public int DamageBlock;
         public Armor(string? name, string? description, int id, int? durability, int? damageBlock, int roomId, bool fromShop) : base(name, description, id, durability, roomId, fromShop) { }
-        public abstract int Block(GameSession gameSession);
+        protected void Initialize(string name, string description, int durability, int damageBlock)
+        {
+            Name = name;
+            Description = description;
+            Durability = durability;
+            DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
+            CalculateCost();
+        }
+        public int Block(GameSession gameSession)
+        {
+            Durability--;
+            CalculateCost();
+            if (Durability <= 0) BreakDown(gameSession);
+            return DamageBlock;
+        }
+        protected abstract void BreakDown(GameSession gameSession);
+        private void CalculateCost()
+        {
+            Cost = (Durability * DamageBlock) / 10;
+        }
     }
     #region Helm
-    enum HelmType
-    {
-        WoodenBucket,
-        Leather,
-        Iron,
-    }
     public class Helm : Armor
     {
-        private HelmType HelmType;
-
         private const int WoodenBucketMax = 70;
         private const int LeatherMax = 80;
 
@@ -531,92 +532,47 @@ namespace TextGame
         {
             Random random = new Random();
             int helmTypeNumber = random.Next(100);
-            HelmType = helmTypeNumber switch
+            switch (helmTypeNumber)
             {
-                >= 0 and < WoodenBucketMax => HelmType.WoodenBucket,
-                >= WoodenBucketMax and < LeatherMax => HelmType.Leather,
-                >= LeatherMax and < 100 => HelmType.Iron,
-
-                _ => HelmType.WoodenBucket,
-            };
-            switch (HelmType)
-            {
-                case HelmType.WoodenBucket:
+                case >= 0 and < WoodenBucketMax:
                     Initialize("ДЕРЕВЯННОЕ ВЕДРО", "Старое дырявое ведро. Кто в своём уме наденет его на голову?", random.Next(2, 6), random.Next(1, 3));
                     break;
-                case HelmType.Leather:
+                case >= WoodenBucketMax and < LeatherMax:
                     Initialize("КОЖАННЫЙ ШЛЕМ", "Изысканный чёрный шлем мастера подземелия.", random.Next(7, 15), random.Next(3, 7));
                     break;
-                case HelmType.Iron:
+                case >= LeatherMax and < 100:
                     Initialize("ЖЕЛЕЗНЫЙ ШЛЕМ", "Крепкий шлем из качественного металла.", random.Next(16, 31), random.Next(8, 12));
+                    break;
+                default:
+                    Initialize("ДЕРЕВЯННОЕ ВЕДРО", "Старое дырявое ведро. Кто в своём уме наденет его на голову?", random.Next(2, 6), random.Next(1, 3));
                     break;
             }
         }
-        private void Initialize(string name, string description, int durability, int damageBlock)
-        {
-            Name = name;
-            Description = description;
-            Durability = durability;
-            DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
-        }
-        public override int Block(GameSession gameSession)
-        {
-            Durability--;
-            if (Durability <= 0) BreakDown(gameSession);
-            return DamageBlock;
-        }
-        public void BreakDown(GameSession gameSession)
+        protected override void BreakDown(GameSession gameSession)
         {
             gameSession.RemoveHelm();
         }
     }
     #endregion
     #region Chestplate
-    enum ChestplateType
-    {
-        Leather,
-        Iron,
-    }
     public class Chestplate : Armor
     {
-        private ChestplateType ChestplateType;
-
         private const int LeatherMax = 80;
         public Chestplate(IItemIdFactory itemIdFactory, int roomId, bool fromShop) : base(null, null, itemIdFactory.Id(), null, null, roomId, fromShop)
         {
             Random random = new Random();
             int chestplateTypeNumber = random.Next(100);
-            ChestplateType = chestplateTypeNumber switch
+            switch (chestplateTypeNumber)
             {
-                >= 0 and < LeatherMax => ChestplateType.Leather,
-                >= LeatherMax and < 100 => ChestplateType.Iron,
-
-                _ => ChestplateType.Leather,
-            };
-            switch (ChestplateType)
-            {
-                case ChestplateType.Leather:
+                case >= 0 and < LeatherMax:
                     Initialize("КОЖАННАЯ КУРТКА", "Лёгкая куртка из плотной кожи.", random.Next(5, 16), random.Next(6, 14));
                     break;
-                case ChestplateType.Iron:
+                case >= LeatherMax and < 100:
                     Initialize("ЖЕЛЕЗНАЯ КИРАСА", "Тяжёлая и прочная.", random.Next(20, 51), random.Next(16, 24));
                     break;
             }
         }
-        private void Initialize(string name, string description, int durability, int damageBlock)
-        {
-            Name = name;
-            Description = description;
-            Durability = durability;
-            DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
-        }
-        public override int Block(GameSession gameSession)
-        {
-            Durability--;
-            if (Durability <= 0) BreakDown(gameSession);
-            return DamageBlock;
-        }
-        public void BreakDown(GameSession gameSession)
+        protected override void BreakDown(GameSession gameSession)
         {
             gameSession.RemoveChestplate();
         }
