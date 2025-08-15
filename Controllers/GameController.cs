@@ -31,12 +31,6 @@ namespace TextGame.Controllers
         {
             return Results.Ok(new SuccessfulResponse(GameControllerRepository.GetMap()));
         }
-        [HttpGet("currentroom")]
-        public IResult GetCurrentRoom()
-        {
-            var room = GameControllerRepository.GetCurrentRoom();
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
-        }
         [HttpGet("coins")]
         public IResult GetCoins()
         {
@@ -60,6 +54,12 @@ namespace TextGame.Controllers
         {
             var item = GameControllerRepository.GetInventoryItem(itemId);
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(item)));
+        }
+        [HttpPost("inventory/{itemId}/sell")]
+        public IResult SellInventoryItem(int itemId)
+        {
+            GameControllerRepository.SellInventoryItem(itemId);
+            return GetInfo();
         }
         [HttpPost("inventory/{itemId}/use")]
         public IResult UseInventoryItem(int itemId)

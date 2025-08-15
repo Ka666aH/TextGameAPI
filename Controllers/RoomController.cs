@@ -4,7 +4,7 @@ namespace TextGame.Controllers
 {
 
     [ApiController]
-    [Route("room")]
+    [Route("rooms")]
     public class RoomController
     {
         private readonly IRoomControllerRepository RoomControllerRepository;
@@ -27,6 +27,12 @@ namespace TextGame.Controllers
             var room = RoomControllerRepository.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
         }
+        [HttpGet("current")]
+        public IResult GetCurrentRoom()
+        {
+            var room = RoomControllerRepository.GetCurrentRoom();
+            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
+        }
         [HttpPost("current/items")]
         public IResult Search()
         {
@@ -44,6 +50,12 @@ namespace TextGame.Controllers
         public IResult TakeAllItems()
         {
             RoomControllerRepository.TakeAllItems();
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
+        }
+        [HttpPost("current/items/{itemId}/buy")]
+        public IResult BuyItem(int itemId)
+        {
+            RoomControllerRepository.BuyItem(itemId);
             return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
         #region CHEST

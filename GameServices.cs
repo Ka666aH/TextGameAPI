@@ -10,7 +10,7 @@
         public Weapon Weapon { get; set; } = Fists.DefaultFists;
         public Helm? Helm { get; set; }
         public Chestplate? Chestplate { get; set; }
-        public static readonly int DefaultMaxHealth = 10;
+        public const int DefaultMaxHealth = 10;
         public int MaxHealth { get; set; } = DefaultMaxHealth;
         public int CurrentHealth { get; set; } = DefaultMaxHealth;
         public int Coins { get; set; }
@@ -216,6 +216,18 @@
             if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
             return equipmentList;
         }
+        public void SellInventoryItem(int itemId)
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (Session.IsInBattle) throw new InBattleException();
+
+            if (Session.CurrentRoom is not Shop) throw new NotShopException();
+            Item item = GetInventoryItem(itemId);
+            if (item.Cost == null) throw new UnsellableItemException();
+            
+            Session.Inventory.Remove(item);
+            Session.Coins += (int)item.Cost;
+        }
     }
     public class ChestRepository : IChestRepository
     {
@@ -243,14 +255,14 @@
             EnemyFactory = enemyFactory;
             CombatRepository = combatRepository;
         }
-        public ChestDTO ReturnChestDTO(Chest chest)
+        public ChestStateDTO ReturnChestDTO(Chest chest)
         {
-            return new ChestDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
+            return new ChestStateDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
         }
-        public ChestDTO ReturnChestDTO(int chestId)
+        public ChestStateDTO ReturnChestDTO(int chestId)
         {
             Chest chest = GetChestById(chestId);
-            return new ChestDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
+            return new ChestStateDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
         }
         public Chest GetChestById(int chestId)
         {
@@ -327,7 +339,7 @@
             if (chest.IsLocked) throw new LockedException();
             if (chest.IsClosed) throw new ClosedException();
             Item item = GetItemByIdRepository.GetItemById(itemId, chest.Items);
-            if (item is Coin) Session.Coins++;
+            if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
             else if (item is Key) Session.Keys++;
             else Session.Inventory.Add(item);
             chest.Items.Remove(item);
@@ -344,7 +356,7 @@
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
             {
-                if (item is Coin) Session.Coins++;
+                if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
                 else if (item is Key) Session.Keys++;
                 else Session.Inventory.Add(item);
             }
@@ -388,7 +400,7 @@
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
             //RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
-            RoomDTO roomDTO = (RoomDTO)GameObjectMapper.ToDTO(Session.CurrentRoom!);
+            var roomDTO = GameObjectMapper.ToDTO(Session.CurrentRoom!);
             WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(Session.Weapon);
             ArmorDTO? helmDTO = Session.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Helm) : null;
             ArmorDTO? chestplateDTO = Session.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Chestplate) : null;
@@ -544,6 +556,8 @@
         public List<Equipment> UnequipHelm() => InventoryRepository.UnequipHelm();
         public List<Equipment> UnequipChestplate() => InventoryRepository.UnequipChestplate();
         public GameInfoDTO GetGameInfo() => GameInfoRepository.GetGameInfo();
+
+        public void SellInventoryItem(int itemId) => InventoryRepository.SellInventoryItem(itemId);
     }
 
     public class RoomControllerRepository : IRoomControllerRepository
@@ -594,18 +608,21 @@
 
             //Room room = GetRoomById(roomId);
             Room room = Session.CurrentRoom!;
+            room.IsSearched = true;
             return room!.Items;
         }
         public void TakeItem(int itemId)
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             if (Session.IsInBattle) throw new InBattleException();
+            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (Session.CurrentRoom is Shop) throw new ImpossibleStealException();
 
             //Room room = GetRoomById(roomId);
             //Room room = Session.CurrentRoom!;
             Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom!.Items);
             if (!item.IsCarryable) throw new UncarryableException();
-            if (item is Coin) Session.Coins++;
+            if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
             else if (item is Key) Session.Keys++;
             else Session.Inventory.Add(item);
             Session.CurrentRoom!.Items.Remove(item);
@@ -614,6 +631,8 @@
         {
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             if (Session.IsInBattle) throw new InBattleException();
+            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (Session.CurrentRoom is Shop) throw new ImpossibleStealException();
 
             //Room room = GetRoomById(roomId);
             List<Item> carryableItems = Session.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
@@ -621,11 +640,25 @@
             foreach (Item item in carryableItems)
             {
                 if (!item.IsCarryable) continue;
-                if (item is Coin) Session.Coins++;
+                if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
                 else if (item is Key) Session.Keys++;
                 else Session.Inventory.Add(item);
             }
             Session.CurrentRoom!.Items.RemoveAll(x => x.IsCarryable);
+        }
+        public void BuyItem(int itemId)
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (Session.IsInBattle) throw new InBattleException();
+            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+
+            if (Session.CurrentRoom is not Shop) throw new NotShopException();
+            Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom.Items);
+            if (item.Cost > Session.Coins) throw new NoMoneyException();
+
+            Session.Coins -= (int)item.Cost!;
+            Session.CurrentRoom.Items.Remove(item);
+            Session.Inventory.Add(item);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
         public Enemy GetEnemyById() => GetEnemyByIdRepository.GetEnemyById();
@@ -633,8 +666,8 @@
         public BattleLog DealDamage() => CombatRepository.DealDamage();
         public BattleLog GetDamage() => CombatRepository.GetDamage();
 
-        public ChestDTO ReturnChestDTO(Chest chest) => ChestRepository.ReturnChestDTO(chest);
-        public ChestDTO ReturnChestDTO(int chestId) => ChestRepository.ReturnChestDTO(chestId);
+        public ChestStateDTO ReturnChestDTO(Chest chest) => ChestRepository.ReturnChestDTO(chest);
+        public ChestStateDTO ReturnChestDTO(int chestId) => ChestRepository.ReturnChestDTO(chestId);
         public BattleLog HitChest(int chestId) => ChestRepository.HitChest(chestId);
         public void OpenChest(int chestId) => ChestRepository.OpenChest(chestId);
         public void UnlockChest(int chestId) => ChestRepository.UnlockChest(chestId);

@@ -62,10 +62,19 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                     case NullRoomIdException or NullItemIdException or EmptyException:
                         result = Results.NotFound(new ErrorResponse(gameEx));
                         break;
-                    case InvalidIdException or UncarryableException:
+                    case InvalidIdException or UncarryableException or UnsellableItemException:
                         result = Results.UnprocessableEntity(new ErrorResponse(gameEx));
                         break;
-                    case LockedException or NoKeyException or NoMapException or ClosedException or UndiscoveredRoomException or InBattleException:
+                    case 
+                    LockedException or 
+                    NoKeyException or 
+                    NoMapException or 
+                    ClosedException or 
+                    UndiscoveredRoomException or 
+                    InBattleException or 
+                    UnsearchedRoomException or 
+                    NotShopException or 
+                    NoMoneyException:
                         result = Results.Json(new ErrorResponse(gameEx), statusCode: 403);
                         break;
                     case DefeatException or WinException:
@@ -79,8 +88,9 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                             new BattleWinDTO(battleWinEx.Message, battleWinEx.BattleLog)
                             ));
                         break;
-                    default: //UnstartedGameException
-                        result = Results.BadRequest(new ErrorResponse(gameEx));
+                    default: //UnstartedGameException ImpossibleStealException
+                        //result = Results.BadRequest(new ErrorResponse(gameEx));
+                        result = Results.Json(new ErrorResponse(gameEx), statusCode: 401);
                         break;
                 }
                 break;

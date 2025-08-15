@@ -6,8 +6,8 @@
     }
     public interface IChestRepository
     {
-        ChestDTO ReturnChestDTO(Chest chest);
-        ChestDTO ReturnChestDTO(int chestId);
+        ChestStateDTO ReturnChestDTO(Chest chest);
+        ChestStateDTO ReturnChestDTO(int chestId);
         BattleLog HitChest(int chestId);
         void OpenChest(int chestId);
         void UnlockChest(int chestId);
@@ -23,6 +23,7 @@
         List<Equipment> UnequipWeapon();
         List<Equipment> UnequipHelm();
         List<Equipment> UnequipChestplate();
+        void SellInventoryItem(int itemId);
         //List<Item> GetInventoryItems(List<int> itemIds);
     }
     public interface IGameInfoRepository
@@ -64,5 +65,6 @@
         List<Item> Search();
         void TakeItem(int itemId);
         void TakeAllItems();
+        void BuyItem(int itemId);
     }
 }
