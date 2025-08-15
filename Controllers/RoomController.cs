@@ -52,6 +52,12 @@ namespace TextGame.Controllers
             RoomControllerRepository.TakeAllItems();
             return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
         }
+        [HttpPost("current/items/{itemId}/buy")]
+        public IResult BuyItem(int itemId)
+        {
+            RoomControllerRepository.BuyItem(itemId);
+            return Results.Ok(new SuccessfulResponse(RoomControllerRepository.GetGameInfo()));
+        }
         #region CHEST
         [HttpPost("current/items/{chestId}/chest/hit")]
         public IResult HitChest(int chestId)

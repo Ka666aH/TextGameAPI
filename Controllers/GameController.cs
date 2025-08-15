@@ -55,6 +55,12 @@ namespace TextGame.Controllers
             var item = GameControllerRepository.GetInventoryItem(itemId);
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(item)));
         }
+        [HttpPost("inventory/{itemId}/sell")]
+        public IResult SellInventoryItem(int itemId)
+        {
+            GameControllerRepository.SellInventoryItem(itemId);
+            return GetInfo();
+        }
         [HttpPost("inventory/{itemId}/use")]
         public IResult UseInventoryItem(int itemId)
         {

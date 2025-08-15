@@ -400,7 +400,7 @@
         {
             if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
             //RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
-            RoomDTO roomDTO = (RoomDTO)GameObjectMapper.ToDTO(Session.CurrentRoom!);
+            var roomDTO = GameObjectMapper.ToDTO(Session.CurrentRoom!);
             WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(Session.Weapon);
             ArmorDTO? helmDTO = Session.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Helm) : null;
             ArmorDTO? chestplateDTO = Session.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Chestplate) : null;
@@ -657,6 +657,7 @@
             if (item.Cost > Session.Coins) throw new NoMoneyException();
 
             Session.Coins -= (int)item.Cost!;
+            Session.CurrentRoom.Items.Remove(item);
             Session.Inventory.Add(item);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
