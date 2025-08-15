@@ -216,6 +216,18 @@
             if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
             return equipmentList;
         }
+        public void SellInventoryItem(int itemId)
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (Session.IsInBattle) throw new InBattleException();
+
+            if (Session.CurrentRoom is not Shop) throw new NotShopException();
+            Item item = GetInventoryItem(itemId);
+            if (item.Cost == null) throw new UnsellableItemException();
+            
+            Session.Inventory.Remove(item);
+            Session.Coins += (int)item.Cost;
+        }
     }
     public class ChestRepository : IChestRepository
     {
@@ -544,6 +556,8 @@
         public List<Equipment> UnequipHelm() => InventoryRepository.UnequipHelm();
         public List<Equipment> UnequipChestplate() => InventoryRepository.UnequipChestplate();
         public GameInfoDTO GetGameInfo() => GameInfoRepository.GetGameInfo();
+
+        public void SellInventoryItem(int itemId) => InventoryRepository.SellInventoryItem(itemId);
     }
 
     public class RoomControllerRepository : IRoomControllerRepository
@@ -602,6 +616,7 @@
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             if (Session.IsInBattle) throw new InBattleException();
             if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (Session.CurrentRoom is Shop) throw new ImpossibleStealException();
 
             //Room room = GetRoomById(roomId);
             //Room room = Session.CurrentRoom!;
@@ -617,6 +632,7 @@
             if (!Session.IsGameStarted) throw new UnstartedGameException();
             if (Session.IsInBattle) throw new InBattleException();
             if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (Session.CurrentRoom is Shop) throw new ImpossibleStealException();
 
             //Room room = GetRoomById(roomId);
             List<Item> carryableItems = Session.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
@@ -629,6 +645,19 @@
                 else Session.Inventory.Add(item);
             }
             Session.CurrentRoom!.Items.RemoveAll(x => x.IsCarryable);
+        }
+        public void BuyItem(int itemId)
+        {
+            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (Session.IsInBattle) throw new InBattleException();
+            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+
+            if (Session.CurrentRoom is not Shop) throw new NotShopException();
+            Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom.Items);
+            if (item.Cost > Session.Coins) throw new NoMoneyException();
+
+            Session.Coins -= (int)item.Cost!;
+            Session.Inventory.Add(item);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
         public Enemy GetEnemyById() => GetEnemyByIdRepository.GetEnemyById();

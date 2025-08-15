@@ -23,6 +23,7 @@
         List<Equipment> UnequipWeapon();
         List<Equipment> UnequipHelm();
         List<Equipment> UnequipChestplate();
+        void SellInventoryItem(int itemId);
         //List<Item> GetInventoryItems(List<int> itemIds);
     }
     public interface IGameInfoRepository
@@ -64,5 +65,6 @@
         List<Item> Search();
         void TakeItem(int itemId);
         void TakeAllItems();
+        void BuyItem(int itemId);
     }
 }

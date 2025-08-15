@@ -49,6 +49,10 @@
     {
         public UncarryableException() : base("UNCARRYABLE_ERROR", "Невозможно поднять этот предмет!") { }
     }
+    public class UnsellableItemException : GameException
+    {
+        public UnsellableItemException() : base("UNSELLABLE_ERROR", "Невозможно продать этот предмет!") { }
+    }
     public class LockedException : GameException
     {
         public LockedException() : base("LOCKED", "Сундук заперт!") { }
@@ -64,6 +68,18 @@
     public class ClosedException : GameException
     {
         public ClosedException() : base("CLOSED", "Сундук закрыт!") { }
+    }
+    public class NotShopException : GameException
+    {
+        public NotShopException() : base("NOT_IN_SHOP", "Невозможно вне магазина!") { }
+    }
+    public class NoMoneyException : GameException
+    {
+        public NoMoneyException() : base("NO_MONEY", "Недостаточно средств!") { }
+    }
+    public class ImpossibleStealException : GameException
+    {
+        public ImpossibleStealException() : base("CAN_NOT_STEAL", "Невозможно украсть. За Вами следят.") { }
     }
     public class InBattleException : GameException
     {
