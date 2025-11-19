@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Linq.Expressions;
+using TextGame;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace TextGame
@@ -98,18 +99,21 @@ namespace TextGame
     }
     public interface IRoomNumberFactory
     {
+        int Number { get; }
         int GetRoomNumber();
         void Reset();
     }
     public class RoomNumberFactory : IRoomNumberFactory
     {
-        private int Number = 0;
+        private int number = 0;
+
+        public int Number => Volatile.Read(ref number);
         public int GetRoomNumber()
         {
-            Interlocked.Increment(ref Number);
-            return Number;
+            Interlocked.Increment(ref number);
+            return number;
         }
-        public void Reset() => Number = 0;
+        public void Reset() => number = 0;
     }
 
     public interface IRoomFactory
@@ -124,10 +128,10 @@ namespace TextGame
         private readonly IEnemyFactory EnemyFactory;
         private readonly Random random = Random.Shared;
 
-        private const int EmptyRoomMax = 25;
-        private const int SmallRoomMax = 70;
-        private const int BigRoomMax = 95;
-        //private const int ShopMax = 100;
+        private const int EmptyRoomMax = 3000;
+        private const int SmallRoomMax = 7000;
+        private const int BigRoomMax = 9000;
+        private const int ShopMax = 10000;
 
         public RoomFactory(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory, IEnemyFactory enemyFactory)
         {
@@ -138,17 +142,14 @@ namespace TextGame
 
         public Room CreateRoom()
         {
-
-
-            var roomTypeNumber = random.Next(100);
+            var roomTypeNumber = random.Next(ShopMax + RoomNumberFactory.Number);
             return roomTypeNumber switch
             {
-                0 => new EndRoom(RoomNumberFactory),
+                >= 0 and < EmptyRoomMax => new EmptyRoom(RoomNumberFactory, EnemyFactory),
                 >= EmptyRoomMax and < SmallRoomMax => new SmallRoom(RoomNumberFactory, ItemFactory, EnemyFactory),
                 >= SmallRoomMax and < BigRoomMax => new BigRoom(RoomNumberFactory, ItemFactory, EnemyFactory),
-                >= BigRoomMax and < 100 => new Shop(RoomNumberFactory, ItemFactory),
-
-                _ => new EmptyRoom(RoomNumberFactory, EnemyFactory),
+                >= BigRoomMax and < ShopMax => new Shop(RoomNumberFactory, ItemFactory),
+                _ => new EndRoom(RoomNumberFactory),
             };
         }
     }
@@ -591,14 +592,14 @@ namespace TextGame
         private const int RoomKeyMax = 36; // 13/100
         private const int RoomCoinMax = 49; // 13/100
         private const int RoomChestMax = 62; // 13/100
-        //8/100
+                                             //8/100
         private const int RoomBondageMax = 70;
         //13/100
         private const int RoomSwordMax = 80; // 10/100
         private const int RoomWandMax = 85; // 5/100
-        //13/100
+                                            //13/100
         private const int RoomHelmMax = 95; // 10/100
-        //private const int RoomChestplateMax = 100; // 5/100
+                                            //private const int RoomChestplateMax = 100; // 5/100
         #endregion
         public Item? CreateRoomItem(int roomId)
         {
@@ -627,16 +628,16 @@ namespace TextGame
         private const int ChestKeyMax = 20; // 10/100
         private const int ChestCoinMax = 45; // 25/100
         private const int ChestMapMax = 50; // 5/100
-        // 15/100
+                                            // 15/100
         private const int ChestRegenPotionMax = 58; // 8/100
         private const int ChestPowerPotionMax = 63; // 5/100
         private const int ChestRandomPotionMax = 65; // 2/100
-        // 20/100
+                                                     // 20/100
         private const int ChestSwordMax = 72; // 7/100
         private const int ChestWandMax = 85; // 13/100
-        // 15/100
+                                             // 15/100
         private const int ChestHelmMax = 93; // 8/100
-        //private const int ChestChestplateMax = 100; // 7/100
+                                             //private const int ChestChestplateMax = 100; // 7/100
         #endregion
         public Item? CreateChestItem(int roomId)
         {
@@ -668,12 +669,12 @@ namespace TextGame
         //32/100
         private const int ShopRegenPotionMax = 26;//22/100
         private const int ShopPowerPotionMax = 36;//10/100
-        //32/100
+                                                  //32/100
         private const int ShopSwordMax = 56;// 20/100
         private const int ShopWandMax = 68;// 12/100
-        //32/100
+                                           //32/100
         private const int ShopHelmMax = 84;// 16/100
-        //private const int ShopChestplateMax = 100;// 16/100
+                                           //private const int ShopChestplateMax = 100;// 16/100
         #endregion
         public Item? CreateShopItem(int roomId)
         {
@@ -843,7 +844,7 @@ namespace TextGame
         private const int SkeletorArcherMax = 89; // 12/100
         private const int DeadmanMax = 95; // 7/100
         private const int GhostMax = 99; // 4/100
-        //private const int LichMax = 100; // 1/100
+                                         //private const int LichMax = 100; // 1/100
         public EnemyFactory(IEnemyIdFactory enemyIdFactory)
         {
             EnemyIdFactory = enemyIdFactory;
