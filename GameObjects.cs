@@ -6,6 +6,11 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace TextGame
 {
+    public class GameConst
+    {
+        public const double Spread = 0.2;
+        public const double Gain = 0.01;
+    }
     public class GameObject
     {
         public string? Name { get; set; }
@@ -14,33 +19,78 @@ namespace TextGame
     #region Room
     public class Room : GameObject
     {
-        private readonly IEnemyFactory? EnemyFactory;
+        private readonly IEnemyFactory? _enemyFactory;
         public int Number { get; init; }
         public List<Item> Items { get; set; } = new List<Item>();
         public List<Enemy> Enemies { get; set; } = new List<Enemy>();
         public bool IsDiscovered { get; set; } = false;
         public bool IsSearched { get; set; } = false;
 
-        public Room(string name, string description, int number)
-        {
-            Name = name;
-            Description = description;
-            Number = number;
-            EnemyFactory = null;
-        }
-        public Room(string name, string description, int number, IEnemyFactory enemyFactory)
-        {
-            Name = name;
-            Description = description;
-            Number = number;
-            EnemyFactory = enemyFactory;
-        }
-        public void CreateEnemy()
-        {
-            if (EnemyFactory == null) return;
+        private Random _random = Random.Shared;
 
-            Enemy? enemy = EnemyFactory.CreateEnemy(Number);
-            if (enemy != null) Enemies.Add(enemy);
+        public Room(string name, string description, int number, IEnemyFactory? enemyFactory = null)
+        {
+            Name = name;
+            Description = description;
+            Number = number;
+            _enemyFactory = enemyFactory;
+        }
+        public void CreateEnemy(int roomId)
+        {
+            if (_enemyFactory == null) return;
+            //Логика создания врагов
+
+            //Расчёт весов (вероятности) появления врагов
+            int noneWeight = roomId < 100 ? (int)(-0.4 * roomId + 60) : 20;
+            int skeletorWeight = roomId < 50 ? (int)-0.48 * roomId + 24 : 0;
+            int skeletorArcherWeight = roomId switch
+            {
+                < 10 => (int)(0.3 * roomId + 12),
+                >= 10 and < 65 => (int)(-0.27778 * (roomId - 10) + 15),
+                _ => 0
+            };
+            int deadmanWeight = roomId switch
+            {
+                <= 100 => (int)(0.2 * roomId + 4),
+                > 100 and <= 200 => (int)(-0.08 * (roomId - 100) + 24),
+                _ => 20
+            };
+            int ghostWeight = roomId switch
+            {
+                <= 100 => (int)(0.32 * roomId),
+                > 100 and <= 200 => (int)(-0.08 * (roomId - 100) + 32),
+                _ => 30
+            };
+            int lichWeight = roomId switch
+            {
+                <= 10 => 0,
+                > 10 and <= 200 => (int)(0.21053 * (roomId - 10)),
+                _ => 50
+            };
+            //Формирование списка взвешенного выбора
+            var options = new List<(int Weight, Action Create)>
+            {
+                (noneWeight,            ()=>{}),
+                (skeletorWeight,        () => Enemies.Add(_enemyFactory.CreateSkeletor(roomId))),
+                (skeletorArcherWeight,  () => Enemies.Add(_enemyFactory.CreateSkeletorArcher(roomId))),
+                (deadmanWeight,         () => Enemies.Add(_enemyFactory.CreateDeadman(roomId))),
+                (ghostWeight,           () => Enemies.Add(_enemyFactory.CreateGhost(roomId))),
+                (lichWeight,            () => Enemies.Add(_enemyFactory.CreateLich(roomId))),
+            };
+            //Выбор
+            int weightsSum = options.Sum(x => x.Weight);
+            int roll = _random.Next(weightsSum);
+            int accumulated = 0;
+
+            foreach (var option in options)
+            {
+                if (roll < accumulated + option.Weight)
+                {
+                    option.Create();
+                    break;
+                }
+                accumulated += option.Weight;
+            }
         }
     }
     public class StartRoom : Room
@@ -58,7 +108,7 @@ namespace TextGame
     {
         public EmptyRoom(IRoomNumberFactory roomNumberFactory, IEnemyFactory enemyFactory) : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", roomNumberFactory.GetRoomNumber(), enemyFactory)
         {
-            CreateEnemy();
+            CreateEnemy(Number);
         }
     }
     public class SmallRoom : Room
@@ -67,7 +117,7 @@ namespace TextGame
         {
             Item? item = itemFactory.CreateRoomItem(Number);
             if (item != null) Items.Add(item);
-            CreateEnemy();
+            CreateEnemy(Number);
         }
     }
     public class BigRoom : Room
@@ -80,7 +130,7 @@ namespace TextGame
                 Item? item = itemFactory.CreateRoomItem(Number);
                 if (item != null) Items.Add(item);
             }
-            CreateEnemy();
+            CreateEnemy(Number);
         }
     }
     public class Shop : Room
@@ -720,21 +770,26 @@ namespace TextGame
         public int Damage { get; protected set; } = 0;
         public int DamageBlock { get; protected set; } = 0;
 
-        private double Multiplicator;
-        private const double MultiplicatorDivider = 50;
+        protected Random _random = Random.Shared;
 
-        public Enemy(string name, string description, int roomId, IEnemyIdFactory enemyIdFactory)
+        public Enemy(string name, string description, int roomId, IEnemyIdFactory enemyIdFactory, int health, int damage, int damageBlock)
         {
             Name = name;
             Description = description;
             Id = enemyIdFactory!.Id();
-            Multiplicator = 1 + (roomId / MultiplicatorDivider);
+            Initialize((int)(health * roomId * GameConst.Gain), (int)(damage * roomId * GameConst.Gain), (int)(damageBlock * roomId * GameConst.Gain));
         }
         public virtual void Initialize(int health, int damage, int damageBlock)
         {
-            Health = (int)Math.Round(health * Multiplicator);
-            Damage = (int)Math.Round(damage * Multiplicator);
-            DamageBlock = (int)Math.Round(damageBlock * Multiplicator);
+            Health = _random.Next(
+                (int)(health * (1 - GameConst.Spread)),
+                (int)(health * (1 + GameConst.Spread) + 1));
+            Damage = _random.Next(
+                (int)(damage * (1 - GameConst.Spread)),
+                (int)(damage * (1 + GameConst.Spread) + 1));
+            DamageBlock = _random.Next(
+                (int)(damageBlock * (1 - GameConst.Spread)),
+                (int)(damageBlock * (1 + GameConst.Spread) + 1));
         }
         public virtual int Attack()
         {
@@ -748,44 +803,35 @@ namespace TextGame
     }
     public class Skeletor : Enemy
     {
-        public Skeletor(int roomId, IEnemyIdFactory enemyIdFactory) : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId, enemyIdFactory)
-        {
-            var random = Random.Shared;
-            int health = random.Next(2, 5);
-            int damage = random.Next(1, 3);
-            Initialize(health, damage, 0);
-        }
+        private const int _baseHealth = 20;
+        private const int _baseDamage = 10;
+        private const int _baseDamageBlock = 2;
+        public Skeletor(int roomId, IEnemyIdFactory enemyIdFactory)
+            : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
     }
     public class SkeletorArcher : Enemy
     {
-        public SkeletorArcher(int roomId, IEnemyIdFactory enemyIdFactory) : base("СКЕЛЕТОР-ЛУЧНИК", "Из тех, кто при жизни умел обращаться с луком.", roomId, enemyIdFactory)
-        {
-            var random = Random.Shared;
-            int health = random.Next(1, 3);
-            int damage = random.Next(3, 5);
-            Initialize(health, damage, 0);
-        }
+        private const int _baseHealth = 10;
+        private const int _baseDamage = 20;
+        private const int _baseDamageBlock = 1;
+        public SkeletorArcher(int roomId, IEnemyIdFactory enemyIdFactory)
+            : base("СКЕЛЕТОР-ЛУЧНИК", "Из тех, кто при жизни умел обращаться с луком.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
     }
     public class Deadman : Enemy
     {
-        public Deadman(int roomId, IEnemyIdFactory enemyIdFactory) : base("МЕРТВЯК", "Мёртвое полуразложившееся тело. Источник жуткого смрада.", roomId, enemyIdFactory)
-        {
-            var random = Random.Shared;
-            int health = random.Next(4, 7);
-            int damage = random.Next(1, 3);
-            int damageBlock = random.Next(1, 3);
-            Initialize(health, damage, damageBlock);
-        }
+        private const int _baseHealth = 50;
+        private const int _baseDamage = 5;
+        private const int _baseDamageBlock = 3;
+        public Deadman(int roomId, IEnemyIdFactory enemyIdFactory)
+            : base("МЕРТВЯК", "Мёртвое полуразложившееся тело. Источник жуткого смрада.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
     }
     public class Ghost : Enemy
     {
-        public Ghost(int roomId, IEnemyIdFactory enemyIdFactory) : base("ПРИЗРАК", "Злой полуматериальный дух. Попробуй попади.", roomId, enemyIdFactory)
-        {
-            var random = Random.Shared;
-            int health = random.Next(3, 5);
-            int damage = random.Next(2, 5);
-            Initialize(health, damage, 0);
-        }
+        private const int _baseHealth = 15;
+        private const int _baseDamage = 15;
+        private const int _baseDamageBlock = 0;
+        public Ghost(int roomId, IEnemyIdFactory enemyIdFactory)
+            : base("ПРИЗРАК", "Злой полуматериальный дух. Попробуй попади.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
         public override int GetDamage(int damage, Room? room = null)
         {
             if (Random.Shared.Next(2) == 0) Health -= damage;
@@ -794,34 +840,31 @@ namespace TextGame
     }
     public class Lich : Enemy
     {
-        public Lich(int roomId, IEnemyIdFactory enemyIdFactory) : base("ЛИЧ", "Тебя ждёт вечный параЛИЧ. Ха-ха.", roomId, enemyIdFactory)
-        {
-            var random = Random.Shared;
-            int health = random.Next(5, 13);
-            int damage = random.Next(4, 8);
-            int damageBlock = random.Next(4, 7);
-            Initialize(health, damage, damageBlock);
-        }
+        private const int _baseHealth = 40;
+        private const int _baseDamage = 30;
+        private const int _baseDamageBlock = 8;
+        public Lich(int roomId, IEnemyIdFactory enemyIdFactory)
+            : base("ЛИЧ", "Тебя ждёт вечный параЛИЧ. Ха-ха.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
     }
     public class Mimic : Enemy
     {
-        private Chest Chest;
-        public Mimic(int roomId, Chest chest, IEnemyIdFactory enemyIdFactory) : base("МИМИК", "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.", roomId, enemyIdFactory)
+        private const int _baseHealth = 15;
+        private const int _baseDamage = 10;
+        private const int _baseDamageBlock = 5;
+
+        private Chest _chest;
+        public Mimic(int roomId, Chest chest, IEnemyIdFactory enemyIdFactory)
+            : base("МИМИК", "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock)
         {
-            Chest = chest;
-            var random = Random.Shared;
-            int health = random.Next(3, 6);
-            int damage = random.Next(3, 5);
-            int damageBlock = random.Next(2, 4);
-            Initialize(health, damage, damageBlock);
+            _chest = chest;
         }
         public override int GetDamage(int damage, Room? room = null)
         {
             if (damage > DamageBlock) Health -= damage - DamageBlock;
             if (Health <= 0)
             {
-                Chest.KillMimic();
-                room!.Items.Add(Chest);
+                _chest.KillMimic();
+                room!.Items.Add(_chest);
             }
             return Health;
         }
@@ -829,45 +872,44 @@ namespace TextGame
 
     public interface IEnemyFactory
     {
-        Enemy? CreateEnemy(int roomId);
+        Skeletor CreateSkeletor(int roomId);
+        SkeletorArcher CreateSkeletorArcher(int roomId);
+        Deadman CreateDeadman(int roomId);
+        Ghost CreateGhost(int roomId);
+        Lich CreateLich(int roomId);
         Mimic CreateMimic(int roomId, Chest chest);
     }
     public class EnemyFactory : IEnemyFactory
     {
-        private readonly IEnemyIdFactory EnemyIdFactory;
-        private Random Random = Random.Shared;
-
-        private double MultiplicatorDivider = 100;
-
-        private const int NoneMax = 60; // 60/100
-        private const int SkeletorMax = 77; // 17/100
-        private const int SkeletorArcherMax = 89; // 12/100
-        private const int DeadmanMax = 95; // 7/100
-        private const int GhostMax = 99; // 4/100
-                                         //private const int LichMax = 100; // 1/100
+        private readonly IEnemyIdFactory _enemyIdFactory;
+        private Random _random = Random.Shared;
         public EnemyFactory(IEnemyIdFactory enemyIdFactory)
         {
-            EnemyIdFactory = enemyIdFactory;
+            _enemyIdFactory = enemyIdFactory;
         }
-        public Enemy? CreateEnemy(int roomId)
+        public Skeletor CreateSkeletor(int roomId)
         {
-            double multiplicator = 1 + (roomId / MultiplicatorDivider);
-            int number = (int)Math.Round(Random.Next(100) * multiplicator);
-            return number switch
-            {
-                >= 0 and < NoneMax => null,
-                >= NoneMax and < SkeletorMax => new Skeletor(roomId, EnemyIdFactory),
-                >= SkeletorMax and < SkeletorArcherMax => new SkeletorArcher(roomId, EnemyIdFactory),
-                >= SkeletorArcherMax and < DeadmanMax => new Deadman(roomId, EnemyIdFactory),
-                >= DeadmanMax and < GhostMax => new Ghost(roomId, EnemyIdFactory),
-                >= GhostMax and < 100 => new Lich(roomId, EnemyIdFactory),
-
-                _ => null,
-            };
+            return new Skeletor(roomId, _enemyIdFactory);
+        }
+        public SkeletorArcher CreateSkeletorArcher(int roomId)
+        {
+            return new SkeletorArcher(roomId, _enemyIdFactory);
+        }
+        public Deadman CreateDeadman(int roomId)
+        {
+            return new Deadman(roomId, _enemyIdFactory);
+        }
+        public Ghost CreateGhost(int roomId)
+        {
+            return new Ghost(roomId, _enemyIdFactory);
+        }
+        public Lich CreateLich(int roomId)
+        {
+            return new Lich(roomId, _enemyIdFactory);
         }
         public Mimic CreateMimic(int roomId, Chest chest)
         {
-            return new Mimic(roomId, chest, EnemyIdFactory);
+            return new Mimic(roomId, chest, _enemyIdFactory);
         }
     }
     #endregion 
