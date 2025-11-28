@@ -240,8 +240,7 @@ namespace TextGame
         private int _baseCost = 35;
         public Key(IItemIdFactory itemIdFactory, int roomId) : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemIdFactory!.Id(), true)
         {
-            var (min, max) = GameBalance.ApplySpread(_baseCost, roomId);
-            Cost = _random.Next(min, max + 1);
+            Cost = (int)(_baseCost * GameBalance.ApplyGain(roomId));
         }
     }
     public class BagOfCoins : Item
@@ -302,8 +301,8 @@ namespace TextGame
     #region Heal
     public abstract class Heal : Item
     {
-        public int? MaxHealthBoost { get; protected set; } = 0;
-        public int? CurrentHealthBoost { get; protected set; } = 0;
+        public int? MaxHealthBoost = 0;
+        public int? CurrentHealthBoost = 0;
 
         protected int _roomId;
         protected bool _fromShop;
@@ -321,7 +320,7 @@ namespace TextGame
             if (maxHealthBoost is null) MaxHealthBoost = null;
             else
             {
-                var (min, max) = GameBalance.ApplySpread((int)MaxHealthBoost!, _roomId);
+                var (min, max) = GameBalance.ApplySpread((int)maxHealthBoost!, _roomId);
                 MaxHealthBoost = _random.Next(min, max + 1);
                 if (_fromShop) GameBalance.ApplyShopMultiplier((int)MaxHealthBoost!);
                 Cost += MaxHealthBoost * 2;
@@ -330,7 +329,7 @@ namespace TextGame
             if (currentHealthBoost is null) CurrentHealthBoost = null;
             else
             {
-                var (min, max) = GameBalance.ApplySpread((int)CurrentHealthBoost!, _roomId);
+                var (min, max) = GameBalance.ApplySpread((int)currentHealthBoost!, _roomId);
                 CurrentHealthBoost = _random.Next(min, max + 1);
                 if (_fromShop) GameBalance.ApplyShopMultiplier((int)CurrentHealthBoost!);
                 Cost += CurrentHealthBoost;
