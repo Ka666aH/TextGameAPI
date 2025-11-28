@@ -56,7 +56,8 @@
             int damage = Session.Weapon.Attack(Session);
             int enemyHealthBeforeAttack = enemy.Health;
             int enemyHealthAfterAttack = enemy.GetDamage(damage, Session.CurrentRoom!);
-            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
+            int playerHealthAfterAttack = playerHealthBeforeAttack - Session.CurrentHealth;
+            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, Session.CurrentHealth);
             if (enemyHealthAfterAttack <= 0)
             {
                 Session.CurrentRoom!.Enemies.Remove(enemy);
@@ -86,8 +87,8 @@
             int playerHealthBeforeAttack = Session.CurrentHealth;
             if (damageAfterBlock > 0) Session.CurrentHealth -= damageAfterBlock;
             if (Session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", GameInfoRepository.GetGameInfo());
-
-            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, Session.CurrentHealth, enemy.Name!, enemyHealthBeforeAttack, enemy.Health);
+            int enemyHealthAfterAttack = enemyHealthBeforeAttack - enemy.Health;
+            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, Session.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
         }
     }
     public class GetEnemyByIdRepository : IGetEnemyByIdRepository
@@ -299,7 +300,8 @@
             {
                 int playerHealthBeforeAttack = Session.CurrentHealth;
                 int damage = Session.Weapon.Attack(Session);
-                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
+                int playerHealthAfterAttack = playerHealthBeforeAttack - Session.CurrentHealth;
+                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, Session.CurrentHealth);
             }
             return battleLog;
         }
