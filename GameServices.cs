@@ -18,6 +18,7 @@
         public List<Item> Inventory { get; set; } = new List<Item>();
         public bool IsGameStarted { get; set; }
         public bool IsInBattle { get; set; } = false;
+        public Chest? CurrentMimicChest { get; set; } = null;
         public void RemoveWeapon()
         {
             Weapon = Fists.DefaultFists;
@@ -59,6 +60,12 @@
             if (enemyHealthAfterAttack <= 0)
             {
                 Session.CurrentRoom!.Enemies.Remove(enemy);
+                if (Session.CurrentMimicChest is not null)
+                {
+                    Session.CurrentMimicChest.KillMimic();
+                    Session.CurrentRoom.Items.Add(Session.CurrentMimicChest);
+                    Session.CurrentMimicChest = null;
+                }
                 if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo());//дубль
                 if (!Session.CurrentRoom.Enemies.Any()) Session.IsInBattle = false;
                 throw new BattleWinException($"{enemy.Name!} повержен.", battleLog);
@@ -224,7 +231,7 @@
             if (Session.CurrentRoom is not Shop) throw new NotShopException();
             Item item = GetInventoryItem(itemId);
             if (item.Cost == null) throw new UnsellableItemException();
-            
+
             Session.Inventory.Remove(item);
             Session.Coins += (int)item.Cost;
         }
@@ -280,12 +287,11 @@
             //Room room = GetRoomByIdRepository.GetRoomById(roomId);
 
             BattleLog battleLog;
-            if (chest.IsMimic)
+            if (chest.Mimic is not null)
             {
+                Session.CurrentMimicChest = chest;
                 Session.CurrentRoom!.Items.Remove(chest);
-
-                Enemy enemy = EnemyFactory.CreateMimic(Session.CurrentRoom!.Number, chest);
-                Session.CurrentRoom!.Enemies.Add(enemy);
+                Session.CurrentRoom!.Enemies.Add(chest.Mimic);
                 Session.IsInBattle = true;
                 battleLog = CombatRepository.DealDamage();
             }
@@ -304,7 +310,7 @@
 
             Chest chest = GetChestById(chestId);
             if (chest.IsLocked) throw new LockedException();
-            if (chest.IsMimic)
+            if (chest.Mimic is not null)
             {
                 Session.IsGameStarted = false;
                 throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameInfoRepository.GetGameInfo());
