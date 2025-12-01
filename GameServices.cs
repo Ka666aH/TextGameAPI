@@ -10,7 +10,7 @@
         public Weapon Weapon { get; set; } = Fists.DefaultFists;
         public Helm? Helm { get; set; }
         public Chestplate? Chestplate { get; set; }
-        public const int DefaultMaxHealth = 10;
+        public const int DefaultMaxHealth = 100;
         public int MaxHealth { get; set; } = DefaultMaxHealth;
         public int CurrentHealth { get; set; } = DefaultMaxHealth;
         public int Coins { get; set; }
@@ -18,6 +18,7 @@
         public List<Item> Inventory { get; set; } = new List<Item>();
         public bool IsGameStarted { get; set; }
         public bool IsInBattle { get; set; } = false;
+        public Chest? CurrentMimicChest { get; set; } = null;
         public void RemoveWeapon()
         {
             Weapon = Fists.DefaultFists;
@@ -55,10 +56,17 @@
             int damage = Session.Weapon.Attack(Session);
             int enemyHealthBeforeAttack = enemy.Health;
             int enemyHealthAfterAttack = enemy.GetDamage(damage, Session.CurrentRoom!);
-            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
+            int playerHealthAfterAttack = playerHealthBeforeAttack - Session.CurrentHealth;
+            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, Session.CurrentHealth);
             if (enemyHealthAfterAttack <= 0)
             {
                 Session.CurrentRoom!.Enemies.Remove(enemy);
+                if (Session.CurrentMimicChest is not null)
+                {
+                    Session.CurrentMimicChest.KillMimic();
+                    Session.CurrentRoom.Items.Add(Session.CurrentMimicChest);
+                    Session.CurrentMimicChest = null;
+                }
                 if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo());//дубль
                 if (!Session.CurrentRoom.Enemies.Any()) Session.IsInBattle = false;
                 throw new BattleWinException($"{enemy.Name!} повержен.", battleLog);
@@ -79,8 +87,8 @@
             int playerHealthBeforeAttack = Session.CurrentHealth;
             if (damageAfterBlock > 0) Session.CurrentHealth -= damageAfterBlock;
             if (Session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", GameInfoRepository.GetGameInfo());
-
-            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, Session.CurrentHealth, enemy.Name!, enemyHealthBeforeAttack, enemy.Health);
+            int enemyHealthAfterAttack = enemyHealthBeforeAttack - enemy.Health;
+            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, Session.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
         }
     }
     public class GetEnemyByIdRepository : IGetEnemyByIdRepository
@@ -224,7 +232,7 @@
             if (Session.CurrentRoom is not Shop) throw new NotShopException();
             Item item = GetInventoryItem(itemId);
             if (item.Cost == null) throw new UnsellableItemException();
-            
+
             Session.Inventory.Remove(item);
             Session.Coins += (int)item.Cost;
         }
@@ -280,12 +288,11 @@
             //Room room = GetRoomByIdRepository.GetRoomById(roomId);
 
             BattleLog battleLog;
-            if (chest.IsMimic)
+            if (chest.Mimic is not null)
             {
+                Session.CurrentMimicChest = chest;
                 Session.CurrentRoom!.Items.Remove(chest);
-
-                Enemy enemy = EnemyFactory.CreateMimic(Session.CurrentRoom!.Number, chest);
-                Session.CurrentRoom!.Enemies.Add(enemy);
+                Session.CurrentRoom!.Enemies.Add(chest.Mimic);
                 Session.IsInBattle = true;
                 battleLog = CombatRepository.DealDamage();
             }
@@ -293,7 +300,8 @@
             {
                 int playerHealthBeforeAttack = Session.CurrentHealth;
                 int damage = Session.Weapon.Attack(Session);
-                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthBeforeAttack, Session.CurrentHealth);
+                int playerHealthAfterAttack = playerHealthBeforeAttack - Session.CurrentHealth;
+                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, Session.CurrentHealth);
             }
             return battleLog;
         }
@@ -304,7 +312,7 @@
 
             Chest chest = GetChestById(chestId);
             if (chest.IsLocked) throw new LockedException();
-            if (chest.IsMimic)
+            if (chest.Mimic is not null)
             {
                 Session.IsGameStarted = false;
                 throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameInfoRepository.GetGameInfo());
