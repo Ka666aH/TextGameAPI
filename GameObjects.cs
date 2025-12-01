@@ -237,7 +237,7 @@ namespace TextGame
     }
     public class Key : Item
     {
-        private int _baseCost = 35;
+        private const int _baseCost = 35;
         public Key(IItemIdFactory itemIdFactory, int roomId) : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemIdFactory!.Id(), true)
         {
             Cost = (int)(_baseCost * GameBalance.ApplyGain(roomId));
@@ -245,7 +245,7 @@ namespace TextGame
     }
     public class BagOfCoins : Item
     {
-        private int _baseCost = 11;
+        private const int _baseCost = 11;
         public BagOfCoins(IItemIdFactory itemIdFactory, int roomId) : base("МЕШОЧЕК С МОНЕТАМИ", "Потрёпанный кусок ткани с разными монетами внутри.", itemIdFactory!.Id(), true)
         {
             var (min, max) = GameBalance.ApplySpread(_baseCost, roomId);
@@ -301,11 +301,11 @@ namespace TextGame
     #region Heal
     public abstract class Heal : Item
     {
-        public int? MaxHealthBoost = 0;
-        public int? CurrentHealthBoost = 0;
+        public int? MaxHealthBoost { get; protected set; } = 0;
+        public int? CurrentHealthBoost { get; protected set; } = 0;
 
-        protected int _roomId;
-        protected bool _fromShop;
+        protected readonly int _roomId;
+        protected readonly bool _fromShop;
 
         public Heal(string name, string description, int id, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost) : base(name, description, id, true)
         {
@@ -375,8 +375,8 @@ namespace TextGame
     }
     public class RandomPotion : Heal
     {
-        private int _baseMaxHealthBoost = 25;
-        private int _baseCurrentHealthBoost = 50;
+        private const int _baseMaxHealthBoost = 25;
+        private const int _baseCurrentHealthBoost = 50;
         public RandomPotion(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
             : base("НЕИЗВЕСТНОЕ ЗЕЛЬЕ", "Пробирка с жижей непонятного цвета.", itemIdFactory.Id(), roomId, fromShop, null, null) { }
         public override void Use(GameSession gameSession)
@@ -400,12 +400,11 @@ namespace TextGame
     #endregion
     #region Equipment
     public abstract class Equipment : Item
-
     {
-        protected int _roomId;
-        protected bool _fromShop;
+        protected readonly int _roomId;
+        protected readonly bool _fromShop;
 
-        public int? Durability;
+        public int? Durability { get; protected set; }
         public Equipment(string name, string description, int? id, int? durability, int roomId, bool fromShop) : base(name, description, id, true)
         {
             _roomId = roomId;
@@ -417,7 +416,7 @@ namespace TextGame
     #region Weapon
     public abstract class Weapon : Equipment
     {
-        public int Damage;
+        public int Damage { get; protected set; }
 
         public Weapon(string name, string description, int? id, int? durability, int damage, int roomId, bool fromShop)
             : base(name, description, id, durability, roomId, fromShop)
@@ -548,7 +547,7 @@ namespace TextGame
     #region Armor
     public abstract class Armor : Equipment
     {
-        public int DamageBlock;
+        public int DamageBlock { get; protected set; }
         public Armor(string name, string description, int id, int roomId, bool fromShop, int durability, int damageBlock) : base(name, description, id, durability, roomId, fromShop)
         {
             Initialize(durability, damageBlock);
@@ -943,7 +942,7 @@ namespace TextGame
         public int Damage { get; protected set; } = 0;
         public int DamageBlock { get; protected set; } = 0;
 
-        private int _roomId;
+        private readonly int _roomId;
 
         protected Random _random = Random.Shared;
 

@@ -1,120 +1,76 @@
 ﻿namespace TextGame
 {
-    public class GameSession
-    {
-        public List<Room> Rooms { get; set; } = new List<Room>()
-            {
-                new StartRoom(),
-            };
-        public Room? CurrentRoom { get; set; }
-        public Weapon Weapon { get; set; } = Fists.DefaultFists;
-        public Helm? Helm { get; set; }
-        public Chestplate? Chestplate { get; set; }
-        public const int DefaultMaxHealth = 100;
-        public int MaxHealth { get; set; } = DefaultMaxHealth;
-        public int CurrentHealth { get; set; } = DefaultMaxHealth;
-        public int Coins { get; set; }
-        public int Keys { get; set; }
-        public List<Item> Inventory { get; set; } = new List<Item>();
-        public bool IsGameStarted { get; set; }
-        public bool IsInBattle { get; set; } = false;
-        public Chest? CurrentMimicChest { get; set; } = null;
-        public void RemoveWeapon()
-        {
-            Weapon = Fists.DefaultFists;
-        }
-        public void RemoveHelm()
-        {
-            Helm = null;
-        }
-        public void RemoveChestplate()
-        {
-            Chestplate = null;
-        }
-    }
     public class CombatRepository : ICombatRepository
     {
-        private GameSession Session;
-        private IGetEnemyByIdRepository GetEnemyByIdRepository;
-        private IGameInfoRepository GameInfoRepository;
+        private readonly GameSession _session;
+        private readonly IGetEnemyByIdRepository _getEnemyByIdRepository;
+        private readonly IGameInfoRepository _gameInfoRepository;
         public CombatRepository(
             GameSession gameSession,
             IGetEnemyByIdRepository getEnemyByIdRepository,
             IGameInfoRepository gameInfoRepository
             )
         {
-            Session = gameSession;
-            GetEnemyByIdRepository = getEnemyByIdRepository;
-            GameInfoRepository = gameInfoRepository;
+            _session = gameSession;
+            _getEnemyByIdRepository = getEnemyByIdRepository;
+            _gameInfoRepository = gameInfoRepository;
         }
         public BattleLog DealDamage()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
-            int playerHealthBeforeAttack = Session.CurrentHealth;
-            Enemy enemy = GetEnemyByIdRepository.GetEnemyById();
-            int damage = Session.Weapon.Attack(Session);
+            int playerHealthBeforeAttack = _session.CurrentHealth;
+            Enemy enemy = _getEnemyByIdRepository.GetEnemyById();
+            int damage = _session.Weapon.Attack(_session);
             int enemyHealthBeforeAttack = enemy.Health;
-            int enemyHealthAfterAttack = enemy.GetDamage(damage, Session.CurrentRoom!);
-            int playerHealthAfterAttack = playerHealthBeforeAttack - Session.CurrentHealth;
-            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, Session.CurrentHealth);
+            int enemyHealthAfterAttack = enemy.GetDamage(damage, _session.CurrentRoom!);
+            int playerHealthAfterAttack = playerHealthBeforeAttack - _session.CurrentHealth;
+            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _session.CurrentHealth);
             if (enemyHealthAfterAttack <= 0)
             {
-                Session.CurrentRoom!.Enemies.Remove(enemy);
-                if (Session.CurrentMimicChest is not null)
+                _session.CurrentRoom!.Enemies.Remove(enemy);
+                if (_session.CurrentMimicChest is not null)
                 {
-                    Session.CurrentMimicChest.KillMimic();
-                    Session.CurrentRoom.Items.Add(Session.CurrentMimicChest);
-                    Session.CurrentMimicChest = null;
+                    _session.CurrentMimicChest.KillMimic();
+                    _session.CurrentRoom.Items.Add(_session.CurrentMimicChest);
+                    _session.CurrentMimicChest = null;
                 }
-                if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo());//дубль
-                if (!Session.CurrentRoom.Enemies.Any()) Session.IsInBattle = false;
+                if (_session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", _gameInfoRepository.GetGameInfo());//дубль
+                if (!_session.CurrentRoom.Enemies.Any()) _session.IsInBattle = false;
                 throw new BattleWinException($"{enemy.Name!} повержен.", battleLog);
             }
-            if (Session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", GameInfoRepository.GetGameInfo()); //дубль
+            if (_session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", _gameInfoRepository.GetGameInfo()); //дубль
             return battleLog;
         }
         public BattleLog GetDamage()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
-            Enemy enemy = GetEnemyByIdRepository.GetEnemyById();
+            Enemy enemy = _getEnemyByIdRepository.GetEnemyById();
             int enemyHealthBeforeAttack = enemy.Health;
             int damage = enemy.Attack();
-            int helmBlock = Session.Helm != null ? Session.Helm.Block(Session) : 0;
-            int chestplateBlock = Session.Chestplate != null ? Session.Chestplate.Block(Session) : 0;
+            int helmBlock = _session.Helm != null ? _session.Helm.Block(_session) : 0;
+            int chestplateBlock = _session.Chestplate != null ? _session.Chestplate.Block(_session) : 0;
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
-            int playerHealthBeforeAttack = Session.CurrentHealth;
-            if (damageAfterBlock > 0) Session.CurrentHealth -= damageAfterBlock;
-            if (Session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", GameInfoRepository.GetGameInfo());
+            int playerHealthBeforeAttack = _session.CurrentHealth;
+            if (damageAfterBlock > 0) _session.CurrentHealth -= damageAfterBlock;
+            if (_session.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", _gameInfoRepository.GetGameInfo());
             int enemyHealthAfterAttack = enemyHealthBeforeAttack - enemy.Health;
-            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, Session.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
+            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, _session.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
         }
     }
     public class GetEnemyByIdRepository : IGetEnemyByIdRepository
     {
-        private GameSession Session;
-        private IGetRoomByIdRepository GetRoomByIdRepository;
-        public GetEnemyByIdRepository(
-            IGetRoomByIdRepository getRoomByIdRepository,
-            GameSession session)
+        private readonly GameSession _session;
+        public GetEnemyByIdRepository(GameSession session)
         {
-            GetRoomByIdRepository = getRoomByIdRepository;
-            Session = session;
+            _session = session;
         }
-        //public List<Enemy> GetEnemies()
-        //{
-        //    if (!Session.IsGameStarted) throw new UnstartedGameException();
-
-        //    Room room = Session.CurrentRoom!;
-        //    return room.Enemies;
-        //}
         public Enemy GetEnemyById()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
-            Room room = Session.CurrentRoom!;
-            //Enemy? enemy = room.Enemies.FirstOrDefault(e => e.Id == enemyId);
+            Room room = _session.CurrentRoom!;
             Enemy? enemy = room.Enemies.FirstOrDefault();
             if (enemy == null) throw new NullEnemyIdException();
             return enemy;
@@ -122,146 +78,139 @@
     }
     public class GetCurrentRoomRepository : IGetCurrentRoomRepository
     {
-        private GameSession Session { get; set; }
+        private readonly GameSession _session;
         public GetCurrentRoomRepository(GameSession session)
         {
-            Session = session;
+            _session = session;
         }
         public Room GetCurrentRoom()
         {
-            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            return Session.CurrentRoom!;
+            if (!_session.IsGameStarted && _session.Rooms.Count <= 1) throw new UnstartedGameException();
+            return _session.CurrentRoom!;
         }
     }
     public class InventoryRepository : IInventoryRepository
     {
-        private GameSession Session { get; set; }
+        private readonly GameSession _session;
         public InventoryRepository(GameSession session)
         {
-            Session = session;
+            _session = session;
         }
 
         public Item GetInventoryItem(int itemId)
         {
-            Item? item = Session.Inventory.FirstOrDefault(i => i.Id == itemId);
+            Item? item = _session.Inventory.FirstOrDefault(i => i.Id == itemId);
             if (item == null) throw new NullItemIdException();
             return item;
         }
         public List<Equipment> GetEquipment()
         {
-            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
-            if (Session.Helm != null) equipmentList.Add(Session.Helm);
-            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            List<Equipment> equipmentList = new List<Equipment>() { _session.Weapon };
+            if (_session.Helm != null) equipmentList.Add(_session.Helm);
+            if (_session.Chestplate != null) equipmentList.Add(_session.Chestplate);
             return equipmentList;
         }
         public List<Equipment> EquipInventoryItem(int itemId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
             Item item = GetInventoryItem(itemId);
             if (item is not Equipment equipment) throw new InvalidIdException("NOT_EQUIPMENT", "Это не снаряжение.");
             switch (equipment)
             {
                 case Weapon weapon:
-                    if (Session.Weapon != Fists.DefaultFists) Session.Inventory.Add(Session.Weapon);
-                    Session.Weapon = weapon;
-                    Session.Inventory.Remove(weapon);
+                    if (_session.Weapon != Fists.DefaultFists) _session.Inventory.Add(_session.Weapon);
+                    _session.Weapon = weapon;
+                    _session.Inventory.Remove(weapon);
                     break;
                 case Armor armor:
                     switch (armor)
                     {
                         case Helm helm:
-                            if (Session.Helm != null) Session.Inventory.Add(Session.Helm);
-                            Session.Helm = helm;
-                            Session.Inventory.Remove(helm);
+                            if (_session.Helm != null) _session.Inventory.Add(_session.Helm);
+                            _session.Helm = helm;
+                            _session.Inventory.Remove(helm);
                             break;
                         case Chestplate chestplate:
-                            if (Session.Chestplate != null) Session.Inventory.Add(Session.Chestplate);
-                            Session.Chestplate = chestplate;
-                            Session.Inventory.Remove(chestplate);
+                            if (_session.Chestplate != null) _session.Inventory.Add(_session.Chestplate);
+                            _session.Chestplate = chestplate;
+                            _session.Inventory.Remove(chestplate);
                             break;
                     }
                     break;
             }
-            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
-            if (Session.Helm != null) equipmentList.Add(Session.Helm);
-            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            List<Equipment> equipmentList = new List<Equipment>() { _session.Weapon };
+            if (_session.Helm != null) equipmentList.Add(_session.Helm);
+            if (_session.Chestplate != null) equipmentList.Add(_session.Chestplate);
             return equipmentList;
         }
         public List<Equipment> UnequipWeapon()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
-            if (Session.Weapon == Fists.DefaultFists) throw new EmptyException();
-            Session.Inventory.Add(Session.Weapon);
-            Session.Weapon = Fists.DefaultFists;
-            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
-            if (Session.Helm != null) equipmentList.Add(Session.Helm);
-            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            if (_session.Weapon == Fists.DefaultFists) throw new EmptyException();
+            _session.Inventory.Add(_session.Weapon);
+            _session.Weapon = Fists.DefaultFists;
+            List<Equipment> equipmentList = new List<Equipment>() { _session.Weapon };
+            if (_session.Helm != null) equipmentList.Add(_session.Helm);
+            if (_session.Chestplate != null) equipmentList.Add(_session.Chestplate);
             return equipmentList;
         }
         public List<Equipment> UnequipHelm()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
-            if (Session.Helm == null) throw new EmptyException();
-            Session.Inventory.Add(Session.Helm!);
-            Session.Helm = null;
-            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
-            if (Session.Helm != null) equipmentList.Add(Session.Helm);
-            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            if (_session.Helm == null) throw new EmptyException();
+            _session.Inventory.Add(_session.Helm!);
+            _session.Helm = null;
+            List<Equipment> equipmentList = new List<Equipment>() { _session.Weapon };
+            if (_session.Helm != null) equipmentList.Add(_session.Helm);
+            if (_session.Chestplate != null) equipmentList.Add(_session.Chestplate);
             return equipmentList;
         }
         public List<Equipment> UnequipChestplate()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
-            if (Session.Chestplate == null) throw new EmptyException();
-            Session.Inventory.Add(Session.Chestplate!);
-            Session.Chestplate = null;
-            List<Equipment> equipmentList = new List<Equipment>() { Session.Weapon };
-            if (Session.Helm != null) equipmentList.Add(Session.Helm);
-            if (Session.Chestplate != null) equipmentList.Add(Session.Chestplate);
+            if (_session.Chestplate == null) throw new EmptyException();
+            _session.Inventory.Add(_session.Chestplate!);
+            _session.Chestplate = null;
+            List<Equipment> equipmentList = new List<Equipment>() { _session.Weapon };
+            if (_session.Helm != null) equipmentList.Add(_session.Helm);
+            if (_session.Chestplate != null) equipmentList.Add(_session.Chestplate);
             return equipmentList;
         }
         public void SellInventoryItem(int itemId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
-            if (Session.CurrentRoom is not Shop) throw new NotShopException();
+            if (_session.CurrentRoom is not Shop) throw new NotShopException();
             Item item = GetInventoryItem(itemId);
             if (item.Cost == null) throw new UnsellableItemException();
 
-            Session.Inventory.Remove(item);
-            Session.Coins += (int)item.Cost;
+            _session.Inventory.Remove(item);
+            _session.Coins += (int)item.Cost;
         }
     }
     public class ChestRepository : IChestRepository
     {
-        private GameSession Session;
+        private readonly GameSession _session;
 
-        private IGameInfoRepository GameInfoRepository;
-        private IGetRoomByIdRepository GetRoomByIdRepository;
-        private IGetItemByIdRepository GetItemByIdRepository;
-        private ICombatRepository CombatRepository;
-
-        private IEnemyFactory EnemyFactory;
+        private IGameInfoRepository _gameInfoRepository;
+        private IGetItemByIdRepository _getItemByIdRepository;
+        private ICombatRepository _combatRepository;
         public ChestRepository(
             GameSession session,
             IGameInfoRepository gameInfoRepository,
-            IGetRoomByIdRepository getRoomByIdRepository,
             IGetItemByIdRepository getItemByIdRepository,
-            IEnemyFactory enemyFactory,
             ICombatRepository combatRepository
             )
         {
-            Session = session;
-            GameInfoRepository = gameInfoRepository;
-            GetRoomByIdRepository = getRoomByIdRepository;
-            GetItemByIdRepository = getItemByIdRepository;
-            EnemyFactory = enemyFactory;
-            CombatRepository = combatRepository;
+            _session = session;
+            _gameInfoRepository = gameInfoRepository;
+            _getItemByIdRepository = getItemByIdRepository;
+            _combatRepository = combatRepository;
         }
         public ChestStateDTO ReturnChestDTO(Chest chest)
         {
@@ -275,14 +224,14 @@
         public Chest GetChestById(int chestId)
         {
             //Room room = GetRoomByIdRepository.GetRoomById(roomId);
-            Item item = GetItemByIdRepository.GetItemById(chestId, Session.CurrentRoom!.Items);
+            Item item = _getItemByIdRepository.GetItemById(chestId, _session.CurrentRoom!.Items);
             if (item is not Chest) throw new InvalidIdException("NOT_CHEST", "Это не сундук.");
             return (Chest)item;
         }
         public BattleLog HitChest(int chestId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
             Chest chest = GetChestById(chestId);
             //Room room = GetRoomByIdRepository.GetRoomById(roomId);
@@ -290,49 +239,49 @@
             BattleLog battleLog;
             if (chest.Mimic is not null)
             {
-                Session.CurrentMimicChest = chest;
-                Session.CurrentRoom!.Items.Remove(chest);
-                Session.CurrentRoom!.Enemies.Add(chest.Mimic);
-                Session.IsInBattle = true;
-                battleLog = CombatRepository.DealDamage();
+                _session.CurrentMimicChest = chest;
+                _session.CurrentRoom!.Items.Remove(chest);
+                _session.CurrentRoom!.Enemies.Add(chest.Mimic);
+                _session.IsInBattle = true;
+                battleLog = _combatRepository.DealDamage();
             }
             else
             {
-                int playerHealthBeforeAttack = Session.CurrentHealth;
-                int damage = Session.Weapon.Attack(Session);
-                int playerHealthAfterAttack = playerHealthBeforeAttack - Session.CurrentHealth;
-                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, Session.CurrentHealth);
+                int playerHealthBeforeAttack = _session.CurrentHealth;
+                int damage = _session.Weapon.Attack(_session);
+                int playerHealthAfterAttack = playerHealthBeforeAttack - _session.CurrentHealth;
+                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _session.CurrentHealth);
             }
             return battleLog;
         }
         public void OpenChest(int chestId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
             Chest chest = GetChestById(chestId);
             if (chest.IsLocked) throw new LockedException();
             if (chest.Mimic is not null)
             {
-                Session.IsGameStarted = false;
-                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", GameInfoRepository.GetGameInfo());
+                _session.IsGameStarted = false;
+                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", _gameInfoRepository.GetGameInfo());
             }
             chest.Open();
         }
         public void UnlockChest(int chestId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
             Chest chest = GetChestById(chestId);
-            if (Session.Keys > 0) Session.Keys--;
+            if (_session.Keys > 0) _session.Keys--;
             else throw new NoKeyException();
             chest.Unlock();
         }
         public List<Item> SearchChest(int chestId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
             Chest chest = GetChestById(chestId);
             if (chest.IsClosed) throw new ClosedException();
@@ -340,22 +289,22 @@
         }
         public void TakeItemFromChest(int chestId, int itemId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
             Chest chest = GetChestById(chestId);
             if (chest.IsLocked) throw new LockedException();
             if (chest.IsClosed) throw new ClosedException();
-            Item item = GetItemByIdRepository.GetItemById(itemId, chest.Items);
-            if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
-            else if (item is Key) Session.Keys++;
-            else Session.Inventory.Add(item);
+            Item item = _getItemByIdRepository.GetItemById(itemId, chest.Items);
+            if (item is BagOfCoins bagOfCoins) _session.Coins += (int)bagOfCoins.Cost!;
+            else if (item is Key) _session.Keys++;
+            else _session.Inventory.Add(item);
             chest.Items.Remove(item);
         }
         public void TakeAllItemsFromChest(int chestId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
             Chest chest = GetChestById(chestId);
             if (chest.IsLocked) throw new LockedException();
@@ -364,82 +313,56 @@
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
             {
-                if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
-                else if (item is Key) Session.Keys++;
-                else Session.Inventory.Add(item);
+                if (item is BagOfCoins bagOfCoins) _session.Coins += (int)bagOfCoins.Cost!;
+                else if (item is Key) _session.Keys++;
+                else _session.Inventory.Add(item);
             }
             chest.Items.RemoveAll(x => x.IsCarryable);
         }
     }
-    //public class InventoryRepository : IInventoryRepository
-    //{
-    //    private GameSession Session;
-    //    private IGetItemByIdRepository GetItemByIdRepository;
-    //    public InventoryRepository(
-    //        GameSession session,
-    //        IGetItemByIdRepository getItemByIdRepository
-    //        )
-    //    {
-    //        Session = session;
-    //        GetItemByIdRepository = getItemByIdRepository;
-    //    }
-    //    public Item GetInventoryItem(int itemId)
-    //    {
-    //        return GetItemByIdRepository.GetItemById(itemId, Session.Inventory);
-    //    }
-    //    public List<Item> GetInventoryItems(List<int> itemsIds)
-    //    {
-    //        List<Item> items = new List<Item>();
-    //        foreach (var itemId in itemsIds)
-    //        {
-    //            items.Add(GetInventoryItem(itemId));
-    //        }
-    //        return items;
-    //    }
-    //}
     public class GameInfoRepository : IGameInfoRepository
     {
-        private GameSession Session;
+        private readonly GameSession _session;
         public GameInfoRepository(GameSession session)
         {
-            Session = session;
+            _session = session;
         }
         public GameInfoDTO GetGameInfo()
         {
-            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
+            if (!_session.IsGameStarted && _session.Rooms.Count <= 1) throw new UnstartedGameException();
             //RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
-            var roomDTO = GameObjectMapper.ToDTO(Session.CurrentRoom!);
-            WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(Session.Weapon);
-            ArmorDTO? helmDTO = Session.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Helm) : null;
-            ArmorDTO? chestplateDTO = Session.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(Session.Chestplate) : null;
-            return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, Session.MaxHealth, Session.CurrentHealth, Session.Coins, Session.Keys, GameObjectMapper.ToDTO(Session.Inventory));
+            var roomDTO = GameObjectMapper.ToDTO(_session.CurrentRoom!);
+            WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(_session.Weapon);
+            ArmorDTO? helmDTO = _session.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(_session.Helm) : null;
+            ArmorDTO? chestplateDTO = _session.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(_session.Chestplate) : null;
+            return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, _session.MaxHealth, _session.CurrentHealth, _session.Coins, _session.Keys, GameObjectMapper.ToDTO(_session.Inventory));
         }
     }
     public class GetRoomByIdRepository : IGetRoomByIdRepository
     {
-        private GameSession Session;
-        IGameInfoRepository GameInfoRepository;
+        private readonly GameSession _session;
+        private readonly IGameInfoRepository _gameInfoRepository;
         public GetRoomByIdRepository(
             GameSession session,
             IGameInfoRepository gameInfoRepository
             )
         {
-            Session = session;
-            GameInfoRepository = gameInfoRepository;
+            _session = session;
+            _gameInfoRepository = gameInfoRepository;
         }
         public Room GetRoomById(int roomId)
         {
             /*//Старый вариант
             Room? room = Rooms.FirstOrDefault(r => r.Number == roomId);
             if (room == null) throw new NullIdException("ROOM_NOT_FOUND", "Комната с таким номером не найдена.");*/
-            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted && _session.Rooms.Count <= 1) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
-            if (roomId < 0 || roomId > Session.Rooms.Count) throw new NullRoomIdException();
-            Room room = Session.Rooms[roomId];
+            if (roomId < 0 || roomId > _session.Rooms.Count) throw new NullRoomIdException();
+            Room room = _session.Rooms[roomId];
             if (!room.IsDiscovered) throw new UndiscoveredRoomException();
-            Session.CurrentRoom = room;
-            if (Session.CurrentRoom is EndRoom) throw new WinException(GameInfoRepository.GetGameInfo());
+            _session.CurrentRoom = room;
+            if (_session.CurrentRoom is EndRoom) throw new WinException(_gameInfoRepository.GetGameInfo());
             return room;
         }
     }
@@ -454,16 +377,16 @@
     }
     public class GameControllerRepository : IGameControllerRepository
     {
-        private GameSession Session;
-        private IGetCurrentRoomRepository GetCurrentRoomRepository;
+        private readonly GameSession _session;
+        private readonly IGetCurrentRoomRepository _getCurrentRoomRepository;
 
-        private readonly IRoomNumberFactory RoomNumberFactory;
-        private readonly IRoomFactory RoomFactory;
-        private readonly IItemIdFactory ItemIdFactory;
-        private readonly IEnemyIdFactory EnemyIdFactory;
+        private readonly IRoomNumberFactory _roomNumberFactory;
+        private readonly IRoomFactory _roomFactory;
+        private readonly IItemIdFactory _itemIdFactory;
+        private readonly IEnemyIdFactory _enemyIdFactory;
 
-        private readonly IInventoryRepository InventoryRepository;
-        private readonly IGameInfoRepository GameInfoRepository;
+        private readonly IInventoryRepository _inventoryRepository;
+        private readonly IGameInfoRepository _gameInfoRepository;
         public GameControllerRepository(
             GameSession session,
             IGetCurrentRoomRepository getCurrentRoomRepository,
@@ -475,43 +398,43 @@
             IGameInfoRepository gameInfoRepository
             )
         {
-            Session = session;
-            GetCurrentRoomRepository = getCurrentRoomRepository;
-            RoomNumberFactory = roomNumberFactory;
-            RoomFactory = roomFactory;
-            ItemIdFactory = itemIdFactory;
-            InventoryRepository = inventoryRepository;
-            EnemyIdFactory = enemyIdFactory;
-            GameInfoRepository = gameInfoRepository;
+            _session = session;
+            _getCurrentRoomRepository = getCurrentRoomRepository;
+            _roomNumberFactory = roomNumberFactory;
+            _roomFactory = roomFactory;
+            _itemIdFactory = itemIdFactory;
+            _inventoryRepository = inventoryRepository;
+            _enemyIdFactory = enemyIdFactory;
+            _gameInfoRepository = gameInfoRepository;
         }
-        public Room GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
+        public Room GetCurrentRoom() => _getCurrentRoomRepository.GetCurrentRoom();
         public void Start()
         {
             ResetGame();
-            Session.Rooms = GenerateMap();
-            Session.CurrentRoom = Session.Rooms[0];
-            Session.IsGameStarted = true;
+            _session.Rooms = GenerateMap();
+            _session.CurrentRoom = _session.Rooms[0];
+            _session.IsGameStarted = true;
         }
         public void ResetGame()
         {
-            Session.Coins = 0;
-            Session.Keys = 0;
+            _session.Coins = 0;
+            _session.Keys = 0;
 
-            Session.Weapon = Fists.DefaultFists;
-            Session.Helm = null;
-            Session.Chestplate = null;
+            _session.Weapon = Fists.DefaultFists;
+            _session.Helm = null;
+            _session.Chestplate = null;
 
-            Session.Inventory = new List<Item>();
-            Session.Rooms = new List<Room>();
+            _session.Inventory = new List<Item>();
+            _session.Rooms = new List<Room>();
 
-            Session.MaxHealth = GameSession.DefaultMaxHealth;
-            Session.CurrentHealth = GameSession.DefaultMaxHealth;
+            _session.MaxHealth = GameSession.DefaultMaxHealth;
+            _session.CurrentHealth = GameSession.DefaultMaxHealth;
 
-            Session.IsInBattle = false;
+            _session.IsInBattle = false;
 
-            RoomNumberFactory.Reset();
-            ItemIdFactory.Reset();
-            EnemyIdFactory.Reset();
+            _roomNumberFactory.Reset();
+            _itemIdFactory.Reset();
+            _enemyIdFactory.Reset();
         }
         public List<Room> GenerateMap()
         {
@@ -521,63 +444,63 @@
             };
             while (rooms.Last() is not EndRoom)
             {
-                rooms.Add(RoomFactory.CreateRoom());
+                rooms.Add(_roomFactory.CreateRoom());
             }
             return rooms;
         }
         public List<Item> GetInventory()
         {
-            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            return Session.Inventory;
+            if (!_session.IsGameStarted && _session.Rooms.Count <= 1) throw new UnstartedGameException();
+            return _session.Inventory;
         }
         public int GetCoins()
         {
-            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            return Session.Coins;
+            if (!_session.IsGameStarted && _session.Rooms.Count <= 1) throw new UnstartedGameException();
+            return _session.Coins;
         }
         public int GetKeys()
         {
-            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            return Session.Keys;
+            if (!_session.IsGameStarted && _session.Rooms.Count <= 1) throw new UnstartedGameException();
+            return _session.Keys;
         }
         public List<MapRoomDTO> GetMap()
         {
-            if (!Session.IsGameStarted && Session.Rooms.Count <= 1) throw new UnstartedGameException();
-            if (!Session.Inventory.OfType<Map>().Any()) throw new NoMapException();
-            return Session.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? "НЕИЗВЕСТНО")).ToList();
+            if (!_session.IsGameStarted && _session.Rooms.Count <= 1) throw new UnstartedGameException();
+            if (!_session.Inventory.OfType<Map>().Any()) throw new NoMapException();
+            return _session.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? "НЕИЗВЕСТНО")).ToList();
         }
         public void UseInventoryItem(int itemId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
 
             Item item = GetInventoryItem(itemId);
             if (item is not Heal heal) throw new InvalidIdException("NOT_HEAL", "Это не предмет лечения.");
-            Session.Inventory.Remove(heal);
-            heal.Use(Session);
-            if (Session.CurrentHealth <= 0) throw new DefeatException($"{heal.Name} приводит Вас к гибели!", GetGameInfo());
+            _session.Inventory.Remove(heal);
+            heal.Use(_session);
+            if (_session.CurrentHealth <= 0) throw new DefeatException($"{heal.Name} приводит Вас к гибели!", GetGameInfo());
         }
 
-        public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
-        public List<Equipment> GetEquipment() => InventoryRepository.GetEquipment();
-        public List<Equipment> EquipInventoryItem(int itemId) => InventoryRepository.EquipInventoryItem(itemId);
-        public List<Equipment> UnequipWeapon() => InventoryRepository.UnequipWeapon();
-        public List<Equipment> UnequipHelm() => InventoryRepository.UnequipHelm();
-        public List<Equipment> UnequipChestplate() => InventoryRepository.UnequipChestplate();
-        public GameInfoDTO GetGameInfo() => GameInfoRepository.GetGameInfo();
+        public Item GetInventoryItem(int itemId) => _inventoryRepository.GetInventoryItem(itemId);
+        public List<Equipment> GetEquipment() => _inventoryRepository.GetEquipment();
+        public List<Equipment> EquipInventoryItem(int itemId) => _inventoryRepository.EquipInventoryItem(itemId);
+        public List<Equipment> UnequipWeapon() => _inventoryRepository.UnequipWeapon();
+        public List<Equipment> UnequipHelm() => _inventoryRepository.UnequipHelm();
+        public List<Equipment> UnequipChestplate() => _inventoryRepository.UnequipChestplate();
+        public GameInfoDTO GetGameInfo() => _gameInfoRepository.GetGameInfo();
 
-        public void SellInventoryItem(int itemId) => InventoryRepository.SellInventoryItem(itemId);
+        public void SellInventoryItem(int itemId) => _inventoryRepository.SellInventoryItem(itemId);
     }
 
     public class RoomControllerRepository : IRoomControllerRepository
     {
-        private GameSession Session;
-        private IGetCurrentRoomRepository GetCurrentRoomRepository;
-        private IChestRepository ChestRepository;
-        private IGameInfoRepository GameInfoRepository;
-        private IGetRoomByIdRepository GetRoomByIdRepository;
-        private IGetItemByIdRepository GetItemByIdRepository;
-        private IGetEnemyByIdRepository GetEnemyByIdRepository;
-        private ICombatRepository CombatRepository;
+        private readonly GameSession _session;
+        private readonly IGetCurrentRoomRepository _getCurrentRoomRepository;
+        private readonly IChestRepository _chestRepository;
+        private readonly IGameInfoRepository _gameInfoRepository;
+        private readonly IGetRoomByIdRepository _getRoomByIdRepository;
+        private readonly IGetItemByIdRepository _getItemByIdRepository;
+        private readonly IGetEnemyByIdRepository _getEnemyByIdRepository;
+        private readonly ICombatRepository _combatRepository;
         public RoomControllerRepository(
             GameSession session,
             IGetCurrentRoomRepository getCurrentRoomRepository,
@@ -589,103 +512,103 @@
             ICombatRepository combatRepository
             )
         {
-            Session = session;
-            GetCurrentRoomRepository = getCurrentRoomRepository;
-            ChestRepository = chestRepository;
-            GameInfoRepository = gameInfoRepository;
-            GetRoomByIdRepository = getRoomByIdRepository;
-            GetItemByIdRepository = getItemByIdRepository;
-            CombatRepository = combatRepository;
-            GetEnemyByIdRepository = getEnemyByIdRepository;
+            _session = session;
+            _getCurrentRoomRepository = getCurrentRoomRepository;
+            _chestRepository = chestRepository;
+            _gameInfoRepository = gameInfoRepository;
+            _getRoomByIdRepository = getRoomByIdRepository;
+            _getItemByIdRepository = getItemByIdRepository;
+            _combatRepository = combatRepository;
+            _getEnemyByIdRepository = getEnemyByIdRepository;
         }
-        public Room GetCurrentRoom() => GetCurrentRoomRepository.GetCurrentRoom();
+        public Room GetCurrentRoom() => _getCurrentRoomRepository.GetCurrentRoom();
         public void GoNextRoom()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
-            Session.CurrentRoom = Session.Rooms[Session.CurrentRoom!.Number + 1];
-            Session.CurrentRoom.IsDiscovered = true;
-            if (Session.CurrentRoom is EndRoom) throw new WinException(GameInfoRepository.GetGameInfo());
-            if (Session.CurrentRoom.Enemies.Any()) Session.IsInBattle = true;
+            _session.CurrentRoom = _session.Rooms[_session.CurrentRoom!.Number + 1];
+            _session.CurrentRoom.IsDiscovered = true;
+            if (_session.CurrentRoom is EndRoom) throw new WinException(_gameInfoRepository.GetGameInfo());
+            if (_session.CurrentRoom.Enemies.Any()) _session.IsInBattle = true;
         }
         public List<Item> Search()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
 
             //Room room = GetRoomById(roomId);
-            Room room = Session.CurrentRoom!;
+            Room room = _session.CurrentRoom!;
             room.IsSearched = true;
             return room!.Items;
         }
         public void TakeItem(int itemId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
-            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
-            if (Session.CurrentRoom is Shop) throw new ImpossibleStealException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
+            if (!_session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (_session.CurrentRoom is Shop) throw new ImpossibleStealException();
 
             //Room room = GetRoomById(roomId);
             //Room room = Session.CurrentRoom!;
-            Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom!.Items);
+            Item item = _getItemByIdRepository.GetItemById(itemId, _session.CurrentRoom!.Items);
             if (!item.IsCarryable) throw new UncarryableException();
-            if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
-            else if (item is Key) Session.Keys++;
-            else Session.Inventory.Add(item);
-            Session.CurrentRoom!.Items.Remove(item);
+            if (item is BagOfCoins bagOfCoins) _session.Coins += (int)bagOfCoins.Cost!;
+            else if (item is Key) _session.Keys++;
+            else _session.Inventory.Add(item);
+            _session.CurrentRoom!.Items.Remove(item);
         }
         public void TakeAllItems()
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
-            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
-            if (Session.CurrentRoom is Shop) throw new ImpossibleStealException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
+            if (!_session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (_session.CurrentRoom is Shop) throw new ImpossibleStealException();
 
             //Room room = GetRoomById(roomId);
-            List<Item> carryableItems = Session.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
+            List<Item> carryableItems = _session.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
             {
                 if (!item.IsCarryable) continue;
-                if (item is BagOfCoins bagOfCoins) Session.Coins += (int)bagOfCoins.Cost!;
-                else if (item is Key) Session.Keys++;
-                else Session.Inventory.Add(item);
+                if (item is BagOfCoins bagOfCoins) _session.Coins += (int)bagOfCoins.Cost!;
+                else if (item is Key) _session.Keys++;
+                else _session.Inventory.Add(item);
             }
-            Session.CurrentRoom!.Items.RemoveAll(x => x.IsCarryable);
+            _session.CurrentRoom!.Items.RemoveAll(x => x.IsCarryable);
         }
         public void BuyItem(int itemId)
         {
-            if (!Session.IsGameStarted) throw new UnstartedGameException();
-            if (Session.IsInBattle) throw new InBattleException();
-            if (!Session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (!_session.IsGameStarted) throw new UnstartedGameException();
+            if (_session.IsInBattle) throw new InBattleException();
+            if (!_session.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
 
-            if (Session.CurrentRoom is not Shop) throw new NotShopException();
-            Item item = GetItemByIdRepository.GetItemById(itemId, Session.CurrentRoom.Items);
-            if (item.Cost > Session.Coins) throw new NoMoneyException();
+            if (_session.CurrentRoom is not Shop) throw new NotShopException();
+            Item item = _getItemByIdRepository.GetItemById(itemId, _session.CurrentRoom.Items);
+            if (item.Cost > _session.Coins) throw new NoMoneyException();
 
-            Session.Coins -= (int)item.Cost!;
-            Session.CurrentRoom.Items.Remove(item);
-            Session.Inventory.Add(item);
+            _session.Coins -= (int)item.Cost!;
+            _session.CurrentRoom.Items.Remove(item);
+            _session.Inventory.Add(item);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
-        public Enemy GetEnemyById() => GetEnemyByIdRepository.GetEnemyById();
+        public Enemy GetEnemyById() => _getEnemyByIdRepository.GetEnemyById();
 
-        public BattleLog DealDamage() => CombatRepository.DealDamage();
-        public BattleLog GetDamage() => CombatRepository.GetDamage();
+        public BattleLog DealDamage() => _combatRepository.DealDamage();
+        public BattleLog GetDamage() => _combatRepository.GetDamage();
 
-        public ChestStateDTO ReturnChestDTO(Chest chest) => ChestRepository.ReturnChestDTO(chest);
-        public ChestStateDTO ReturnChestDTO(int chestId) => ChestRepository.ReturnChestDTO(chestId);
-        public BattleLog HitChest(int chestId) => ChestRepository.HitChest(chestId);
-        public void OpenChest(int chestId) => ChestRepository.OpenChest(chestId);
-        public void UnlockChest(int chestId) => ChestRepository.UnlockChest(chestId);
-        public List<Item> SearchChest(int chestId) => ChestRepository.SearchChest(chestId);
-        public void TakeItemFromChest(int chestId, int itemId) => ChestRepository.TakeItemFromChest(chestId, itemId);
-        public void TakeAllItemsFromChest(int chestId) => ChestRepository.TakeAllItemsFromChest(chestId);
-        public Room GetRoomById(int roomId) => GetRoomByIdRepository.GetRoomById(roomId);
+        public ChestStateDTO ReturnChestDTO(Chest chest) => _chestRepository.ReturnChestDTO(chest);
+        public ChestStateDTO ReturnChestDTO(int chestId) => _chestRepository.ReturnChestDTO(chestId);
+        public BattleLog HitChest(int chestId) => _chestRepository.HitChest(chestId);
+        public void OpenChest(int chestId) => _chestRepository.OpenChest(chestId);
+        public void UnlockChest(int chestId) => _chestRepository.UnlockChest(chestId);
+        public List<Item> SearchChest(int chestId) => _chestRepository.SearchChest(chestId);
+        public void TakeItemFromChest(int chestId, int itemId) => _chestRepository.TakeItemFromChest(chestId, itemId);
+        public void TakeAllItemsFromChest(int chestId) => _chestRepository.TakeAllItemsFromChest(chestId);
+        public Room GetRoomById(int roomId) => _getRoomByIdRepository.GetRoomById(roomId);
         //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
         //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
         //public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
-        public GameInfoDTO GetGameInfo() => GameInfoRepository.GetGameInfo();
+        public GameInfoDTO GetGameInfo() => _gameInfoRepository.GetGameInfo();
     }
 }
