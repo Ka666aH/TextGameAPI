@@ -23,8 +23,6 @@ namespace TextGame
         public bool IsDiscovered { get; set; } = false;
         public bool IsSearched { get; set; } = false;
 
-        private Random _random = Random.Shared;
-
         public Room(string name, string description, int number, IEnemyFactory? enemyFactory = null)
         {
             Name = name;
@@ -50,7 +48,7 @@ namespace TextGame
             };
             //Выбор
             int weightsSum = options.Sum(x => x.Weight);
-            int roll = _random.Next(weightsSum);
+            int roll = Random.Shared.Next(weightsSum);
             int accumulated = 0;
 
             foreach (var option in options)
@@ -161,8 +159,6 @@ namespace TextGame
         public int? Id { get; init; }
         public int? Cost { get; protected set; }
         public bool IsCarryable { get; init; }
-
-        protected Random _random = Random.Shared;
         public Item(string name, string description, int? id, bool isCarryable)
         {
             Name = name;
@@ -187,7 +183,7 @@ namespace TextGame
             : base("МЕШОЧЕК С МОНЕТАМИ", "Потрёпанный кусок ткани с разными монетами внутри.", itemId, true)
         {
             var (min, max) = GameBalance.ApplySpread(GameBalance.BagOfCoinsBaseCost, roomId);
-            Cost = _random.Next(min, max + 1);
+            Cost = Random.Shared.Next(min, max + 1);
         }
     }
     public class Chest : Item
@@ -201,10 +197,10 @@ namespace TextGame
             : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemId, false)
         {
             Cost = null;
-            IsLocked = _random.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
-            Mimic = _random.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? enemyFactory.CreateMimic(session) : null;
+            IsLocked = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
+            Mimic = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? enemyFactory.CreateMimic(session) : null;
             Items = new List<Item>();
-            var itemsInChest = _random.Next(GameBalance.MinChestItemsAmount, GameBalance.MaxChestItemsAmount + 1);
+            var itemsInChest = Random.Shared.Next(GameBalance.MinChestItemsAmount, GameBalance.MaxChestItemsAmount + 1);
             for (int i = 0; i < itemsInChest; i++)
             {
                 Item? item = itemFactory.CreateChestItem(session);
@@ -254,7 +250,7 @@ namespace TextGame
             else
             {
                 var (min, max) = GameBalance.ApplySpread((int)maxHealthBoost!, _roomId);
-                MaxHealthBoost = _random.Next(min, max + 1);
+                MaxHealthBoost = Random.Shared.Next(min, max + 1);
                 if (_fromShop) GameBalance.ApplyShopMultiplier((int)MaxHealthBoost!);
                 Cost += (int)(MaxHealthBoost * GameBalance.MaxHealthCostMultiplier);
             }
@@ -263,7 +259,7 @@ namespace TextGame
             else
             {
                 var (min, max) = GameBalance.ApplySpread((int)currentHealthBoost!, _roomId);
-                CurrentHealthBoost = _random.Next(min, max + 1);
+                CurrentHealthBoost = Random.Shared.Next(min, max + 1);
                 if (_fromShop) GameBalance.ApplyShopMultiplier((int)CurrentHealthBoost!);
                 Cost += (int)(CurrentHealthBoost * GameBalance.CurrentHealthCostMultiplier);
             }
@@ -317,8 +313,8 @@ namespace TextGame
                 currentHealthFloor *= 1 / GameBalance.ShopMultiplier;
                 currentHealthCeiling *= GameBalance.ShopMultiplier;
             }
-            MaxHealthBoost = _random.Next((int)maxHealthFloor, (int)currentHealthCeiling + 1);
-            CurrentHealthBoost = _random.Next((int)currentHealthFloor, (int)currentHealthCeiling + 1);
+            MaxHealthBoost = Random.Shared.Next((int)maxHealthFloor, (int)currentHealthCeiling + 1);
+            CurrentHealthBoost = Random.Shared.Next((int)currentHealthFloor, (int)currentHealthCeiling + 1);
             base.Use(gameSession);
         }
     }
@@ -358,8 +354,8 @@ namespace TextGame
         public override int Attack(GameSession gameSession)
         {
             var (min, max) = GameBalance.ApplySpread(GameBalance.FistsBaseDamage, gameSession.CurrentRoom!.Number);
-            int damage = _random.Next(min, max + 1);
-            if (_random.Next(GameBalance.FistSelfHarmProbabilityDivider) == 0)
+            int damage = Random.Shared.Next(min, max + 1);
+            if (Random.Shared.Next(GameBalance.FistSelfHarmProbabilityDivider) == 0)
                 gameSession.CurrentHealth -= (int)(damage / GameBalance.FistSelfHarmDivider);
             return damage;
         }
@@ -373,9 +369,9 @@ namespace TextGame
         protected void Initialize(int durability, int damage)
         {
             var (minDurability, maxDurability) = GameBalance.ApplySpread(durability, _roomId);
-            Durability = _random.Next(minDurability, maxDurability + 1);
+            Durability = Random.Shared.Next(minDurability, maxDurability + 1);
             var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
-            Damage = _random.Next(minDamage, maxDamage + 1);
+            Damage = Random.Shared.Next(minDamage, maxDamage + 1);
             if (_fromShop)
             {
                 Durability = GameBalance.ApplyShopMultiplier((int)Durability!);
@@ -428,7 +424,7 @@ namespace TextGame
         protected void Initialize(int damage)
         {
             var (min, max) = GameBalance.ApplySpread(damage, _roomId);
-            Damage = _random.Next(min, max + 1);
+            Damage = Random.Shared.Next(min, max + 1);
             if (_fromShop) Damage = GameBalance.ApplyShopMultiplier(Damage);
             Cost = GameBalance.CalculateWandCost(Damage);
         }
@@ -450,7 +446,7 @@ namespace TextGame
         public override int Attack(GameSession gameSession)
         {
             int damage = (int)(Damage * GameBalance.ApplyGain(_roomId));
-            return _random.Next(damage + 1);
+            return Random.Shared.Next(damage + 1);
         }
     }
 
@@ -465,11 +461,11 @@ namespace TextGame
         }
         protected void Initialize(int durability, int damageBlock)
         {
-            Durability = _random.Next(
+            Durability = Random.Shared.Next(
                 (int)(durability * GameBalance.SpreadFloor),
                 (int)(durability * GameBalance.SpreadCeiling + 1));
             var (min, max) = GameBalance.ApplySpread(damageBlock, _roomId);
-            DamageBlock = _random.Next(min, max + 1);
+            DamageBlock = Random.Shared.Next(min, max + 1);
             if (_fromShop)
             {
                 Durability = GameBalance.ApplyShopMultiplier((int)Durability!);
@@ -554,8 +550,6 @@ namespace TextGame
     public class ItemFactory : IItemFactory
     {
         private readonly IEnemyFactory _enemyFactory;
-        private Random _random = Random.Shared;
-
         public ItemFactory(IEnemyFactory enemyFactory)
         {
 
@@ -572,7 +566,7 @@ namespace TextGame
                 return null;
 
             // Генерируем случайное число в диапазоне [0, totalWeight)
-            int roll = _random.Next(totalWeight);
+            int roll = Random.Shared.Next(totalWeight);
             int accumulated = 0;
 
             // Ищем предмет, в чей диапазон попало число
@@ -743,8 +737,6 @@ public abstract class Enemy : GameObject
 
     private readonly int _roomId;
 
-    protected Random _random = Random.Shared;
-
     public Enemy(string name, string description, int roomId, int id, int health, int damage, int damageBlock)
     {
         _roomId = roomId;
@@ -757,13 +749,13 @@ public abstract class Enemy : GameObject
     public virtual void Initialize(int health, int damage, int damageBlock)
     {
         var (minHealth, maxHealth) = GameBalance.ApplySpread(health, _roomId);
-        Health = _random.Next(minHealth, maxHealth + 1);
+        Health = Random.Shared.Next(minHealth, maxHealth + 1);
 
         var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
-        Damage = _random.Next(minDamage, maxDamage + 1);
+        Damage = Random.Shared.Next(minDamage, maxDamage + 1);
 
         var (minDamageBlock, maxDamageBlock) = GameBalance.ApplySpread(damageBlock, _roomId);
-        DamageBlock = _random.Next(minDamageBlock, maxDamageBlock + 1);
+        DamageBlock = Random.Shared.Next(minDamageBlock, maxDamageBlock + 1);
     }
     public virtual int Attack()
     {
