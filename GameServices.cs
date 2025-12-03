@@ -1,4 +1,6 @@
-﻿namespace TextGame
+﻿using System;
+
+namespace TextGame
 {
     public class CombatRepository : ICombatRepository
     {
@@ -380,31 +382,22 @@
         private readonly GameSession _session;
         private readonly IGetCurrentRoomRepository _getCurrentRoomRepository;
 
-        private readonly IRoomNumberFactory _roomNumberFactory;
         private readonly IRoomFactory _roomFactory;
-        private readonly IItemIdFactory _itemIdFactory;
-        private readonly IEnemyIdFactory _enemyIdFactory;
 
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IGameInfoRepository _gameInfoRepository;
         public GameControllerRepository(
             GameSession session,
             IGetCurrentRoomRepository getCurrentRoomRepository,
-            IRoomNumberFactory roomNumberFactory,
             IRoomFactory roomFactory,
-            IItemIdFactory itemIdFactory,
             IInventoryRepository inventoryRepository,
-            IEnemyIdFactory enemyIdFactory,
             IGameInfoRepository gameInfoRepository
             )
         {
             _session = session;
             _getCurrentRoomRepository = getCurrentRoomRepository;
-            _roomNumberFactory = roomNumberFactory;
             _roomFactory = roomFactory;
-            _itemIdFactory = itemIdFactory;
             _inventoryRepository = inventoryRepository;
-            _enemyIdFactory = enemyIdFactory;
             _gameInfoRepository = gameInfoRepository;
         }
         public Room GetCurrentRoom() => _getCurrentRoomRepository.GetCurrentRoom();
@@ -427,25 +420,56 @@
             _session.Inventory = new List<Item>();
             _session.Rooms = new List<Room>();
 
-            _session.MaxHealth = GameSession.DefaultMaxHealth;
-            _session.CurrentHealth = GameSession.DefaultMaxHealth;
+            _session.MaxHealth = GameBalance.DefaultMaxHealth;
+            _session.CurrentHealth = GameBalance.DefaultMaxHealth;
 
             _session.IsInBattle = false;
 
-            _roomNumberFactory.Reset();
-            _itemIdFactory.Reset();
-            _enemyIdFactory.Reset();
+            //_roomNumberFactory.Reset();
+            //_itemIdFactory.Reset();
+            //_enemyIdFactory.Reset();
+            _session.RoomCounter = 0;
+            _session.ItemCounter = 0;
+            _session.EnemyCounter = 0;
         }
         public List<Room> GenerateMap()
         {
-            List<Room> rooms = new List<Room>()
+            var rooms = new List<Room> { _roomFactory.CreateStartRoom() };
+            var options = new (int Weight, Func<Room> Create)[]
             {
-                new StartRoom(),
+        (GameBalance.EmptyRoomWeight, () => _roomFactory.CreateEmptyRoom(_session)),
+        (GameBalance.SmallRoomWeight, () => _roomFactory.CreateSmallRoom(_session)),
+        (GameBalance.BigRoomWeight, () => _roomFactory.CreateBigRoom(_session)),
+        (GameBalance.ShopWeight, () => _roomFactory.CreateShopRoom(_session))
             };
+            int baseWeightSum = options.Sum(x => x.Weight);
+
             while (rooms.Last() is not EndRoom)
             {
-                rooms.Add(_roomFactory.CreateRoom());
+                int endRoomWeight = _session.RoomCounter;
+                int totalWeight = baseWeightSum + endRoomWeight;
+
+                int roll = Random.Shared.Next(totalWeight);
+
+                if (roll >= baseWeightSum)
+                {
+                    rooms.Add(_roomFactory.CreateEndRoom(_session));
+                }
+                else
+                {
+                    int acc = 0;
+                    foreach (var (weight, create) in options)
+                    {
+                        if (roll < acc + weight)
+                        {
+                            rooms.Add(create());
+                            break;
+                        }
+                        acc += weight;
+                    }
+                }
             }
+
             return rooms;
         }
         public List<Item> GetInventory()

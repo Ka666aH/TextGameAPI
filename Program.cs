@@ -2,27 +2,26 @@ using Microsoft.AspNetCore.Diagnostics;
 using TextGame;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IItemFactory, ItemFactory>();
-builder.Services.AddSingleton<IEnemyFactory, EnemyFactory>();
+
 //Сессионные
-builder.Services.AddSingleton<IRoomNumberFactory, RoomNumberFactory>();
-builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
-builder.Services.AddSingleton<IEnemyIdFactory, EnemyIdFactory>();
-builder.Services.AddSingleton<IItemIdFactory, ItemIdFactory>();
+builder.Services.AddScoped<GameSession>();
+
 
 //Контроллерные
-//builder.Services.AddSingleton<IGameRepository, GameRepository>();
-builder.Services.AddSingleton<GameSession>();
-builder.Services.AddSingleton<IGetCurrentRoomRepository, GetCurrentRoomRepository>();
-builder.Services.AddSingleton<IChestRepository, ChestRepository>();
-builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
-builder.Services.AddSingleton<IGameInfoRepository, GameInfoRepository>();
-builder.Services.AddSingleton<IGetRoomByIdRepository, GetRoomByIdRepository>();
-builder.Services.AddSingleton<IGetItemByIdRepository, GetItemByIdRepository>();
-builder.Services.AddSingleton<IGameControllerRepository, GameControllerRepository>();
-builder.Services.AddSingleton<IRoomControllerRepository, RoomControllerRepository>();
-builder.Services.AddSingleton<IGetEnemyByIdRepository, GetEnemyByIdRepository>();
-builder.Services.AddSingleton<ICombatRepository, CombatRepository>();
+builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
+builder.Services.AddSingleton<IItemFactory, ItemFactory>();
+builder.Services.AddSingleton<IEnemyFactory, EnemyFactory>();
+
+builder.Services.AddScoped<IGetCurrentRoomRepository, GetCurrentRoomRepository>();
+builder.Services.AddScoped<IChestRepository, ChestRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IGameInfoRepository, GameInfoRepository>();
+builder.Services.AddScoped<IGetRoomByIdRepository, GetRoomByIdRepository>();
+builder.Services.AddScoped<IGetItemByIdRepository, GetItemByIdRepository>();
+builder.Services.AddScoped<IGameControllerRepository, GameControllerRepository>();
+builder.Services.AddScoped<IRoomControllerRepository, RoomControllerRepository>();
+builder.Services.AddScoped<IGetEnemyByIdRepository, GetEnemyByIdRepository>();
+builder.Services.AddScoped<ICombatRepository, CombatRepository>();
 
 
 // Add services to the container.

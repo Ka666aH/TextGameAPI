@@ -8,23 +8,6 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace TextGame
 {
-    public class GameBalance
-    {
-        public const double SpreadFloor = 0.8;
-        public const double SpreadCeiling = 1.2;
-        public const double ShopMultiplier = 1.2;
-        private const double _gain = 0.01;
-
-        public static double ApplyGain(int roomId) => 1 + roomId * _gain;
-        public static (int min, int max) ApplySpread(int baseValue, int roomId)
-        {
-            int minValue = (int)(baseValue * ApplyGain(roomId) * SpreadFloor);
-            int maxValue = (int)(baseValue * ApplyGain(roomId) * SpreadCeiling);
-            return (minValue, maxValue);
-        }
-        public static int ApplyShopMultiplier(int baseValue) => (int)(baseValue * ShopMultiplier);
-
-    }
     public class GameObject
     {
         public string Name { get; set; } = "НЕИЗВЕСТНО";
@@ -49,47 +32,21 @@ namespace TextGame
             Number = number;
             _enemyFactory = enemyFactory;
         }
-        public void CreateEnemy(int roomId)
+        public void CreateEnemy(GameSession session)
         {
             if (_enemyFactory == null) return;
+            int roomId = session.RoomCounter;
             //Логика создания врагов
 
-            //Расчёт весов (вероятности) появления врагов
-            int noneWeight = roomId < 100 ? (int)(-0.4 * roomId + 60) : 20;
-            int skeletorWeight = roomId < 50 ? (int)-0.48 * roomId + 24 : 0;
-            int skeletorArcherWeight = roomId switch
-            {
-                < 10 => (int)(0.3 * roomId + 12),
-                >= 10 and < 65 => (int)(-0.27778 * (roomId - 10) + 15),
-                _ => 0
-            };
-            int deadmanWeight = roomId switch
-            {
-                <= 100 => (int)(0.2 * roomId + 4),
-                > 100 and <= 200 => (int)(-0.08 * (roomId - 100) + 24),
-                _ => 20
-            };
-            int ghostWeight = roomId switch
-            {
-                <= 100 => (int)(0.32 * roomId),
-                > 100 and <= 200 => (int)(-0.08 * (roomId - 100) + 32),
-                _ => 30
-            };
-            int lichWeight = roomId switch
-            {
-                <= 10 => 0,
-                > 10 and <= 200 => (int)(0.21053 * (roomId - 10)),
-                _ => 50
-            };
             //Формирование списка взвешенного выбора
-            var options = new List<(int Weight, Action Create)>
+            var options = new List<(int Weight, Func<Enemy?> Create)>
             {
-                (noneWeight,            ()=>{}),
-                (skeletorWeight,        () => Enemies.Add(_enemyFactory.CreateSkeletor(roomId))),
-                (skeletorArcherWeight,  () => Enemies.Add(_enemyFactory.CreateSkeletorArcher(roomId))),
-                (deadmanWeight,         () => Enemies.Add(_enemyFactory.CreateDeadman(roomId))),
-                (ghostWeight,           () => Enemies.Add(_enemyFactory.CreateGhost(roomId))),
-                (lichWeight,            () => Enemies.Add(_enemyFactory.CreateLich(roomId))),
+                (GameBalance.CalculateNoneWeight(roomId),            () => null),
+                (GameBalance.CalculateSkeletorWeight(roomId),        () => _enemyFactory.CreateSkeletor(session)),
+                (GameBalance.CalculateSkeletorArcherWeight(roomId),  () => _enemyFactory.CreateSkeletorArcher(session)),
+                (GameBalance.CalculateDeadmanWeight(roomId),         () => _enemyFactory.CreateDeadman(session)),
+                (GameBalance.CalculateGhostWeight(roomId),           () => _enemyFactory.CreateGhost(session)),
+                (GameBalance.CalculateLichWeight(roomId),            () => _enemyFactory.CreateLich(session)),
             };
             //Выбор
             int weightsSum = options.Sum(x => x.Weight);
@@ -100,7 +57,8 @@ namespace TextGame
             {
                 if (roll < accumulated + option.Weight)
                 {
-                    option.Create();
+                    var enemy = option.Create();
+                    if (enemy is not null) Enemies.Add(enemy);
                     break;
                 }
                 accumulated += option.Weight;
@@ -109,113 +67,92 @@ namespace TextGame
     }
     public class StartRoom : Room
     {
-        public StartRoom() : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра, через которую Вы сюда провалились.", 0)
+        public StartRoom()
+            : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра, через которую Вы сюда провалились.", 0)
         {
             IsDiscovered = true;
         }
     }
     public class EndRoom : Room
     {
-        public EndRoom(IRoomNumberFactory roomNumberFactory) : base("ВЫХОД", "Выход наружу. Свобода.", roomNumberFactory.GetRoomNumber()) { }
+        public EndRoom(int roomNumber, GameSession session)
+            : base("ВЫХОД", "Выход наружу. Свобода.", roomNumber) { }
     }
     public class EmptyRoom : Room
     {
-        public EmptyRoom(IRoomNumberFactory roomNumberFactory, IEnemyFactory enemyFactory) : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", roomNumberFactory.GetRoomNumber(), enemyFactory)
+        public EmptyRoom(int roomNumber, IEnemyFactory enemyFactory, GameSession session)
+            : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", roomNumber)
         {
-            CreateEnemy(Number);
+            CreateEnemy(session);
         }
     }
     public class SmallRoom : Room
     {
-        public SmallRoom(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory, IEnemyFactory enemyFactory) : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", roomNumberFactory.GetRoomNumber(), enemyFactory)
+        public SmallRoom(int roomNumber, IItemFactory itemFactory, IEnemyFactory enemyFactory, GameSession session)
+            : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", roomNumber, enemyFactory)
         {
-            Item? item = itemFactory.CreateRoomItem(Number);
-            if (item != null) Items.Add(item);
-            CreateEnemy(Number);
+            for (int i = 0; i < GameBalance.SmallRoomItemsAmount; i++)
+            {
+                Item? item = itemFactory.CreateRoomItem(session);
+                if (item != null) Items.Add(item);
+            }
+            CreateEnemy(session);
         }
     }
     public class BigRoom : Room
     {
-        private const int _itemsAmount = 3;
-        public BigRoom(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory, IEnemyFactory enemyFactory) : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumberFactory.GetRoomNumber(), enemyFactory)
+        public BigRoom(int roomNumber, IItemFactory itemFactory, IEnemyFactory enemyFactory, GameSession session)
+            : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumber, enemyFactory)
         {
-            for (int i = 0; i < _itemsAmount; i++)
+            for (int i = 0; i < GameBalance.BigRoomItemsAmount; i++)
             {
-                Item? item = itemFactory.CreateRoomItem(Number);
+                Item? item = itemFactory.CreateRoomItem(session);
                 if (item != null) Items.Add(item);
             }
-            CreateEnemy(Number);
+            CreateEnemy(session);
         }
     }
     public class Shop : Room
     {
-        private const int _itemsAmount = 5;
-        public Shop(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory) : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", roomNumberFactory.GetRoomNumber())
+        public Shop(int roomNumber, IItemFactory itemFactory, GameSession session)
+            : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", roomNumber)
         {
-            for (int i = 0; i < _itemsAmount; i++)
+            for (int i = 0; i < GameBalance.ShopItemsAmount; i++)
             {
-                Item? item = itemFactory.CreateShopItem(Number);
+                Item? item = itemFactory.CreateShopItem(session);
                 if (item == null) continue;
                 item.AddStoreMargin();
                 Items.Add(item);
             }
         }
     }
-    public interface IRoomNumberFactory
-    {
-        int Number { get; }
-        int GetRoomNumber();
-        void Reset();
-    }
-    public class RoomNumberFactory : IRoomNumberFactory
-    {
-        private int _number = 0;
-
-        public int Number => Volatile.Read(ref _number);
-        public int GetRoomNumber()
-        {
-            Interlocked.Increment(ref _number);
-            return _number;
-        }
-        public void Reset() => _number = 0;
-    }
 
     public interface IRoomFactory
     {
-        Room CreateRoom();
+        StartRoom CreateStartRoom();
+        EmptyRoom CreateEmptyRoom(GameSession session);
+        SmallRoom CreateSmallRoom(GameSession session);
+        BigRoom CreateBigRoom(GameSession session);
+        Shop CreateShopRoom(GameSession session);
+        EndRoom CreateEndRoom(GameSession session);
     }
 
     public class RoomFactory : IRoomFactory
     {
-        private readonly IRoomNumberFactory _roomNumberFactory;
         private readonly IItemFactory _itemFactory;
         private readonly IEnemyFactory _enemyFactory;
-        private readonly Random _random = Random.Shared;
 
-        private const int _emptyRoomMax = 3000;
-        private const int _smallRoomMax = 7000;
-        private const int _bigRoomMax = 9000;
-        private const int _shopMax = 10000;
-
-        public RoomFactory(IRoomNumberFactory roomNumberFactory, IItemFactory itemFactory, IEnemyFactory enemyFactory)
+        public RoomFactory(IItemFactory itemFactory, IEnemyFactory enemyFactory)
         {
-            _roomNumberFactory = roomNumberFactory;
             _itemFactory = itemFactory;
             _enemyFactory = enemyFactory;
         }
-
-        public Room CreateRoom()
-        {
-            var roomTypeNumber = _random.Next(_shopMax + _roomNumberFactory.Number);
-            return roomTypeNumber switch
-            {
-                < _emptyRoomMax => new EmptyRoom(_roomNumberFactory, _enemyFactory),
-                >= _emptyRoomMax and < _smallRoomMax => new SmallRoom(_roomNumberFactory, _itemFactory, _enemyFactory),
-                >= _smallRoomMax and < _bigRoomMax => new BigRoom(_roomNumberFactory, _itemFactory, _enemyFactory),
-                >= _bigRoomMax and < _shopMax => new Shop(_roomNumberFactory, _itemFactory),
-                _ => new EndRoom(_roomNumberFactory),
-            };
-        }
+        public StartRoom CreateStartRoom() => new StartRoom();
+        public EmptyRoom CreateEmptyRoom(GameSession session) => new EmptyRoom(session.NextRoomNumber(), _enemyFactory, session);
+        public SmallRoom CreateSmallRoom(GameSession session) => new SmallRoom(session.NextRoomNumber(), _itemFactory, _enemyFactory, session);
+        public BigRoom CreateBigRoom(GameSession session) => new BigRoom(session.NextRoomNumber(), _itemFactory, _enemyFactory, session);
+        public Shop CreateShopRoom(GameSession session) => new Shop(session.NextRoomNumber(), _itemFactory, session);
+        public EndRoom CreateEndRoom(GameSession session) => new EndRoom(session.NextRoomNumber(), session);
     }
     #endregion
     #region Item
@@ -233,22 +170,23 @@ namespace TextGame
             Id = id;
             IsCarryable = isCarryable;
         }
-        public virtual void AddStoreMargin() => Cost *= 2;
+        public virtual void AddStoreMargin() => Cost = (int)(Cost! * GameBalance.StoreMargin);
     }
     public class Key : Item
     {
-        private const int _baseCost = 35;
-        public Key(IItemIdFactory itemIdFactory, int roomId) : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemIdFactory!.Id(), true)
+        public Key(int itemId, int roomId)
+            : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemId, true)
         {
-            Cost = (int)(_baseCost * GameBalance.ApplyGain(roomId));
+            Cost = (int)(GameBalance.KeyBaseCost * GameBalance.ApplyGain(roomId));
         }
     }
     public class BagOfCoins : Item
     {
-        private const int _baseCost = 11;
-        public BagOfCoins(IItemIdFactory itemIdFactory, int roomId) : base("МЕШОЧЕК С МОНЕТАМИ", "Потрёпанный кусок ткани с разными монетами внутри.", itemIdFactory!.Id(), true)
+        
+        public BagOfCoins(int itemId, int roomId)
+            : base("МЕШОЧЕК С МОНЕТАМИ", "Потрёпанный кусок ткани с разными монетами внутри.", itemId, true)
         {
-            var (min, max) = GameBalance.ApplySpread(_baseCost, roomId);
+            var (min, max) = GameBalance.ApplySpread(GameBalance.BagOfCoinsBaseCost, roomId);
             Cost = _random.Next(min, max + 1);
         }
     }
@@ -259,23 +197,17 @@ namespace TextGame
         public Mimic? Mimic { get; private set; }
         public List<Item> Items { get; set; }
 
-        private const int _minChestItemsAmount = 1;
-        private const int _maxChestItemsAmount = 3;
-
-        private const int _lockedProbabilityDenominator = 75;
-        private const int _mimicProbabilityDenominator = 50;
-        private const int _chestDivider = 100;
-
-        public Chest(IItemIdFactory itemIdFactory, IItemFactory itemFactory, IEnemyFactory enemyFactory, int roomId) : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemIdFactory!.Id(), false)
+        public Chest(int itemId, IItemFactory itemFactory, IEnemyFactory enemyFactory, int roomId, GameSession session)
+            : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemId, false)
         {
             Cost = null;
-            IsLocked = _random.Next(_chestDivider) < _lockedProbabilityDenominator;
-            Mimic = _random.Next(_chestDivider) < _mimicProbabilityDenominator ? enemyFactory.CreateMimic(roomId) : null;
+            IsLocked = _random.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
+            Mimic = _random.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? enemyFactory.CreateMimic(session) : null;
             Items = new List<Item>();
-            var itemsInChest = _random.Next(_minChestItemsAmount, _maxChestItemsAmount + 1);
+            var itemsInChest = _random.Next(GameBalance.MinChestItemsAmount, GameBalance.MaxChestItemsAmount + 1);
             for (int i = 0; i < itemsInChest; i++)
             {
-                Item? item = itemFactory.CreateChestItem(roomId);
+                Item? item = itemFactory.CreateChestItem(session);
                 if (item != null) Items.Add(item);
             }
         }
@@ -293,9 +225,10 @@ namespace TextGame
     }
     public class Map : Item
     {
-        public Map(IItemIdFactory itemIdFactory) : base("КАРТА", "Содержит знания о строении подземелья.", itemIdFactory!.Id(), true)
+        public Map(int itemId)
+            : base("КАРТА", "Содержит знания о строении подземелья.", itemId, true)
         {
-            Cost = 100;
+            Cost = GameBalance.MapBaseCost;
         }
     }
     #region Heal
@@ -323,7 +256,7 @@ namespace TextGame
                 var (min, max) = GameBalance.ApplySpread((int)maxHealthBoost!, _roomId);
                 MaxHealthBoost = _random.Next(min, max + 1);
                 if (_fromShop) GameBalance.ApplyShopMultiplier((int)MaxHealthBoost!);
-                Cost += MaxHealthBoost * 2;
+                Cost += (int)(MaxHealthBoost * GameBalance.MaxHealthCostMultiplier);
             }
 
             if (currentHealthBoost is null) CurrentHealthBoost = null;
@@ -332,7 +265,7 @@ namespace TextGame
                 var (min, max) = GameBalance.ApplySpread((int)currentHealthBoost!, _roomId);
                 CurrentHealthBoost = _random.Next(min, max + 1);
                 if (_fromShop) GameBalance.ApplyShopMultiplier((int)CurrentHealthBoost!);
-                Cost += CurrentHealthBoost;
+                Cost += (int)(CurrentHealthBoost * GameBalance.CurrentHealthCostMultiplier);
             }
         }
         public virtual void Use(GameSession gameSession)
@@ -354,37 +287,29 @@ namespace TextGame
     }
     public class Bandage : Heal
     {
-        private const int _baseMaxHealthBoost = 0;
-        private const int _baseCurrentHealthBoost = 20;
-        public Bandage(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ПОВЯЗКА", "Менее грязная тряпка, из тех, что здесь обычно встречаются.", itemIdFactory.Id(), roomId, fromShop, _baseMaxHealthBoost, _baseCurrentHealthBoost) { }
+        public Bandage(int itemId, int roomId, bool fromShop)
+            : base("ПОВЯЗКА", "Менее грязная тряпка, из тех, что здесь обычно встречаются.", itemId, roomId, fromShop, GameBalance.BandageBaseMaxHealthBoost, GameBalance.BandageBaseCurrentHealthBoost) { }
     }
     public class RegenPotion : Heal
     {
-        private const int _baseMaxHealthBoost = 0;
-        private const int _baseCurrentHealthBoost = 60;
-        public RegenPotion(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ЗЕЛЬЕ РЕГЕНЕРАЦИИ", "Пыльный бутылёк с субстанцией тёмного цвета.", itemIdFactory.Id(), roomId, fromShop, _baseMaxHealthBoost, _baseCurrentHealthBoost) { }
+        public RegenPotion(int itemId, int roomId, bool fromShop)
+            : base("ЗЕЛЬЕ РЕГЕНЕРАЦИИ", "Пыльный бутылёк с субстанцией тёмного цвета.", itemId, roomId, fromShop, GameBalance.RegenPotionBaseMaxHealthBoost, GameBalance.RegenPotionBaseCurrentHealthBoost) { }
     }
     public class PowerPotion : Heal
     {
-        private const int _baseMaxHealthBoost = 10;
-        private const int _baseCurrentHealthBoost = 30;
-        public PowerPotion(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ЗЕЛЬЕ СИЛЫ", "Не только восстанавливает силы, но и придаёт новых.", itemIdFactory.Id(), roomId, fromShop, _baseMaxHealthBoost, _baseCurrentHealthBoost) { }
+        public PowerPotion(int itemId, int roomId, bool fromShop)
+            : base("ЗЕЛЬЕ СИЛЫ", "Не только восстанавливает силы, но и придаёт новых.", itemId, roomId, fromShop, GameBalance.PowerPotionBaseMaxHealthBoost, GameBalance.PowerPotionBaseCurrentHealthBoost) { }
     }
     public class RandomPotion : Heal
     {
-        private const int _baseMaxHealthBoost = 25;
-        private const int _baseCurrentHealthBoost = 50;
-        public RandomPotion(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("НЕИЗВЕСТНОЕ ЗЕЛЬЕ", "Пробирка с жижей непонятного цвета.", itemIdFactory.Id(), roomId, fromShop, null, null) { }
+        public RandomPotion(int itemId, int roomId, bool fromShop)
+            : base("НЕИЗВЕСТНОЕ ЗЕЛЬЕ", "Пробирка с жижей непонятного цвета.", itemId, roomId, fromShop, null, null) { }
         public override void Use(GameSession gameSession)
         {
-            double maxHealthFloor = _baseMaxHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadFloor;
-            double maxHealthCeiling = _baseMaxHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadCeiling;
-            double currentHealthFloor = _baseCurrentHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadFloor;
-            double currentHealthCeiling = _baseCurrentHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadCeiling;
+            double maxHealthFloor = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadFloor;
+            double maxHealthCeiling = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadCeiling;
+            double currentHealthFloor = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadFloor;
+            double currentHealthCeiling = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadCeiling;
             if (_fromShop)
             {
                 maxHealthFloor *= 1 / GameBalance.ShopMultiplier;
@@ -428,22 +353,20 @@ namespace TextGame
     public class Fists : Weapon
     {
         public static readonly Fists DefaultFists = new Fists();
-        private const int _baseDamage = 10;
-        private const int _selfHarmProbabilityDivider = 2;
 
-        public Fists() : base("КУЛАКИ", "То, что есть (почти) у каждого. Базовое оружие самозащиты. Может быть больно.", null, null, _baseDamage, 0, false) { }
+        public Fists() : base("КУЛАКИ", "То, что есть (почти) у каждого. Базовое оружие самозащиты. Может быть больно.", null, null, GameBalance.FistsBaseDamage, 0, false) { }
         public override int Attack(GameSession gameSession)
         {
-            var (min, max) = GameBalance.ApplySpread(_baseDamage, gameSession.CurrentRoom!.Number);
+            var (min, max) = GameBalance.ApplySpread(GameBalance.FistsBaseDamage, gameSession.CurrentRoom!.Number);
             int damage = _random.Next(min, max + 1);
-            if (_random.Next(_selfHarmProbabilityDivider) == 0)
-                gameSession.CurrentHealth -= damage / 2;
+            if (_random.Next(GameBalance.FistSelfHarmProbabilityDivider) == 0)
+                gameSession.CurrentHealth -= (int)(damage / GameBalance.FistSelfHarmDivider);
             return damage;
         }
     }
     public abstract class Sword : Weapon
     {
-        public Sword(string name, string description, IItemIdFactory itemIdFactory, int roomId, bool fromShop, int durability, int damage) : base(name, description, itemIdFactory.Id(), null, 0, roomId, fromShop)
+        public Sword(string name, string description, int itemId, int roomId, bool fromShop, int durability, int damage) : base(name, description, itemId, null, 0, roomId, fromShop)
         {
             Initialize(durability, damage);
         }
@@ -469,44 +392,36 @@ namespace TextGame
         }
         public void BreakDown(GameSession gameSession)
         {
-            gameSession.RemoveWeapon();
+            gameSession.Weapon = Fists.DefaultFists;
         }
         private void CalculateCost()
         {
-            Cost = 1 + ((Durability * Damage) / 10);
+            Cost = GameBalance.CalculateSwordCost((int)Durability!,Damage);
         }
     }
     public class RustSword : Sword
     {
-        private const int _baseDurability = 8;
-        private const int _baseDamage = 15;
-        public RustSword(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamage) { }
+        public RustSword(int itemId, int roomId, bool fromShop)
+            : base("РЖАВЫЙ МЕЧ", "Очень старый меч. Лучше, чем ничего.", itemId, roomId, fromShop, GameBalance.RustSwordBaseDurability, GameBalance.RustSwordBaseDamage) { }
     }
     public class IronSword : Sword
     {
-        private const int _baseDurability = 18;
-        private const int _baseDamage = 26;
-        public IronSword(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ЖЕЛЕЗНЫЙ МЕЧ", "Добротное оружие воина. На лезвии оттиск \"304\".Номер, наверное.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamage) { }
+        public IronSword(int itemId, int roomId, bool fromShop)
+            : base("ЖЕЛЕЗНЫЙ МЕЧ", "Добротное оружие воина. На лезвии оттиск \"304\".Номер, наверное.", itemId, roomId, fromShop, GameBalance.IronSwordBaseDurability, GameBalance.IronSwordBaseDamage) { }
     }
     public class SilverSword : Sword
     {
-        private const int _baseDurability = 13;
-        private const int _baseDamage = 53;
-        public SilverSword(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("СЕРЕБРЯНЫЙ МЕЧ", "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamage) { }
+        public SilverSword(int itemId, int roomId, bool fromShop)
+            : base("СЕРЕБРЯНЫЙ МЕЧ", "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.", itemId, roomId, fromShop, GameBalance.SilverSwordBaseDurability, GameBalance.SilverSwordBaseDamage) { }
     }
     public class GlassSword : Sword
     {
-        private const int _baseDurability = 1;
-        private const int _baseDamage = 115;
-        public GlassSword(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("СТЕКЛЯННЫЙ МЕЧ", "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamage) { }
+        public GlassSword(int itemId, int roomId, bool fromShop)
+            : base("СТЕКЛЯННЫЙ МЕЧ", "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.", itemId, roomId, fromShop, GameBalance.GlassSwordBaseDurability, GameBalance.GlassSwordBaseDamage) { }
     }
     public abstract class Wand : Weapon
     {
-        public Wand(string name, string description, IItemIdFactory itemIdFactory, int roomId, bool fromShop, int damage) : base(name, description, itemIdFactory.Id(), null, 0, roomId, fromShop)
+        public Wand(string name, string description, int itemId, int roomId, bool fromShop, int damage) : base(name, description, itemId, null, 0, roomId, fromShop)
         {
             Initialize(damage);
         }
@@ -514,11 +429,8 @@ namespace TextGame
         {
             var (min, max) = GameBalance.ApplySpread(damage, _roomId);
             Damage = _random.Next(min, max + 1);
-            if (_fromShop)
-            {
-                Damage = GameBalance.ApplyShopMultiplier(Damage);
-            }
-            Cost = Damage * 3;
+            if (_fromShop) Damage = GameBalance.ApplyShopMultiplier(Damage);
+            Cost = GameBalance.CalculateWandCost(Damage);
         }
         public override int Attack(GameSession gameSession)
         {
@@ -527,15 +439,14 @@ namespace TextGame
     }
     public class MagicWand : Wand
     {
-        private const int _baseDamage = 21;
-        public MagicWand(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", itemIdFactory, roomId, fromShop, _baseDamage) { }
+        
+        public MagicWand(int itemId, int roomId, bool fromShop)
+            : base("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", itemId, roomId, fromShop, GameBalance.MagicWandBaseDamage) { }
     }
     public class RandomWand : Wand
     {
-        private const int _baseDamage = 41;
-        public RandomWand(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие. Становится сильнее со временем.", itemIdFactory, roomId, fromShop, _baseDamage) { }
+        public RandomWand(int itemId, int roomId, bool fromShop)
+            : base("ЖЕЗЛ СЛУЧАЙНОСТЕЙ", "Странное магическое оружие. Становится сильнее со временем.", itemId, roomId, fromShop, GameBalance.RandomWandBaseDamage) { }
         public override int Attack(GameSession gameSession)
         {
             int damage = (int)(Damage * GameBalance.ApplyGain(_roomId));
@@ -576,62 +487,53 @@ namespace TextGame
         protected abstract void BreakDown(GameSession gameSession);
         private void CalculateCost()
         {
-            Cost = 1 + ((Durability * DamageBlock) / 10);
+            Cost = GameBalance.CalculateArmorCost((int)Durability!, DamageBlock);
         }
     }
     public abstract class Helm : Armor
     {
-        public Helm(string name, string description, IItemIdFactory itemIdFactory, int roomId, bool fromShop, int durability, int damageBlock)
-            : base(name, description, itemIdFactory.Id(), roomId, fromShop, durability, damageBlock) { }
+        public Helm(string name, string description, int itemId, int roomId, bool fromShop, int durability, int damageBlock)
+            : base(name, description, itemId, roomId, fromShop, durability, damageBlock) { }
         protected override void BreakDown(GameSession gameSession)
         {
-            gameSession.RemoveHelm();
+            gameSession.Helm = null;
         }
     }
     public class WoodenBucket : Helm
     {
-        private const int _baseDurability = 3;
-        private const int _baseDamageBlock = 2;
-        public WoodenBucket(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ДЕРЕВЯННОЕ ВЕДРО", "Старое дырявое ведро. Кто в своём уме наденет его на голову?", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamageBlock) { }
+
+        public WoodenBucket(int itemId, int roomId, bool fromShop)
+            : base("ДЕРЕВЯННОЕ ВЕДРО", "Старое дырявое ведро. Кто в своём уме наденет его на голову?", itemId, roomId, fromShop, GameBalance.WoodenBucketBaseDurability, GameBalance.WoodenBucketBaseDamageBlock) { }
     }
     public class LeatherHelm : Helm
     {
-        private const int _baseDurability = 12;
-        private const int _baseDamageBlock = 4;
-        public LeatherHelm(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("КОЖАННЫЙ ШЛЕМ", "Изысканный чёрный шлем мастера подземелия.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamageBlock) { }
+        public LeatherHelm(int itemId, int roomId, bool fromShop)
+            : base("КОЖАННЫЙ ШЛЕМ", "Изысканный чёрный шлем мастера подземелия.", itemId, roomId, fromShop, GameBalance.LeatherHelmBaseDurability, GameBalance.LeatherHelmBaseDamageBlock) { }
     }
     public class IronHelm : Helm
     {
-        private const int _baseDurability = 18;
-        private const int _baseDamageBlock = 6;
-        public IronHelm(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ЖЕЛЕЗНЫЙ ШЛЕМ", "Крепкий шлем из качественного металла.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamageBlock) { }
+        public IronHelm(int itemId, int roomId, bool fromShop)
+            : base("ЖЕЛЕЗНЫЙ ШЛЕМ", "Крепкий шлем из качественного металла.", itemId, roomId, fromShop, GameBalance.IronHelmBaseDurability, GameBalance.IronHelmBaseDamageBlock) { }
     }
     public abstract class Chestplate : Armor
     {
-        public Chestplate(string name, string description, IItemIdFactory itemIdFactory, int roomId, bool fromShop, int durability, int damageBlock)
-            : base(name, description, itemIdFactory.Id(), roomId, fromShop, durability, damageBlock) { }
+        public Chestplate(string name, string description, int itemId, int roomId, bool fromShop, int durability, int damageBlock)
+            : base(name, description, itemId, roomId, fromShop, durability, damageBlock) { }
         protected override void BreakDown(GameSession gameSession)
         {
-            gameSession.RemoveChestplate();
+            gameSession.Chestplate = null;
         }
     }
     public class LeatherVest : Chestplate
     {
-        private const int _baseDurability = 24;
-        private const int _baseDamageBlock = 8;
-        public LeatherVest(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("КОЖАННАЯ КУРТКА", "Лёгкая куртка из плотной кожи.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamageBlock) { }
+        public LeatherVest(int itemId, int roomId, bool fromShop)
+            : base("КОЖАННАЯ КУРТКА", "Лёгкая куртка из плотной кожи.", itemId, roomId, fromShop, GameBalance.LeatherVestBaseDurability, GameBalance.LeatherVestBaseDamageBlock) { }
 
     }
     public class IronCuirass : Chestplate
     {
-        private const int _baseDurability = 36;
-        private const int _baseDamageBlock = 12;
-        public IronCuirass(IItemIdFactory itemIdFactory, int roomId, bool fromShop)
-            : base("ЖЕЛЕЗНАЯ КИРАСА", "Тяжёлая и прочная. Имеет небольшой оттиск \"304\" на внутренней части.", itemIdFactory, roomId, fromShop, _baseDurability, _baseDamageBlock) { }
+        public IronCuirass(int itemId, int roomId, bool fromShop)
+            : base("ЖЕЛЕЗНАЯ КИРАСА", "Тяжёлая и прочная. Имеет небольшой оттиск \"304\" на внутренней части.", itemId, roomId, fromShop, GameBalance.IronCuirassBaseDurability, GameBalance.IronCuirassBaseDamageBlock) { }
     }
     #endregion
     #endregion
@@ -642,52 +544,21 @@ namespace TextGame
         void Reset();
     }
     #endregion
-    #region ItemIdFactory
-    public interface IItemIdFactory : IIdFactory { };
-    public class ItemIdFactory : IItemIdFactory
-    {
-        private int ItemId = 0;
-        public int Id()
-        {
-            return Interlocked.Increment(ref ItemId);
-        }
-        public void Reset()
-        {
-            ItemId = 0;
-        }
-    }
-    #endregion
     #region ItemFactory
     public interface IItemFactory
     {
-        public Item? CreateRoomItem(int roomId);
-        public Item? CreateChestItem(int roomId);
-        public Item? CreateShopItem(int roomId);
+        public Item? CreateRoomItem(GameSession session);
+        public Item? CreateChestItem(GameSession session);
+        public Item? CreateShopItem(GameSession session);
     }
     public class ItemFactory : IItemFactory
     {
-        private readonly IItemIdFactory _itemIdFactory;
         private readonly IEnemyFactory _enemyFactory;
         private Random _random = Random.Shared;
 
-        private const double _roomOtherPercent = 70;
-        private const double _roomWeaponPercent = 10;
-        private const double _roomArmorPercent = 5;
-        private const double _roomHealPercent = 15;
-
-        private const double _chestOtherPercent = 45;
-        private const double _chestWeaponPercent = 20;
-        private const double _chestArmorPercent = 10;
-        private const double _chestHealPercent = 25;
-
-        private const double _shopOtherPercent = 18;
-        private const double _shopWeaponPercent = 28;
-        private const double _shopArmorPercent = 27;
-        private const double _shopHealPercent = 27;
-
-        public ItemFactory(IItemIdFactory itemIdFactory, IEnemyFactory enemyFactory)
+        public ItemFactory(IEnemyFactory enemyFactory)
         {
-            _itemIdFactory = itemIdFactory;
+
             _enemyFactory = enemyFactory;
         }
 
@@ -719,7 +590,7 @@ namespace TextGame
         private void AddWeightedGroup(
     List<(int Weight, Func<Item?> Creator)> options,
     int roomId,
-    double groupWeightPercent,
+    double groupWeightWeight,
     params (Func<int, double> WeightCalc, Func<Item?> Creator)[] items)
         {
             // 1. Считаем "сырые" веса для предметов в группе (без отрицательных значений)
@@ -740,181 +611,121 @@ namespace TextGame
                     continue; // Пропускаем предметы с нулевым весом
 
                 // Абсолютный вес = (вес_группы_в_процентах) * (вес_предмета / сумма_весов_группы)
-                int absoluteWeight = (int)(groupWeightPercent * (rawWeight / groupSum));
+                int absoluteWeight = (int)(groupWeightWeight * (rawWeight / groupSum));
 
                 if (absoluteWeight > 0)
                     options.Add((absoluteWeight, items[i].Creator));
             }
         }
 
-        public Item? CreateRoomItem(int roomId)
+        public Item? CreateRoomItem(GameSession session)
         {
-            //int rustSwordWeight = roomId < 100 ? (int)((-0.89 * roomId) + 89) : 0;
-            //int ironSwordWeight = (int)((0.25 * roomId) + 5);
-            //int silverSwordWeight = (int)(0.15 * roomId);
-            //int glassSwordWeight = 1;
-
-            //int magicWandWeight = (int)((0.25 * roomId) + 5);
-            //int randomWandWeight = (int)(0.04 * roomId);
-
-            //double weaponWieghts = rustSwordWeight + ironSwordWeight + silverSwordWeight + magicWandWeight + randomWandWeight;
-            //double weaponMultiplier = (10 * 20 - glassSwordWeight) / weaponWieghts;
-
-            //int woodenBucketWeight = roomId < 50 ? (int)((-1.7 * roomId) + 85) : 0;
-            //int leatherHelm = (int)(0.35 * roomId + 10);
-            //int ironHelm = (int)(0.2 * roomId);
-            //int leatherVest = (int)(0.2 * roomId + 5);
-            //int ironCuirass = (int)(0.1 * roomId);
-
-            //double armorWeight = woodenBucketWeight + leatherHelm + ironHelm + leatherVest + ironCuirass;
-            //double armorMultiplier = (5 * 20) / armorWeight;
-
-            //int bandageWeight = roomId < 100 ? (int)(-0.34 * roomId + 67) : 33 * 20;
-            //int regenWeight = (int)(0.22 * roomId + 22);
-            //int powerWeight = (int)(0.11 * roomId + 10);
-            //int randomWeight = (int)(0.01 * roomId + 1);
-
-            //double healWeight = bandageWeight + regenWeight + powerWeight + randomWeight;
-            //double healMultiplier = (15 * 20) / healWeight;
-
-            //List<(int Weight, Func<Item?> Item)> roomItems = new()
-            //{
-            //    (30 * 20, () => null),
-            //    (6 * 20,  () => new Key(_itemIdFactory,roomId)),
-            //    (14 * 20,  () => new BagOfCoins(_itemIdFactory,roomId)),
-            //    (20 * 20,  () => new Chest(_itemIdFactory,this,_enemyFactory,roomId)),
-            //    //10, Weapon
-            //    ((int)(weaponMultiplier * rustSwordWeight), () => new RustSword(_itemIdFactory,roomId,false)),
-            //    ((int)(weaponMultiplier * ironSwordWeight), () => new IronSword(_itemIdFactory,roomId,false)),
-            //    ((int)(weaponMultiplier * silverSwordWeight), () => new SilverSword(_itemIdFactory,roomId,false)),
-            //    (glassSwordWeight, () => new GlassSword(_itemIdFactory,roomId,false)),
-            //    ((int)(weaponMultiplier * magicWandWeight), () => new MagicWand(_itemIdFactory,roomId,false)),
-            //    ((int)(weaponMultiplier * randomWandWeight), () => new RandomWand(_itemIdFactory,roomId,false)),
-            //    //5, Armor
-            //    ((int)(armorMultiplier * woodenBucketWeight), () => new WoodenBucket(_itemIdFactory,roomId,false)),
-            //    ((int)(armorMultiplier * leatherHelm), () => new LeatherHelm(_itemIdFactory,roomId,false)),
-            //    ((int)(armorMultiplier * ironHelm), () => new IronHelm(_itemIdFactory,roomId,false)),
-            //    ((int)(armorMultiplier * leatherVest), () => new LeatherVest(_itemIdFactory,roomId,false)),
-            //    ((int)(armorMultiplier * ironCuirass), () => new IronСuirass(_itemIdFactory,roomId,false)),
-            //    //15, Heal
-            //    ((int)(healMultiplier * bandageWeight), () => new Bandage(_itemIdFactory,roomId,false)),
-            //    ((int)(healMultiplier * regenWeight), () => new RegenPotion(_itemIdFactory,roomId,false)),
-            //    ((int)(healMultiplier * powerWeight), () => new PowerPotion(_itemIdFactory,roomId,false)),
-            //    ((int)(healMultiplier * randomWeight), () => new RandomPotion(_itemIdFactory,roomId,false)),
-            //};
-
-            ////Выбор
-            //int weightsSum = roomItems.Sum(x => x.Weight);
-            //int roll = _random.Next(weightsSum);
-            //int accumulated = 0;
-
-            //foreach (var option in roomItems)
-            //{
-            //    if (roll < accumulated + option.Weight) return option.Item();
-            //    accumulated += option.Weight;
-            //}
-            //return null;
+            int roomId = session.RoomCounter;
 
             var options = new List<(int Weight, Func<Item?> Creator)>();
 
-            // Группа "Прочее" (70%)
-            AddWeightedGroup(options, roomId, _roomOtherPercent,
+            // Группа "Прочее"
+            AddWeightedGroup(options, roomId, GameBalance.RoomOtherWeight,
                 // Относительные веса внутри группы (не в процентах)
-                (_ => 30, () => null),
-                (_ => 6, () => new Key(_itemIdFactory, roomId)),
-                (_ => 14, () => new BagOfCoins(_itemIdFactory, roomId)),
-                (_ => 20, () => new Chest(_itemIdFactory, this, _enemyFactory, roomId))
+                (_ => GameBalance.CalculateNoneRoomWeight(), () => null),
+                (_ => GameBalance.CalculateKeyRoomWeight(), () => new Key(session.NextItemId(), roomId)),
+                (_ => GameBalance.CalculateBagOfCoinsRoomWeight(), () => new BagOfCoins(session.NextItemId(), roomId)),
+                (_ => GameBalance.CalculateChestRoomWeight(), () => new Chest(session.NextItemId(), this, _enemyFactory, roomId, session))
             );
 
-            // Группа "Оружие" (10%)
-            AddWeightedGroup(options, roomId, _roomWeaponPercent,
-                (r => r < 100 ? -0.89 * r + 89 : 0, () => new RustSword(_itemIdFactory, roomId, false)),
-                (r => 0.25 * r + 5, () => new IronSword(_itemIdFactory, roomId, false)),
-                (r => 0.15 * r, () => new SilverSword(_itemIdFactory, roomId, false)),
-                (_ => 1, () => new GlassSword(_itemIdFactory, roomId, false)),
+            // Группа "Оружие" 
+            AddWeightedGroup(options, roomId, GameBalance.RoomWeaponWeight,
+                (r => GameBalance.CalculateRustSwordRoomWeight(r), () => new RustSword(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateIronSwordRoomWeight(r), () => new IronSword(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateSilverSwordRoomWeight(r), () => new SilverSword(session.NextItemId(), roomId, false)),
+                (_ => GameBalance.CalculateGlassSwordRoomWeight(), () => new GlassSword(session.NextItemId(), roomId, false)),
 
-                (r => 0.25 * r + 5, () => new MagicWand(_itemIdFactory, roomId, false)),
-                (r => 0.04 * r, () => new RandomWand(_itemIdFactory, roomId, false))
+                (r => GameBalance.CalculateMagicWandRoomWeight(r), () => new MagicWand(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateRandomWandRoomWeight(r), () => new RandomWand(session.NextItemId(), roomId, false))
             );
 
-            // Группа "Броня" (5%)
-            AddWeightedGroup(options, roomId, _roomArmorPercent,
-                (r => r < 50 ? -1.7 * r + 85 : 0, () => new WoodenBucket(_itemIdFactory, roomId, false)),
-                (r => 0.35 * r + 10, () => new LeatherHelm(_itemIdFactory, roomId, false)),
-                (r => 0.2 * r, () => new IronHelm(_itemIdFactory, roomId, false)),
-                (r => 0.2 * r + 5, () => new LeatherVest(_itemIdFactory, roomId, false)),
-                (r => 0.1 * r, () => new IronCuirass(_itemIdFactory, roomId, false))
+            // Группа "Броня"
+            AddWeightedGroup(options, roomId, GameBalance.RoomArmorWeight,
+                (r => GameBalance.CalculateWoodenBucketRoomWeight(r), () => new WoodenBucket(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateLeatherHelmRoomWeight(r), () => new LeatherHelm(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateIronHelmRoomWeight(r), () => new IronHelm(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateLeatherVestRoomWeight(r), () => new LeatherVest(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateIronCuirassRoomWeight(r), () => new IronCuirass(session.NextItemId(), roomId, false))
             );
 
-            // Группа "Зелья" (15%)
-            AddWeightedGroup(options, roomId, _roomHealPercent,
-                (r => r < 100 ? -0.34 * r + 67 : 0, () => new Bandage(_itemIdFactory, roomId, false)),
-                (r => 0.22 * r + 22, () => new RegenPotion(_itemIdFactory, roomId, false)),
-                (r => 0.11 * r + 10, () => new PowerPotion(_itemIdFactory, roomId, false)),
-                (r => 0.01 * r + 1, () => new RandomPotion(_itemIdFactory, roomId, false))
+            // Группа "Зелья"
+            AddWeightedGroup(options, roomId, GameBalance.RoomHealWeight,
+                (r => GameBalance.CalculateBandageRoomWeight(r), () => new Bandage(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateRegenPotionRoomWeight(r), () => new RegenPotion(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculatePowerPotionRoomWeight(r), () => new PowerPotion(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateRandomPotionRoomWeight(r), () => new RandomPotion(session.NextItemId(), roomId, false))
             );
 
             return SelectRandom(options);
         }
-        public Item? CreateChestItem(int roomId)
+        public Item? CreateChestItem(GameSession session)
         {
+            int roomId = session.RoomCounter;
+
             var options = new List<(int Weight, Func<Item?> Creator)>();
 
-            AddWeightedGroup(options, roomId, _chestOtherPercent,
-                (_ => 10, () => new Key(_itemIdFactory, roomId)),
-                (_ => 30, () => new BagOfCoins(_itemIdFactory, roomId)),
-                (_ => 5, () => new Map(_itemIdFactory))
+            AddWeightedGroup(options, roomId, GameBalance.ChestOtherWeight,
+                (_ => GameBalance.CalculateKeyChestWeight(), () => new Key(session.NextItemId(), roomId)),
+                (_ => GameBalance.CalculateBagOfCoinsChestWeight(), () => new BagOfCoins(session.NextItemId(), roomId)),
+                (_ => GameBalance.CalculateMapChestWeight(), () => new Map(session.NextItemId()))
             );
-            AddWeightedGroup(options, roomId, _chestWeaponPercent,
-                (r => r < 50 ? -0.8 * r + 40 : 0, () => new RustSword(_itemIdFactory, roomId, false)),
-                (r => 0.25 * r + 15, () => new IronSword(_itemIdFactory, roomId, false)),
-                (r => 0.1 * r + 5, () => new SilverSword(_itemIdFactory, roomId, false)),
-                (_ => 5, () => new GlassSword(_itemIdFactory, roomId, false)),
+            AddWeightedGroup(options, roomId, GameBalance.ChestWeaponWeight,
+                (r => GameBalance.CalculateRustSwordChestWeight(r), () => new RustSword(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateIronSwordChestWeight(r), () => new IronSword(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateSilverSwordChestWeight(r), () => new SilverSword(session.NextItemId(), roomId, false)),
+                (_ => GameBalance.CalculateGlassSwordChestWeight(), () => new GlassSword(session.NextItemId(), roomId, false)),
 
-                (r => 0.05 * r + 25, () => new MagicWand(_itemIdFactory, roomId, false)),
-                (_ => 10, () => new RandomWand(_itemIdFactory, roomId, false))
+                (r => GameBalance.CalculateMagicWandChestWeight(r), () => new MagicWand(session.NextItemId(), roomId, false)),
+                (_ => GameBalance.CalculateRandomWandChestWeight(), () => new RandomWand(session.NextItemId(), roomId, false))
             );
-            AddWeightedGroup(options, roomId, _chestArmorPercent,
-                (r => -0.15 * r + 55, () => new LeatherHelm(_itemIdFactory, roomId, false)),
-                (r => 0.15 * r + 25, () => new IronHelm(_itemIdFactory, roomId, false)),
-                (r => -0.04 * r + 14, () => new LeatherVest(_itemIdFactory, roomId, false)),
-                (r => 0.04 * r + 6, () => new IronCuirass(_itemIdFactory, roomId, false))
+            AddWeightedGroup(options, roomId, GameBalance.ChestArmorWeight,
+                (r => GameBalance.CalculateLeatherHelmChestWeight(r), () => new LeatherHelm(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateIronHelmChestWeight(r), () => new IronHelm(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateLeatherVestChestWeight(r), () => new LeatherVest(session.NextItemId(), roomId, false)),
+                (r => GameBalance.CalculateIronCuirassChestWeight(r), () => new IronCuirass(session.NextItemId(), roomId, false))
             );
-            AddWeightedGroup(options, roomId, _chestHealPercent,
-                (_ => 60, () => new RegenPotion(_itemIdFactory, roomId, false)),
-                (_ => 30, () => new PowerPotion(_itemIdFactory, roomId, false)),
-                (_ => 10, () => new RandomPotion(_itemIdFactory, roomId, false))
+            AddWeightedGroup(options, roomId, GameBalance.ChestHealWeight,
+                (_ => GameBalance.CalculateRegenPotionChestWeight(), () => new RegenPotion(session.NextItemId(), roomId, false)),
+                (_ => GameBalance.CalculatePowerPotionChestWeight(), () => new PowerPotion(session.NextItemId(), roomId, false)),
+                (_ => GameBalance.CalculateRandomPotionChestWeight(), () => new RandomPotion(session.NextItemId(), roomId, false))
             );
             return SelectRandom(options);
         }
-        public Item? CreateShopItem(int roomId)
+        public Item? CreateShopItem(GameSession session)
         {
+            int roomId = session.RoomCounter;
+
             var options = new List<(int Weight, Func<Item?> Creator)>();
 
-            AddWeightedGroup(options, roomId, _shopOtherPercent,
-                (_ => 14, () => new Key(_itemIdFactory, roomId)),
-                (_ => 4, () => new Map(_itemIdFactory))
+            AddWeightedGroup(options, roomId, GameBalance.ShopOtherWeight,
+                (_ => GameBalance.CalculateKeyShopWeight(), () => new Key(session.NextItemId(), roomId)),
+                (_ => GameBalance.CalculateMapShopWeight(), () => new Map(session.NextItemId()))
             );
-            AddWeightedGroup(options, roomId, _shopWeaponPercent,
-                (r => r < 30 ? -r + 30 : 0, () => new RustSword(_itemIdFactory, roomId, true)),
-                (r => 0.15 * r + 20, () => new IronSword(_itemIdFactory, roomId, true)),
-                (r => 0.15 * r + 5, () => new SilverSword(_itemIdFactory, roomId, true)),
+            AddWeightedGroup(options, roomId, GameBalance.ShopWeaponWeight,
+                (r => GameBalance.CalculateRustSwordShopWeight(r), () => new RustSword(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculateIronSwordShopWeight(r), () => new IronSword(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculateSilverSwordShopWeight(r), () => new SilverSword(session.NextItemId(), roomId, true)),
 
-                (_ => 30, () => new MagicWand(_itemIdFactory, roomId, true)),
-                (_ => 15, () => new RandomWand(_itemIdFactory, roomId, true))
+                (_ => GameBalance.CalculateMagicWandShopWeight(), () => new MagicWand(session.NextItemId(), roomId, true)),
+                (_ => GameBalance.CalculateRandomWandShopWeight(), () => new RandomWand(session.NextItemId(), roomId, true))
             );
-            AddWeightedGroup(options, roomId, _shopArmorPercent,
-                (r => r < 30 ? -1.67 * r + 50 : 0, () => new WoodenBucket(_itemIdFactory, roomId, true)),
-                (r => 0.025 * r + 27.5, () => new LeatherHelm(_itemIdFactory, roomId, true)),
-                (r => 0.375 * r + 12.5, () => new IronHelm(_itemIdFactory, roomId, true)),
-                (r => 0.01 * r + 7, () => new LeatherVest(_itemIdFactory, roomId, true)),
-                (r => 0.09 * r + 3, () => new IronCuirass(_itemIdFactory, roomId, true))
+            AddWeightedGroup(options, roomId, GameBalance.ShopArmorWeight,
+                (r => GameBalance.CalculateWoodenBucketShopWeight(r), () => new WoodenBucket(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculateLeatherHelmShopWeight(r), () => new LeatherHelm(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculateIronHelmShopWeight(r), () => new IronHelm(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculateLeatherVestShopWeight(r), () => new LeatherVest(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculateIronCuirassShopWeight(r), () => new IronCuirass(session.NextItemId(), roomId, true))
             );
-            AddWeightedGroup(options, roomId, _shopHealPercent,
-                (r => r < 200 ? -0.15 * r + 30 : 0, () => new Bandage(_itemIdFactory, roomId, true)),
-                (r => 0.1 * r + 40, () => new RegenPotion(_itemIdFactory, roomId, true)),
-                (r => 0.05 * r + 20, () => new PowerPotion(_itemIdFactory, roomId, true)),
-                (_ => 10, () => new RandomPotion(_itemIdFactory, roomId, true))
+            AddWeightedGroup(options, roomId, GameBalance.ShopHealWeight,
+                (r => GameBalance.CalculateBandageShopWeight(r), () => new Bandage(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculateRegenPotionShopWeight(r), () => new RegenPotion(session.NextItemId(), roomId, true)),
+                (r => GameBalance.CalculatePowerPotionShopWeight(r), () => new PowerPotion(session.NextItemId(), roomId, true)),
+                (_ => GameBalance.CalculateRandomPotionShopWeight(), () => new RandomPotion(session.NextItemId(), roomId, true))
             );
             return SelectRandom(options);
         }
@@ -922,133 +733,101 @@ namespace TextGame
     #endregion
     #endregion
     #region Enemy
-    public interface IEnemyIdFactory : IIdFactory { };
-    public class EnemyIdFactory : IEnemyIdFactory
-    {
-        private int _enemyId = 0;
-        public int Id()
-        {
-            return Interlocked.Increment(ref _enemyId);
-        }
-        public void Reset()
-        {
-            _enemyId = 0;
-        }
-    }
-    public abstract class Enemy : GameObject
-    {
-        public int Id { get; protected set; }
-        public int Health { get; protected set; } = 0;
-        public int Damage { get; protected set; } = 0;
-        public int DamageBlock { get; protected set; } = 0;
-
-        private readonly int _roomId;
-
-        protected Random _random = Random.Shared;
-
-        public Enemy(string name, string description, int roomId, IEnemyIdFactory enemyIdFactory, int health, int damage, int damageBlock)
-        {
-            _roomId = roomId;
-
-            Name = name;
-            Description = description;
-            Id = enemyIdFactory!.Id();
-            Initialize(health, damage, damageBlock);
-        }
-        public virtual void Initialize(int health, int damage, int damageBlock)
-        {
-            var (minHealth, maxHealth) = GameBalance.ApplySpread(health, _roomId);
-            Health = _random.Next(minHealth, maxHealth + 1);
-
-            var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
-            Damage = _random.Next(minDamage, maxDamage + 1);
-
-            var (minDamageBlock, maxDamageBlock) = GameBalance.ApplySpread(damageBlock, _roomId);
-            DamageBlock = _random.Next(minDamageBlock, maxDamageBlock + 1);
-        }
-        public virtual int Attack()
-        {
-            return Damage;
-        }
-        public virtual int GetDamage(int damage, Room? room = null)
-        {
-            if (damage > DamageBlock) Health -= damage - DamageBlock;
-            return Health;
-        }
-    }
-    public class Skeletor : Enemy
-    {
-        private const int _baseHealth = 20;
-        private const int _baseDamage = 10;
-        private const int _baseDamageBlock = 2;
-        public Skeletor(int roomId, IEnemyIdFactory enemyIdFactory)
-            : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
-    }
-    public class SkeletorArcher : Enemy
-    {
-        private const int _baseHealth = 10;
-        private const int _baseDamage = 20;
-        private const int _baseDamageBlock = 1;
-        public SkeletorArcher(int roomId, IEnemyIdFactory enemyIdFactory)
-            : base("СКЕЛЕТОР-ЛУЧНИК", "Из тех, кто при жизни умел обращаться с луком.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
-    }
-    public class Deadman : Enemy
-    {
-        private const int _baseHealth = 50;
-        private const int _baseDamage = 5;
-        private const int _baseDamageBlock = 3;
-        public Deadman(int roomId, IEnemyIdFactory enemyIdFactory)
-            : base("МЕРТВЯК", "Мёртвое полуразложившееся тело. Источник жуткого смрада.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
-    }
-    public class Ghost : Enemy
-    {
-        private const int _baseHealth = 15;
-        private const int _baseDamage = 15;
-        private const int _baseDamageBlock = 0;
-        public Ghost(int roomId, IEnemyIdFactory enemyIdFactory)
-            : base("ПРИЗРАК", "Злой полуматериальный дух. Попробуй попади.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
-        public override int GetDamage(int damage, Room? room = null)
-        {
-            if (Random.Shared.Next(2) == 0) Health -= damage;
-            return Health;
-        }
-    }
-    public class Lich : Enemy
-    {
-        private const int _baseHealth = 40;
-        private const int _baseDamage = 30;
-        private const int _baseDamageBlock = 8;
-        public Lich(int roomId, IEnemyIdFactory enemyIdFactory)
-            : base("ЛИЧ", "Тебя ждёт вечный параЛИЧ. Ха-ха.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
-    }
-    public class Mimic : Enemy
-    {
-        private const int _baseHealth = 15;
-        private const int _baseDamage = 10;
-        private const int _baseDamageBlock = 5;
-        public Mimic(int roomId, IEnemyIdFactory enemyIdFactory)
-            : base("МИМИК", "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.", roomId, enemyIdFactory, _baseHealth, _baseDamage, _baseDamageBlock) { }
-    }
-
-    public interface IEnemyFactory
-    {
-        Skeletor CreateSkeletor(int roomId);
-        SkeletorArcher CreateSkeletorArcher(int roomId);
-        Deadman CreateDeadman(int roomId);
-        Ghost CreateGhost(int roomId);
-        Lich CreateLich(int roomId);
-        Mimic CreateMimic(int roomId);
-    }
-    public class EnemyFactory : IEnemyFactory
-    {
-        private readonly IEnemyIdFactory _enemyIdFactory;
-        public EnemyFactory(IEnemyIdFactory enemyIdFactory) => _enemyIdFactory = enemyIdFactory;
-        public Skeletor CreateSkeletor(int roomId) => new Skeletor(roomId, _enemyIdFactory);
-        public SkeletorArcher CreateSkeletorArcher(int roomId) => new SkeletorArcher(roomId, _enemyIdFactory);
-        public Deadman CreateDeadman(int roomId) => new Deadman(roomId, _enemyIdFactory);
-        public Ghost CreateGhost(int roomId) => new Ghost(roomId, _enemyIdFactory);
-        public Lich CreateLich(int roomId) => new Lich(roomId, _enemyIdFactory);
-        public Mimic CreateMimic(int roomId) => new Mimic(roomId, _enemyIdFactory);
-    }
-    #endregion 
 }
+public abstract class Enemy : GameObject
+{
+    public int Id { get; protected set; }
+    public int Health { get; protected set; } = 0;
+    public int Damage { get; protected set; } = 0;
+    public int DamageBlock { get; protected set; } = 0;
+
+    private readonly int _roomId;
+
+    protected Random _random = Random.Shared;
+
+    public Enemy(string name, string description, int roomId, int id, int health, int damage, int damageBlock)
+    {
+        _roomId = roomId;
+
+        Name = name;
+        Description = description;
+        Id = id;
+        Initialize(health, damage, damageBlock);
+    }
+    public virtual void Initialize(int health, int damage, int damageBlock)
+    {
+        var (minHealth, maxHealth) = GameBalance.ApplySpread(health, _roomId);
+        Health = _random.Next(minHealth, maxHealth + 1);
+
+        var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
+        Damage = _random.Next(minDamage, maxDamage + 1);
+
+        var (minDamageBlock, maxDamageBlock) = GameBalance.ApplySpread(damageBlock, _roomId);
+        DamageBlock = _random.Next(minDamageBlock, maxDamageBlock + 1);
+    }
+    public virtual int Attack()
+    {
+        return Damage;
+    }
+    public virtual int GetDamage(int damage, Room? room = null)
+    {
+        if (damage > DamageBlock) Health -= damage - DamageBlock;
+        return Health;
+    }
+}
+public class Skeletor : Enemy
+{
+
+    public Skeletor(int roomId, int enemyId)
+        : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId, enemyId, GameBalance.SkeletorBaseHealth, GameBalance.SkeletorBaseDamage, GameBalance.SkeletorBaseDamageBlock) { }
+}
+public class SkeletorArcher : Enemy
+{
+    public SkeletorArcher(int roomId, int enemyId)
+        : base("СКЕЛЕТОР-ЛУЧНИК", "Из тех, кто при жизни умел обращаться с луком.", roomId, enemyId, GameBalance.SkeletorArcherBaseHealth, GameBalance.SkeletorArcherBaseDamage, GameBalance.SkeletorArcherBaseDamageBlock) { }
+}
+public class Deadman : Enemy
+{
+    public Deadman(int roomId, int enemyId)
+        : base("МЕРТВЯК", "Мёртвое полуразложившееся тело. Источник жуткого смрада.", roomId, enemyId, GameBalance.DeadmanBaseHealth, GameBalance.DeadmanBaseDamage, GameBalance.DeadmanBaseDamageBlock) { }
+}
+public class Ghost : Enemy
+{
+    public Ghost(int roomId, int enemyId)
+        : base("ПРИЗРАК", "Злой полуматериальный дух. Попробуй попади.", roomId, enemyId, GameBalance.GhostBaseHealth, GameBalance.GlassSwordBaseDamage, GameBalance.GhostBaseDamageBlock) { }
+    public override int GetDamage(int damage, Room? room = null)
+    {
+        if (Random.Shared.Next(GameBalance.GhostHitDivider) == 0) Health -= damage;
+        return Health;
+    }
+}
+public class Lich : Enemy
+{
+    public Lich(int roomId, int enemyId)
+        : base("ЛИЧ", "Тебя ждёт вечный параЛИЧ. Ха-ха.", roomId, enemyId, GameBalance.LichBaseHealth, GameBalance.LichBaseDamage, GameBalance.LichBaseDamageBlock) { }
+}
+public class Mimic : Enemy
+{
+    public Mimic(int roomId, int enemyId)
+        : base("МИМИК", "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.", roomId, enemyId, GameBalance.MimicBaseHealth, GameBalance.MimicBaseDamage, GameBalance.MimicBaseDamageBlock) { }
+}
+
+public interface IEnemyFactory
+{
+    Skeletor CreateSkeletor(GameSession session);
+    SkeletorArcher CreateSkeletorArcher(GameSession session);
+    Deadman CreateDeadman(GameSession session);
+    Ghost CreateGhost(GameSession session);
+    Lich CreateLich(GameSession session);
+    Mimic CreateMimic(GameSession session);
+}
+public class EnemyFactory : IEnemyFactory
+{
+    public Skeletor CreateSkeletor(GameSession session) => new Skeletor(session.RoomCounter, session.NextEnemyId());
+    public SkeletorArcher CreateSkeletorArcher(GameSession session) => new SkeletorArcher(session.RoomCounter, session.NextEnemyId());
+    public Deadman CreateDeadman(GameSession session) => new Deadman(session.RoomCounter, session.NextEnemyId());
+    public Ghost CreateGhost(GameSession session) => new Ghost(session.RoomCounter, session.NextEnemyId());
+    public Lich CreateLich(GameSession session) => new Lich(session.RoomCounter, session.NextEnemyId());
+    public Mimic CreateMimic(GameSession session) => new Mimic(session.RoomCounter, session.NextEnemyId());
+}
+#endregion
