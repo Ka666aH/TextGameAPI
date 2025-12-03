@@ -73,21 +73,21 @@ namespace TextGame
     }
     public class EndRoom : Room
     {
-        public EndRoom(int roomNumber, GameSession session)
-            : base("ВЫХОД", "Выход наружу. Свобода.", roomNumber) { }
+        public EndRoom(GameSession session)
+            : base("ВЫХОД", "Выход наружу. Свобода.", session.NextRoomNumber()) { }
     }
     public class EmptyRoom : Room
     {
-        public EmptyRoom(int roomNumber, IEnemyFactory enemyFactory, GameSession session)
-            : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", roomNumber)
+        public EmptyRoom(IEnemyFactory enemyFactory, GameSession session)
+            : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", session.NextRoomNumber())
         {
             CreateEnemy(session);
         }
     }
     public class SmallRoom : Room
     {
-        public SmallRoom(int roomNumber, IItemFactory itemFactory, IEnemyFactory enemyFactory, GameSession session)
-            : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", roomNumber, enemyFactory)
+        public SmallRoom(IItemFactory itemFactory, IEnemyFactory enemyFactory, GameSession session)
+            : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", session.NextRoomNumber(), enemyFactory)
         {
             for (int i = 0; i < GameBalance.SmallRoomItemsAmount; i++)
             {
@@ -99,8 +99,8 @@ namespace TextGame
     }
     public class BigRoom : Room
     {
-        public BigRoom(int roomNumber, IItemFactory itemFactory, IEnemyFactory enemyFactory, GameSession session)
-            : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumber, enemyFactory)
+        public BigRoom(IItemFactory itemFactory, IEnemyFactory enemyFactory, GameSession session)
+            : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", session.NextRoomNumber(), enemyFactory)
         {
             for (int i = 0; i < GameBalance.BigRoomItemsAmount; i++)
             {
@@ -112,8 +112,8 @@ namespace TextGame
     }
     public class Shop : Room
     {
-        public Shop(int roomNumber, IItemFactory itemFactory, GameSession session)
-            : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", roomNumber)
+        public Shop(IItemFactory itemFactory, GameSession session)
+            : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", session.NextRoomNumber())
         {
             for (int i = 0; i < GameBalance.ShopItemsAmount; i++)
             {
@@ -146,11 +146,11 @@ namespace TextGame
             _enemyFactory = enemyFactory;
         }
         public StartRoom CreateStartRoom() => new StartRoom();
-        public EmptyRoom CreateEmptyRoom(GameSession session) => new EmptyRoom(session.NextRoomNumber(), _enemyFactory, session);
-        public SmallRoom CreateSmallRoom(GameSession session) => new SmallRoom(session.NextRoomNumber(), _itemFactory, _enemyFactory, session);
-        public BigRoom CreateBigRoom(GameSession session) => new BigRoom(session.NextRoomNumber(), _itemFactory, _enemyFactory, session);
-        public Shop CreateShopRoom(GameSession session) => new Shop(session.NextRoomNumber(), _itemFactory, session);
-        public EndRoom CreateEndRoom(GameSession session) => new EndRoom(session.NextRoomNumber(), session);
+        public EmptyRoom CreateEmptyRoom(GameSession session) => new EmptyRoom(_enemyFactory, session);
+        public SmallRoom CreateSmallRoom(GameSession session) => new SmallRoom(_itemFactory, _enemyFactory, session);
+        public BigRoom CreateBigRoom(GameSession session) => new BigRoom(_itemFactory, _enemyFactory, session);
+        public Shop CreateShopRoom(GameSession session) => new Shop(_itemFactory, session);
+        public EndRoom CreateEndRoom(GameSession session) => new EndRoom(session);
     }
     #endregion
     #region Item
@@ -193,8 +193,8 @@ namespace TextGame
         public Mimic? Mimic { get; private set; }
         public List<Item> Items { get; set; }
 
-        public Chest(int itemId, IItemFactory itemFactory, IEnemyFactory enemyFactory, int roomId, GameSession session)
-            : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemId, false)
+        public Chest(IItemFactory itemFactory, IEnemyFactory enemyFactory, GameSession session)
+            : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", session.NextItemId(), false)
         {
             Cost = null;
             IsLocked = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
@@ -624,7 +624,7 @@ namespace TextGame
                 (_ => GameBalance.CalculateNoneRoomWeight(), () => null),
                 (_ => GameBalance.CalculateKeyRoomWeight(), () => new Key(session.NextItemId(), roomId)),
                 (_ => GameBalance.CalculateBagOfCoinsRoomWeight(), () => new BagOfCoins(session.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateChestRoomWeight(), () => new Chest(session.NextItemId(), this, _enemyFactory, roomId, session))
+                (_ => GameBalance.CalculateChestRoomWeight(), () => new Chest(this, _enemyFactory, session))
             );
 
             // Группа "Оружие" 
