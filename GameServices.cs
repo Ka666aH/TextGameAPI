@@ -37,12 +37,16 @@ namespace TextGame
                     _session.CurrentRoom.Items.Add(_session.CurrentMimicChest);
                     _session.CurrentMimicChest = null;
                 }
-                if (_session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", _gameInfoRepository.GetGameInfo());//дубль
+                CheckPlayerHealthAfterAttack();
                 if (!_session.CurrentRoom.Enemies.Any()) _session.IsInBattle = false;
                 throw new BattleWinException($"{enemy.Name!} повержен.", battleLog);
             }
-            if (_session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", _gameInfoRepository.GetGameInfo()); //дубль
+            CheckPlayerHealthAfterAttack();
             return battleLog;
+        }
+        public void CheckPlayerHealthAfterAttack()
+        {
+            if (_session.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", _gameInfoRepository.GetGameInfo());
         }
         public BattleLog GetDamage()
         {
