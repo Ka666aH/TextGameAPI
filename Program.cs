@@ -5,23 +5,27 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Сессионные
 builder.Services.AddScoped<GameSession>();
-
-
-//Контроллерные
-builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
-builder.Services.AddSingleton<IItemFactory, ItemFactory>();
-builder.Services.AddSingleton<IEnemyFactory, EnemyFactory>();
+builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 
 builder.Services.AddScoped<IGetCurrentRoomRepository, GetCurrentRoomRepository>();
 builder.Services.AddScoped<IChestRepository, ChestRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IGameInfoRepository, GameInfoRepository>();
 builder.Services.AddScoped<IGetRoomByIdRepository, GetRoomByIdRepository>();
-builder.Services.AddScoped<IGetItemByIdRepository, GetItemByIdRepository>();
 builder.Services.AddScoped<IGameControllerRepository, GameControllerRepository>();
 builder.Services.AddScoped<IRoomControllerRepository, RoomControllerRepository>();
 builder.Services.AddScoped<IGetEnemyByIdRepository, GetEnemyByIdRepository>();
 builder.Services.AddScoped<ICombatRepository, CombatRepository>();
+builder.Services.AddScoped<ICheckItemService, CheckItemService>();
+builder.Services.AddScoped<IMapGenerator, MapGenerator>();
+
+//Общие
+builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
+builder.Services.AddSingleton<IItemFactory, ItemFactory>();
+builder.Services.AddSingleton<IEnemyFactory, EnemyFactory>();
+builder.Services.AddSingleton<IGetItemByIdRepository, GetItemByIdRepository>();
+
+
 
 
 // Add services to the container.

@@ -2,7 +2,7 @@
 {
     public record MapRoomDTO(int number, string name);
     public record ChestStateDTO(string name, string description, bool isLocked, bool isClosed);
-    public record GameInfoDTO(object room, WeaponDTO Weapon, ArmorDTO? Helm, ArmorDTO? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
+    public record GameInfoDTO(object room, WeaponDTO Weapon, ArmorDTO? Helm, ArmorDTO? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, IEnumerable<object> Inventory);
     //public record GameOvernInfoDTO(int roomNumber, Weapon Weapon, Helm? Helm, Chestplate? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, List<object> Inventory);
     public record GameOverDTO(string message, GameInfoDTO gameInfo);
     public record BattleLog(string target, int damageToTarget, int? targetHealthBeforeAttack, int? targetHealthAfterAttack, string attacker, int damageToAttacker, int? healthBeforeAttack, int? healthAfterAttack);
@@ -10,7 +10,7 @@
 
 
     public record GameObjectDTO(string Name, string Description);
-    public record RoomDTO(int Number, string Name, string Description, List<Enemy> Enemies);
+    public record RoomDTO(int Number, string Name, string Description, IEnumerable<Enemy> Enemies);
     public record RoomWithoutEnemiesDTO(int Number, string Name, string Description);
     public record EnemyDTO(int? Id, string Name, string Description, int Health, int Damage, int DamageBlock);
     public record ItemDTO(int? Id, string Name, string Description, int? cost);
@@ -52,7 +52,7 @@
                 _ => new GameObjectDTO(gameObject.Name ?? "НЕИЗВЕСТНО", gameObject.Description ?? "НЕИЗВЕСТНО")
             };
         }
-        public static List<object> ToDTO<T>(List<T> gameObjects) where T : GameObject
+        public static List<object> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject
         {
             List<object> gameObjectsDTO = new List<object>();
             foreach (T gameObject in gameObjects)

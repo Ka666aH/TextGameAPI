@@ -19,9 +19,5 @@
         public int RoomCounter { get; set; }
         public int ItemCounter { get; set; }
         public int EnemyCounter { get; set; }
-
-        public int NextRoomNumber() => ++RoomCounter;
-        public int NextItemId() => ++ItemCounter;
-        public int NextEnemyId() => ++EnemyCounter;
     }
 }
