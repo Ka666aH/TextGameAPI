@@ -54,6 +54,8 @@
         public void RemoveEnemyFromCurrentRoom(Enemy enemy);
         public void AddItemToCurrentRoom(Item item);
         public void RemoveItemFromCurrentRoom(Item item);
+
+        public List<Item> SearchCurrentRoom();
     }
     public interface IMapGenerator
     {

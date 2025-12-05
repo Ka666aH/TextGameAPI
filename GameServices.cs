@@ -103,6 +103,8 @@ namespace TextGame
         public void RemoveEnemyFromCurrentRoom(Enemy enemy) => _session.CurrentRoom!.RemoveEnemy(enemy);
         public void AddItemToCurrentRoom(Item item) => _session.CurrentRoom!.AddItem(item);
         public void RemoveItemFromCurrentRoom(Item item) => _session.CurrentRoom!.RemoveItem(item);
+
+        public List<Item> SearchCurrentRoom() => CurrentRoom!.Search();
     }
     public class MapGenerator : IMapGenerator
     {
@@ -705,10 +707,7 @@ namespace TextGame
             if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
             if (_sessionService.IsInBattle) throw new InBattleException();
 
-            //Room room = GetRoomById(roomId);
-            Room room = _sessionService.CurrentRoom!;
-            room.IsSearched = true;
-            return room!.Items;
+            return _sessionService.SearchCurrentRoom();
         }
         public void TakeItem(int itemId)
         {

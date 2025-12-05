@@ -45,6 +45,11 @@ namespace TextGame
             if (_enemies.Contains(enemy)) _enemies.Remove(enemy);
             else throw new NullEnemyIdException();
         }
+        public List<Item> Search()
+        {
+            IsSearched = true;
+            return _items;
+        }
         public void CreateEnemy(IGameSessionService sessionService)
         {
             if (_enemyFactory == null) return;
