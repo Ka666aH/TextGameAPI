@@ -115,12 +115,7 @@ namespace TextGame
         public BigRoom CreateBigRoom(int roomNumber) => new BigRoom("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", roomNumber);
         public Shop CreateShopRoom(int roomNumber) => new Shop("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", roomNumber);
     }
-    public interface IItemFactory
-    {
-        public Item? CreateRoomItem(IGameSessionService sessionService);
-        public Item? CreateChestItem(IGameSessionService sessionService);
-        public Item? CreateShopItem(IGameSessionService sessionService);
-    }
+
     public class ItemFactory : IItemFactory
     {
         private readonly IEnemyFactory _enemyFactory;

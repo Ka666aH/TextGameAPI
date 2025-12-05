@@ -131,6 +131,12 @@
     {
         Item GetItem(int itemId, IEnumerable<Item> items);
     }
+    public interface IItemFactory
+    {
+        public Item? CreateRoomItem(IGameSessionService sessionService);
+        public Item? CreateChestItem(IGameSessionService sessionService);
+        public Item? CreateShopItem(IGameSessionService sessionService);
+    }
     public interface IGetEnemyByIdRepository
     {
         Enemy GetEnemyById();
