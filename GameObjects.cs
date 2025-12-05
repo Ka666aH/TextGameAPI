@@ -14,9 +14,8 @@ namespace TextGame
         public string Description { get; set; } = "НЕОПИСУЕМО!";
     }
     #region Room
-    public class Room : GameObject
+    public abstract class Room : GameObject
     {
-        private readonly IEnemyFactory? _enemyFactory;
         public int Number { get; init; }
         private readonly List<Item> _items = new();
         public IReadOnlyList<Item> Items => _items;
@@ -25,12 +24,11 @@ namespace TextGame
         public bool IsDiscovered { get; set; } = false;
         public bool IsSearched { get; set; } = false;
 
-        public Room(string name, string description, int number, IEnemyFactory? enemyFactory = null)
+        public Room(string name, string description, int number)
         {
             Name = name;
             Description = description;
             Number = number;
-            _enemyFactory = enemyFactory;
         }
         public void AddItem(Item item) => _items.Add(item);
         public void RemoveItem(Item item)
@@ -50,128 +48,36 @@ namespace TextGame
             IsSearched = true;
             return _items;
         }
-        public void CreateEnemy(IGameSessionService sessionService)
-        {
-            if (_enemyFactory == null) return;
-            int roomId = sessionService.RoomCounter;
-            //Логика создания врагов
 
-            //Формирование списка взвешенного выбора
-            var options = new List<(int Weight, Func<Enemy?> Create)>
-            {
-                (GameBalance.CalculateNoneWeight(roomId),            () => null),
-                (GameBalance.CalculateSkeletorWeight(roomId),        () => _enemyFactory.CreateSkeletor(sessionService)),
-                (GameBalance.CalculateSkeletorArcherWeight(roomId),  () => _enemyFactory.CreateSkeletorArcher(sessionService)),
-                (GameBalance.CalculateDeadmanWeight(roomId),         () => _enemyFactory.CreateDeadman(sessionService)),
-                (GameBalance.CalculateGhostWeight(roomId),           () => _enemyFactory.CreateGhost(sessionService)),
-                (GameBalance.CalculateLichWeight(roomId),            () => _enemyFactory.CreateLich(sessionService)),
-            };
-            //Выбор
-            int weightsSum = options.Sum(x => x.Weight);
-            int roll = Random.Shared.Next(weightsSum);
-            int accumulated = 0;
-
-            foreach (var option in options)
-            {
-                if (roll < accumulated + option.Weight)
-                {
-                    var enemy = option.Create();
-                    if (enemy is not null) AddEnemy(enemy);
-                    break;
-                }
-                accumulated += option.Weight;
-            }
-        }
     }
     public class StartRoom : Room
     {
-        public StartRoom()
-            : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра, через которую Вы сюда провалились.", 0)
+        public StartRoom(string name, string description, int number) : base(name, description, number)
         {
             IsDiscovered = true;
         }
     }
     public class EndRoom : Room
     {
-        public EndRoom(IGameSessionService sessionService)
-            : base("ВЫХОД", "Выход наружу. Свобода.", sessionService.NextRoomNumber()) { }
+        public EndRoom(string name, string description, int number) : base(name, description, number) { }
     }
     public class EmptyRoom : Room
     {
-        public EmptyRoom(IEnemyFactory enemyFactory, IGameSessionService sessionService)
-            : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", sessionService.NextRoomNumber())
-        {
-            CreateEnemy(sessionService);
-        }
+        public EmptyRoom(string name, string description, int number) : base(name, description, number) { }
     }
     public class SmallRoom : Room
     {
-        public SmallRoom(IItemFactory itemFactory, IEnemyFactory enemyFactory, IGameSessionService sessionService)
-            : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", sessionService.NextRoomNumber(), enemyFactory)
-        {
-            for (int i = 0; i < GameBalance.SmallRoomItemsAmount; i++)
-            {
-                Item? item = itemFactory.CreateRoomItem(sessionService);
-                if (item != null) AddItem(item);
-            }
-            CreateEnemy(sessionService);
-        }
+        public SmallRoom(string name, string description, int number) : base(name, description, number) { }
     }
     public class BigRoom : Room
     {
-        public BigRoom(IItemFactory itemFactory, IEnemyFactory enemyFactory, IGameSessionService sessionService)
-            : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", sessionService.NextRoomNumber(), enemyFactory)
-        {
-            for (int i = 0; i < GameBalance.BigRoomItemsAmount; i++)
-            {
-                Item? item = itemFactory.CreateRoomItem(sessionService);
-                if (item != null) AddItem(item);
-            }
-            CreateEnemy(sessionService);
-        }
+        public BigRoom(string name, string description, int number) : base(name, description, number) { }
     }
     public class Shop : Room
     {
-        public Shop(IItemFactory itemFactory, IGameSessionService sessionService)
-            : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", sessionService.NextRoomNumber())
-        {
-            for (int i = 0; i < GameBalance.ShopItemsAmount; i++)
-            {
-                Item? item = itemFactory.CreateShopItem(sessionService);
-                if (item == null) continue;
-                item.AddStoreMargin();
-                AddItem(item);
-            }
-        }
+        public Shop(string name, string description, int number) : base(name, description, number) { }
     }
 
-    public interface IRoomFactory
-    {
-        StartRoom CreateStartRoom();
-        EmptyRoom CreateEmptyRoom(IGameSessionService sessionService);
-        SmallRoom CreateSmallRoom(IGameSessionService sessionService);
-        BigRoom CreateBigRoom(IGameSessionService sessionService);
-        Shop CreateShopRoom(IGameSessionService sessionService);
-        EndRoom CreateEndRoom(IGameSessionService sessionService);
-    }
-
-    public class RoomFactory : IRoomFactory
-    {
-        private readonly IItemFactory _itemFactory;
-        private readonly IEnemyFactory _enemyFactory;
-
-        public RoomFactory(IItemFactory itemFactory, IEnemyFactory enemyFactory)
-        {
-            _itemFactory = itemFactory;
-            _enemyFactory = enemyFactory;
-        }
-        public StartRoom CreateStartRoom() => new StartRoom();
-        public EmptyRoom CreateEmptyRoom(IGameSessionService sessionService) => new EmptyRoom(_enemyFactory, sessionService);
-        public SmallRoom CreateSmallRoom(IGameSessionService sessionService) => new SmallRoom(_itemFactory, _enemyFactory, sessionService);
-        public BigRoom CreateBigRoom(IGameSessionService sessionService) => new BigRoom(_itemFactory, _enemyFactory, sessionService);
-        public Shop CreateShopRoom(IGameSessionService sessionService) => new Shop(_itemFactory, sessionService);
-        public EndRoom CreateEndRoom(IGameSessionService sessionService) => new EndRoom(sessionService);
-    }
     #endregion
     #region Item
     public class Item : GameObject
@@ -548,293 +454,82 @@ namespace TextGame
     }
     #endregion
     #endregion
-    #region IdFactory
-    public interface IIdFactory
-    {
-        int Id();
-        void Reset();
-    }
-    #endregion
-    #region ItemFactory
-    public interface IItemFactory
-    {
-        public Item? CreateRoomItem(IGameSessionService sessionService);
-        public Item? CreateChestItem(IGameSessionService sessionService);
-        public Item? CreateShopItem(IGameSessionService sessionService);
-    }
-    public class ItemFactory : IItemFactory
-    {
-        private readonly IEnemyFactory _enemyFactory;
-        public ItemFactory(IEnemyFactory enemyFactory)
-        {
-
-            _enemyFactory = enemyFactory;
-        }
-
-        private Item? SelectRandom(List<(int Weight, Func<Item?> Creator)> options)
-        {
-            // Суммируем все веса
-            int totalWeight = options.Sum(option => option.Weight);
-
-            // Защита от пустого списка или нулевых весов
-            if (totalWeight <= 0)
-                return null;
-
-            // Генерируем случайное число в диапазоне [0, totalWeight)
-            int roll = Random.Shared.Next(totalWeight);
-            int accumulated = 0;
-
-            // Ищем предмет, в чей диапазон попало число
-            foreach (var (weight, creator) in options)
-            {
-                if (roll < accumulated + weight)
-                    return creator(); // Создаём предмет только когда он выбран
-
-                accumulated += weight;
-            }
-
-            // На случай ошибок округления (очень редко)
-            return options[^1].Creator();
-        }
-        private void AddWeightedGroup(
-    List<(int Weight, Func<Item?> Creator)> options,
-    int roomId,
-    double groupWeightWeight,
-    params (Func<int, double> WeightCalc, Func<Item?> Creator)[] items)
-        {
-            // 1. Считаем "сырые" веса для предметов в группе (без отрицательных значений)
-            var rawWeights = items.Select(item => Math.Max(0, item.WeightCalc(roomId))).ToArray();
-
-            // 2. Сумма всех весов в группе
-            double groupSum = rawWeights.Sum();
-
-            // 3. Если группа пустая - пропускаем
-            if (groupSum <= 0)
-                return;
-
-            // 4. Добавляем каждый предмет с нормализованным весом
-            for (int i = 0; i < items.Length; i++)
-            {
-                double rawWeight = rawWeights[i];
-                if (rawWeight <= 0)
-                    continue; // Пропускаем предметы с нулевым весом
-
-                // Абсолютный вес = (вес_группы_в_процентах) * (вес_предмета / сумма_весов_группы)
-                int absoluteWeight = (int)(groupWeightWeight * (rawWeight / groupSum));
-
-                if (absoluteWeight > 0)
-                    options.Add((absoluteWeight, items[i].Creator));
-            }
-        }
-
-        public Item? CreateRoomItem(IGameSessionService sessionService)
-        {
-            int roomId = sessionService.RoomCounter;
-
-            var options = new List<(int Weight, Func<Item?> Creator)>();
-
-            // Группа "Прочее"
-            AddWeightedGroup(options, roomId, GameBalance.RoomOtherWeight,
-                // Относительные веса внутри группы (не в процентах)
-                (_ => GameBalance.CalculateNoneRoomWeight(), () => null),
-                (_ => GameBalance.CalculateKeyRoomWeight(), () => new Key(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateBagOfCoinsRoomWeight(), () => new BagOfCoins(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateChestRoomWeight(), () => new Chest(this, _enemyFactory, sessionService))
-            );
-
-            // Группа "Оружие" 
-            AddWeightedGroup(options, roomId, GameBalance.RoomWeaponWeight,
-                (r => GameBalance.CalculateRustSwordRoomWeight(r), () => new RustSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronSwordRoomWeight(r), () => new IronSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateSilverSwordRoomWeight(r), () => new SilverSword(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateGlassSwordRoomWeight(), () => new GlassSword(sessionService.NextItemId(), roomId, false)),
-
-                (r => GameBalance.CalculateMagicWandRoomWeight(r), () => new MagicWand(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateRandomWandRoomWeight(r), () => new RandomWand(sessionService.NextItemId(), roomId, false))
-            );
-
-            // Группа "Броня"
-            AddWeightedGroup(options, roomId, GameBalance.RoomArmorWeight,
-                (r => GameBalance.CalculateWoodenBucketRoomWeight(r), () => new WoodenBucket(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateLeatherHelmRoomWeight(r), () => new LeatherHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronHelmRoomWeight(r), () => new IronHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateLeatherVestRoomWeight(r), () => new LeatherVest(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronCuirassRoomWeight(r), () => new IronCuirass(sessionService.NextItemId(), roomId, false))
-            );
-
-            // Группа "Зелья"
-            AddWeightedGroup(options, roomId, GameBalance.RoomHealWeight,
-                (r => GameBalance.CalculateBandageRoomWeight(r), () => new Bandage(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateRegenPotionRoomWeight(r), () => new RegenPotion(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculatePowerPotionRoomWeight(r), () => new PowerPotion(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateRandomPotionRoomWeight(r), () => new RandomPotion(sessionService.NextItemId(), roomId, false))
-            );
-
-            return SelectRandom(options);
-        }
-        public Item? CreateChestItem(IGameSessionService sessionService)
-        {
-            int roomId = sessionService.RoomCounter;
-
-            var options = new List<(int Weight, Func<Item?> Creator)>();
-
-            AddWeightedGroup(options, roomId, GameBalance.ChestOtherWeight,
-                (_ => GameBalance.CalculateKeyChestWeight(), () => new Key(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateBagOfCoinsChestWeight(), () => new BagOfCoins(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateMapChestWeight(), () => new Map(sessionService.NextItemId()))
-            );
-            AddWeightedGroup(options, roomId, GameBalance.ChestWeaponWeight,
-                (r => GameBalance.CalculateRustSwordChestWeight(r), () => new RustSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronSwordChestWeight(r), () => new IronSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateSilverSwordChestWeight(r), () => new SilverSword(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateGlassSwordChestWeight(), () => new GlassSword(sessionService.NextItemId(), roomId, false)),
-
-                (r => GameBalance.CalculateMagicWandChestWeight(r), () => new MagicWand(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateRandomWandChestWeight(), () => new RandomWand(sessionService.NextItemId(), roomId, false))
-            );
-            AddWeightedGroup(options, roomId, GameBalance.ChestArmorWeight,
-                (r => GameBalance.CalculateLeatherHelmChestWeight(r), () => new LeatherHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronHelmChestWeight(r), () => new IronHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateLeatherVestChestWeight(r), () => new LeatherVest(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronCuirassChestWeight(r), () => new IronCuirass(sessionService.NextItemId(), roomId, false))
-            );
-            AddWeightedGroup(options, roomId, GameBalance.ChestHealWeight,
-                (_ => GameBalance.CalculateRegenPotionChestWeight(), () => new RegenPotion(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculatePowerPotionChestWeight(), () => new PowerPotion(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateRandomPotionChestWeight(), () => new RandomPotion(sessionService.NextItemId(), roomId, false))
-            );
-            return SelectRandom(options);
-        }
-        public Item? CreateShopItem(IGameSessionService sessionService)
-        {
-            int roomId = sessionService.RoomCounter;
-
-            var options = new List<(int Weight, Func<Item?> Creator)>();
-
-            AddWeightedGroup(options, roomId, GameBalance.ShopOtherWeight,
-                (_ => GameBalance.CalculateKeyShopWeight(), () => new Key(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateMapShopWeight(), () => new Map(sessionService.NextItemId()))
-            );
-            AddWeightedGroup(options, roomId, GameBalance.ShopWeaponWeight,
-                (r => GameBalance.CalculateRustSwordShopWeight(r), () => new RustSword(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateIronSwordShopWeight(r), () => new IronSword(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateSilverSwordShopWeight(r), () => new SilverSword(sessionService.NextItemId(), roomId, true)),
-
-                (_ => GameBalance.CalculateMagicWandShopWeight(), () => new MagicWand(sessionService.NextItemId(), roomId, true)),
-                (_ => GameBalance.CalculateRandomWandShopWeight(), () => new RandomWand(sessionService.NextItemId(), roomId, true))
-            );
-            AddWeightedGroup(options, roomId, GameBalance.ShopArmorWeight,
-                (r => GameBalance.CalculateWoodenBucketShopWeight(r), () => new WoodenBucket(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateLeatherHelmShopWeight(r), () => new LeatherHelm(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateIronHelmShopWeight(r), () => new IronHelm(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateLeatherVestShopWeight(r), () => new LeatherVest(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateIronCuirassShopWeight(r), () => new IronCuirass(sessionService.NextItemId(), roomId, true))
-            );
-            AddWeightedGroup(options, roomId, GameBalance.ShopHealWeight,
-                (r => GameBalance.CalculateBandageShopWeight(r), () => new Bandage(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateRegenPotionShopWeight(r), () => new RegenPotion(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculatePowerPotionShopWeight(r), () => new PowerPotion(sessionService.NextItemId(), roomId, true)),
-                (_ => GameBalance.CalculateRandomPotionShopWeight(), () => new RandomPotion(sessionService.NextItemId(), roomId, true))
-            );
-            return SelectRandom(options);
-        }
-    }
-    #endregion
     #endregion
     #region Enemy
-}
-public abstract class Enemy : GameObject
-{
-    public int Id { get; protected set; }
-    public int Health { get; protected set; } = 0;
-    public int Damage { get; protected set; } = 0;
-    public int DamageBlock { get; protected set; } = 0;
-
-    private readonly int _roomId;
-
-    public Enemy(string name, string description, int roomId, int id, int health, int damage, int damageBlock)
+    public abstract class Enemy : GameObject
     {
-        _roomId = roomId;
+        public int Id { get; protected set; }
+        public int Health { get; protected set; } = 0;
+        public int Damage { get; protected set; } = 0;
+        public int DamageBlock { get; protected set; } = 0;
 
-        Name = name;
-        Description = description;
-        Id = id;
-        Initialize(health, damage, damageBlock);
+        private readonly int _roomId;
+
+        public Enemy(string name, string description, int roomId, int id, int health, int damage, int damageBlock)
+        {
+            _roomId = roomId;
+
+            Name = name;
+            Description = description;
+            Id = id;
+            Initialize(health, damage, damageBlock);
+        }
+        public virtual void Initialize(int health, int damage, int damageBlock)
+        {
+            var (minHealth, maxHealth) = GameBalance.ApplySpread(health, _roomId);
+            Health = Random.Shared.Next(minHealth, maxHealth + 1);
+
+            var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
+            Damage = Random.Shared.Next(minDamage, maxDamage + 1);
+
+            var (minDamageBlock, maxDamageBlock) = GameBalance.ApplySpread(damageBlock, _roomId);
+            DamageBlock = Random.Shared.Next(minDamageBlock, maxDamageBlock + 1);
+        }
+        public virtual int Attack()
+        {
+            return Damage;
+        }
+        public virtual int GetDamage(int damage, Room? room = null)
+        {
+            if (damage > DamageBlock) Health -= damage - DamageBlock;
+            return Health;
+        }
     }
-    public virtual void Initialize(int health, int damage, int damageBlock)
+    public class Skeletor : Enemy
     {
-        var (minHealth, maxHealth) = GameBalance.ApplySpread(health, _roomId);
-        Health = Random.Shared.Next(minHealth, maxHealth + 1);
 
-        var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
-        Damage = Random.Shared.Next(minDamage, maxDamage + 1);
-
-        var (minDamageBlock, maxDamageBlock) = GameBalance.ApplySpread(damageBlock, _roomId);
-        DamageBlock = Random.Shared.Next(minDamageBlock, maxDamageBlock + 1);
+        public Skeletor(int roomId, int enemyId)
+            : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId, enemyId, GameBalance.SkeletorBaseHealth, GameBalance.SkeletorBaseDamage, GameBalance.SkeletorBaseDamageBlock) { }
     }
-    public virtual int Attack()
+    public class SkeletorArcher : Enemy
     {
-        return Damage;
+        public SkeletorArcher(int roomId, int enemyId)
+            : base("СКЕЛЕТОР-ЛУЧНИК", "Из тех, кто при жизни умел обращаться с луком.", roomId, enemyId, GameBalance.SkeletorArcherBaseHealth, GameBalance.SkeletorArcherBaseDamage, GameBalance.SkeletorArcherBaseDamageBlock) { }
     }
-    public virtual int GetDamage(int damage, Room? room = null)
+    public class Deadman : Enemy
     {
-        if (damage > DamageBlock) Health -= damage - DamageBlock;
-        return Health;
+        public Deadman(int roomId, int enemyId)
+            : base("МЕРТВЯК", "Мёртвое полуразложившееся тело. Источник жуткого смрада.", roomId, enemyId, GameBalance.DeadmanBaseHealth, GameBalance.DeadmanBaseDamage, GameBalance.DeadmanBaseDamageBlock) { }
     }
-}
-public class Skeletor : Enemy
-{
-
-    public Skeletor(int roomId, int enemyId)
-        : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId, enemyId, GameBalance.SkeletorBaseHealth, GameBalance.SkeletorBaseDamage, GameBalance.SkeletorBaseDamageBlock) { }
-}
-public class SkeletorArcher : Enemy
-{
-    public SkeletorArcher(int roomId, int enemyId)
-        : base("СКЕЛЕТОР-ЛУЧНИК", "Из тех, кто при жизни умел обращаться с луком.", roomId, enemyId, GameBalance.SkeletorArcherBaseHealth, GameBalance.SkeletorArcherBaseDamage, GameBalance.SkeletorArcherBaseDamageBlock) { }
-}
-public class Deadman : Enemy
-{
-    public Deadman(int roomId, int enemyId)
-        : base("МЕРТВЯК", "Мёртвое полуразложившееся тело. Источник жуткого смрада.", roomId, enemyId, GameBalance.DeadmanBaseHealth, GameBalance.DeadmanBaseDamage, GameBalance.DeadmanBaseDamageBlock) { }
-}
-public class Ghost : Enemy
-{
-    public Ghost(int roomId, int enemyId)
-        : base("ПРИЗРАК", "Злой полуматериальный дух. Попробуй попади.", roomId, enemyId, GameBalance.GhostBaseHealth, GameBalance.GlassSwordBaseDamage, GameBalance.GhostBaseDamageBlock) { }
-    public override int GetDamage(int damage, Room? room = null)
+    public class Ghost : Enemy
     {
-        if (Random.Shared.Next(GameBalance.GhostHitDivider) == 0) Health -= damage;
-        return Health;
+        public Ghost(int roomId, int enemyId)
+            : base("ПРИЗРАК", "Злой полуматериальный дух. Попробуй попади.", roomId, enemyId, GameBalance.GhostBaseHealth, GameBalance.GlassSwordBaseDamage, GameBalance.GhostBaseDamageBlock) { }
+        public override int GetDamage(int damage, Room? room = null)
+        {
+            if (Random.Shared.Next(GameBalance.GhostHitDivider) == 0) Health -= damage;
+            return Health;
+        }
     }
+    public class Lich : Enemy
+    {
+        public Lich(int roomId, int enemyId)
+            : base("ЛИЧ", "Тебя ждёт вечный параЛИЧ. Ха-ха.", roomId, enemyId, GameBalance.LichBaseHealth, GameBalance.LichBaseDamage, GameBalance.LichBaseDamageBlock) { }
+    }
+    public class Mimic : Enemy
+    {
+        public Mimic(int roomId, int enemyId)
+            : base("МИМИК", "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.", roomId, enemyId, GameBalance.MimicBaseHealth, GameBalance.MimicBaseDamage, GameBalance.MimicBaseDamageBlock) { }
+    }
+    #endregion
 }
-public class Lich : Enemy
-{
-    public Lich(int roomId, int enemyId)
-        : base("ЛИЧ", "Тебя ждёт вечный параЛИЧ. Ха-ха.", roomId, enemyId, GameBalance.LichBaseHealth, GameBalance.LichBaseDamage, GameBalance.LichBaseDamageBlock) { }
-}
-public class Mimic : Enemy
-{
-    public Mimic(int roomId, int enemyId)
-        : base("МИМИК", "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.", roomId, enemyId, GameBalance.MimicBaseHealth, GameBalance.MimicBaseDamage, GameBalance.MimicBaseDamageBlock) { }
-}
-
-public interface IEnemyFactory
-{
-    Skeletor CreateSkeletor(IGameSessionService sessionService);
-    SkeletorArcher CreateSkeletorArcher(IGameSessionService sessionService);
-    Deadman CreateDeadman(IGameSessionService sessionService);
-    Ghost CreateGhost(IGameSessionService sessionService);
-    Lich CreateLich(IGameSessionService sessionService);
-    Mimic CreateMimic(IGameSessionService sessionService);
-}
-public class EnemyFactory : IEnemyFactory
-{
-    public Skeletor CreateSkeletor(IGameSessionService sessionService) => new Skeletor(sessionService.RoomCounter, sessionService.NextEnemyId());
-    public SkeletorArcher CreateSkeletorArcher(IGameSessionService sessionService) => new SkeletorArcher(sessionService.RoomCounter, sessionService.NextEnemyId());
-    public Deadman CreateDeadman(IGameSessionService sessionService) => new Deadman(sessionService.RoomCounter, sessionService.NextEnemyId());
-    public Ghost CreateGhost(IGameSessionService sessionService) => new Ghost(sessionService.RoomCounter, sessionService.NextEnemyId());
-    public Lich CreateLich(IGameSessionService sessionService) => new Lich(sessionService.RoomCounter, sessionService.NextEnemyId());
-    public Mimic CreateMimic(IGameSessionService sessionService) => new Mimic(sessionService.RoomCounter, sessionService.NextEnemyId());
-}
-#endregion

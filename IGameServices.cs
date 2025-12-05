@@ -57,17 +57,45 @@
 
         public List<Item> SearchCurrentRoom();
     }
+    public interface IRoomFactory
+    {
+        StartRoom CreateStartRoom();
+        EmptyRoom CreateEmptyRoom(int roomNumber);
+        SmallRoom CreateSmallRoom(int roomNumber);
+        BigRoom CreateBigRoom(int roomNumber);
+        Shop CreateShopRoom(int roomNumber);
+        EndRoom CreateEndRoom(int roomNumber);
+    }
+    public interface IIdFactory
+    {
+        int Id();
+        void Reset();
+    }
+    public interface IEnemyFactory
+    {
+        Skeletor CreateSkeletor(IGameSessionService sessionService);
+        SkeletorArcher CreateSkeletorArcher(IGameSessionService sessionService);
+        Deadman CreateDeadman(IGameSessionService sessionService);
+        Ghost CreateGhost(IGameSessionService sessionService);
+        Lich CreateLich(IGameSessionService sessionService);
+        Mimic CreateMimic(IGameSessionService sessionService);
+    }
     public interface IMapGenerator
     {
         List<Room> Generate(IGameSessionService sessionService);
     }
+    public interface IRoomContentGenerator
+    {
+        void GenerateContent(Room room, IGameSessionService sessionService);
+    }
+
     public interface IGetCurrentRoomRepository
     {
         Room GetCurrentRoom();
     }
     public interface ICheckItemService
     {
-        void CheckItem(Item item);
+        void CheckItem(Item item, IGameSessionService sessionService);
     }
     public interface IChestRepository
     {
@@ -99,9 +127,9 @@
     {
         Room GetRoomById(int roomId);
     }
-    public interface IGetItemByIdRepository
+    public interface IGetItemById
     {
-        Item GetItemById(int itemId, IEnumerable<Item> items);
+        Item GetItem(int itemId, IEnumerable<Item> items);
     }
     public interface IGetEnemyByIdRepository
     {

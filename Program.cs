@@ -3,10 +3,11 @@ using TextGame;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Сессионные
+//Ядро состояния
 builder.Services.AddScoped<GameSession>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 
+//Репозитории
 builder.Services.AddScoped<IGetCurrentRoomRepository, GetCurrentRoomRepository>();
 builder.Services.AddScoped<IChestRepository, ChestRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
@@ -16,16 +17,15 @@ builder.Services.AddScoped<IGameControllerRepository, GameControllerRepository>(
 builder.Services.AddScoped<IRoomControllerRepository, RoomControllerRepository>();
 builder.Services.AddScoped<IGetEnemyByIdRepository, GetEnemyByIdRepository>();
 builder.Services.AddScoped<ICombatRepository, CombatRepository>();
-builder.Services.AddScoped<ICheckItemService, CheckItemService>();
-builder.Services.AddScoped<IMapGenerator, MapGenerator>();
 
 //Общие
 builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
 builder.Services.AddSingleton<IItemFactory, ItemFactory>();
 builder.Services.AddSingleton<IEnemyFactory, EnemyFactory>();
-builder.Services.AddSingleton<IGetItemByIdRepository, GetItemByIdRepository>();
-
-
+builder.Services.AddSingleton<IMapGenerator, MapGenerator>();
+builder.Services.AddSingleton<IRoomContentGenerator, RoomContentGenerator>();
+builder.Services.AddSingleton<IGetItemById, GetItemById>();
+builder.Services.AddSingleton<ICheckItemService, CheckItemService>();
 
 
 // Add services to the container.
