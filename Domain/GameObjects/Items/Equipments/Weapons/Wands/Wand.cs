@@ -1,7 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameObjects.Items.Equipments.Weapons;
-
-namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands
+﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands
 {
     public abstract class Wand : Weapon
     {
@@ -16,9 +13,6 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands
             if (_fromShop) Damage = GameBalance.CalculateShopMultiplier(Damage);
             Cost = GameBalance.CalculateWandCost(Damage);
         }
-        public override int Attack(IGameSessionService sessionService)
-        {
-            return Damage;
-        }
+        public override WeaponAttackResult Attack(int roomId) => new WeaponAttackResult(Damage);
     }
 }

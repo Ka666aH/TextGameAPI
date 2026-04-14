@@ -4,6 +4,12 @@
     {
 
         public MagicWand(int itemId, int roomId, bool fromShop)
-            : base("ВОЛШЕБНЫЙ ЖЕЗЛ", "Простое магическое оружие. Может использовать каждый.", itemId, roomId, fromShop, GameBalance.MagicWandBaseDamage) { }
+            : base("ВОЛШЕБНЫЙ ЖЕЗЛ",
+                  "Простое магическое оружие. Может использовать каждый.",
+                  itemId,
+                  roomId,
+                  fromShop,
+                  GameBalance.MagicWandBaseDamage)
+        { }
     }
 }

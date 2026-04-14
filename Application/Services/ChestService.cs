@@ -64,9 +64,13 @@ namespace TextGame.Application.Services
             else
             {
                 int playerHealthBeforeAttack = _sessionService.CurrentHealth;
-                int damage = _sessionService.Weapon.Attack(_sessionService);
+                //attack
+                var attackResult = _sessionService.Weapon.Attack(_sessionService.CurrentRoom!.Number);
+                if (attackResult.SelfDamage != 0) _sessionService.AddCurrentHealth(-attackResult.SelfDamage);
+                if (attackResult.IsWeaponBrokenDown) _sessionService.RemoveWeapon();
+
                 int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
-                battleLog = new BattleLog("СУНДУК", damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
+                battleLog = new BattleLog("СУНДУК", attackResult.Damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
             }
             return battleLog;
         }

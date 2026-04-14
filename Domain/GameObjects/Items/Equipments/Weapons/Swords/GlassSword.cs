@@ -3,6 +3,13 @@
     public class GlassSword : Sword
     {
         public GlassSword(int itemId, int roomId, bool fromShop)
-            : base("СТЕКЛЯННЫЙ МЕЧ", "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.", itemId, roomId, fromShop, GameBalance.GlassSwordBaseDurability, GameBalance.GlassSwordBaseDamage) { }
+            : base("СТЕКЛЯННЫЙ МЕЧ",
+                  "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.",
+                  itemId,
+                  roomId,
+                  fromShop,
+                  GameBalance.GlassSwordBaseDurability,
+                  GameBalance.GlassSwordBaseDamage)
+        { }
     }
 }

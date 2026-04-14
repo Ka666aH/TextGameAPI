@@ -1,7 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameObjects.Items.Equipments.Weapons;
-
-namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords
+﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords
 {
     public abstract class Sword : Weapon
     {
@@ -22,16 +19,11 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords
             }
             CalculateCost();
         }
-        public override int Attack(IGameSessionService sessionService)
+        public override WeaponAttackResult Attack(int roomId)
         {
             Durability--;
             CalculateCost();
-            if (Durability <= 0) BreakDown(sessionService);
-            return Damage;
-        }
-        public void BreakDown(IGameSessionService sessionService)
-        {
-            sessionService.RemoveWeapon();
+            return new WeaponAttackResult(Damage, IsWeaponBrokenDown: Durability <= 0);
         }
         private void CalculateCost()
         {

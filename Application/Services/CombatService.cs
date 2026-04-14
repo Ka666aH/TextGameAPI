@@ -26,11 +26,15 @@ namespace TextGame.Application.Services
 
             int playerHealthBeforeAttack = _sessionService.CurrentHealth;
             Enemy enemy = _getEnemyByIdRepository.GetEnemyById();
-            int damage = _sessionService.Weapon.Attack(_sessionService);
+            //attack
+            var attackResult = _sessionService.Weapon.Attack(_sessionService.CurrentRoom!.Number);
+            if (attackResult.SelfDamage != 0) _sessionService.AddCurrentHealth(-attackResult.SelfDamage);
+            if (attackResult.IsWeaponBrokenDown) _sessionService.RemoveWeapon();
+
             int enemyHealthBeforeAttack = enemy.Health;
-            int enemyHealthAfterAttack = enemy.GetDamage(damage);
+            int enemyHealthAfterAttack = enemy.GetDamage(attackResult.Damage);
             int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
-            BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
+            BattleLog battleLog = new BattleLog(enemy.Name!, attackResult.Damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
             if (enemyHealthAfterAttack <= 0)
             {
                 _sessionService.RemoveEnemyFromCurrentRoom(enemy);

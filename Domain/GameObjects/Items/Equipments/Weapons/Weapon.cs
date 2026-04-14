@@ -1,6 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
-
-namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons
+﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons
 {
     public abstract class Weapon : Equipment
     {
@@ -11,6 +9,6 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons
         {
             Damage = damage;
         }
-        public abstract int Attack(IGameSessionService sessionService);
+        public abstract WeaponAttackResult Attack(int roomId);
     }
 }

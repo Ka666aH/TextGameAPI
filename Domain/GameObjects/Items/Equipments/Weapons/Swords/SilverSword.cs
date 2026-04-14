@@ -3,6 +3,13 @@
     public class SilverSword : Sword
     {
         public SilverSword(int itemId, int roomId, bool fromShop)
-            : base("СЕРЕБРЯНЫЙ МЕЧ", "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.", itemId, roomId, fromShop, GameBalance.SilverSwordBaseDurability, GameBalance.SilverSwordBaseDamage) { }
+            : base("СЕРЕБРЯНЫЙ МЕЧ",
+                  "Редкий меч из особого серебряного сплава. Эффективный, но менее прочный.",
+                  itemId,
+                  roomId,
+                  fromShop,
+                  GameBalance.
+                  SilverSwordBaseDurability, GameBalance.SilverSwordBaseDamage)
+        { }
     }
 }
