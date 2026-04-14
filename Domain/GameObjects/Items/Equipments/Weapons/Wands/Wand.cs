@@ -1,0 +1,24 @@
+﻿using TextGame.Application.Interfaces.Services;
+using TextGame.Domain.GameObjects.Items.Equipments.Weapons;
+
+namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands
+{
+    public abstract class Wand : Weapon
+    {
+        public Wand(string name, string description, int itemId, int roomId, bool fromShop, int damage) : base(name, description, itemId, null, 0, roomId, fromShop)
+        {
+            Initialize(damage);
+        }
+        protected void Initialize(int damage)
+        {
+            var (min, max) = GameBalance.ApplySpread(damage, _roomId);
+            Damage = Random.Shared.Next(min, max + 1);
+            if (_fromShop) Damage = GameBalance.ApplyShopMultiplier(Damage);
+            Cost = GameBalance.CalculateWandCost(Damage);
+        }
+        public override int Attack(IGameSessionService sessionService)
+        {
+            return Damage;
+        }
+    }
+}
