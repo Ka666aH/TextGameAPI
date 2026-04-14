@@ -2,6 +2,6 @@
 {
     public class Shop : Room
     {
-        public Shop(string name, string description, int number) : base(name, description, number) { }
+        public Shop(int number) : base("МАГАЗИН", "Здесь мутный торгаш продаёт своё добро.", number) { }
     }
 }

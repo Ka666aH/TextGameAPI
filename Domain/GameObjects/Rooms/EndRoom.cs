@@ -2,6 +2,6 @@
 {
     public class EndRoom : Room
     {
-        public EndRoom(string name, string description, int number) : base(name, description, number) { }
+        public EndRoom(int number) : base("ВЫХОД", "Выход наружу. Свобода.", number) { }
     }
 }

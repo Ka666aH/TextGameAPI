@@ -2,7 +2,7 @@
 {
     public class GameObject
     {
-        public string Name { get; set; } = "НЕИЗВЕСТНО";
-        public string Description { get; set; } = "НЕОПИСУЕМО!";
+        public string Name { get; protected set; } = "НЕИЗВЕСТНО";
+        public string Description { get; protected set; } = "НЕОПИСУЕМО!";
     }
 }

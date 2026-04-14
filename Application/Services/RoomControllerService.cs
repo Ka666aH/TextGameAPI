@@ -47,7 +47,7 @@ namespace TextGame.Application.Services
             if (_sessionService.IsInBattle) throw new InBattleException();
 
             _sessionService.SetCurrentRoom(_sessionService.Rooms[_sessionService.CurrentRoom!.Number + 1]);
-            _sessionService.CurrentRoom.IsDiscovered = true;
+            _sessionService.CurrentRoom.Discover();
             if (_sessionService.CurrentRoom is EndRoom) throw new WinException(_gameInfoRepository.GetGameInfo());
             _sessionService.StartBattle();
         }

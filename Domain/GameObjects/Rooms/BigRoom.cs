@@ -2,6 +2,6 @@
 {
     public class BigRoom : Room
     {
-        public BigRoom(string name, string description, int number) : base(name, description, number) { }
+        public BigRoom(int number) : base("БОЛЬШАЯ КОМНАТА", "Просторная комната. Внутри может быть до трёх предметов.", number) { }
     }
 }

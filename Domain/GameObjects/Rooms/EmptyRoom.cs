@@ -2,6 +2,6 @@
 {
     public class EmptyRoom : Room
     {
-        public EmptyRoom(string name, string description, int number) : base(name, description, number) { }
+        public EmptyRoom(int number) : base("ПУСТАЯ КОМНАТА", "Ничего интересного.", number) { }
     }
 }

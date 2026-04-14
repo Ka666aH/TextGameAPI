@@ -11,8 +11,8 @@ namespace TextGame.Domain.GameObjects.Rooms
         public IReadOnlyList<Item> Items => _items;
         private readonly List<Enemy> _enemies = new();
         public IReadOnlyList<Enemy> Enemies => _enemies;
-        public bool IsDiscovered { get; set; } = false;
-        public bool IsSearched { get; set; } = false;
+        public bool IsDiscovered { get; protected set; } = false;
+        public bool IsSearched { get; protected set; } = false;
 
         public Room(string name, string description, int number)
         {
@@ -38,6 +38,6 @@ namespace TextGame.Domain.GameObjects.Rooms
             IsSearched = true;
             return _items;
         }
-
+        public void Discover() => IsDiscovered = true;
     }
 }
