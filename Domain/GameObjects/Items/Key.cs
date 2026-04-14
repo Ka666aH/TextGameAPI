@@ -3,7 +3,7 @@
     public class Key : Item
     {
         public Key(int itemId, int roomId)
-            : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemId, true)
+            : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemId)
         {
             Cost = (int)(GameBalance.KeyBaseCost * GameBalance.CalculateGain(roomId));
         }

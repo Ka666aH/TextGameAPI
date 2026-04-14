@@ -3,7 +3,7 @@
     public class Map : Item
     {
         public Map(int itemId)
-            : base("КАРТА", "Содержит знания о строении подземелья.", itemId, true)
+            : base("КАРТА", "Содержит знания о строении подземелья.", itemId)
         {
             Cost = GameBalance.MapBaseCost;
         }

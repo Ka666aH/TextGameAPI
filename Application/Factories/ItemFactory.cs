@@ -86,7 +86,22 @@ namespace TextGame.Application.Factories
                 (_ => GameBalance.CalculateNoneRoomWeight(), () => null),
                 (_ => GameBalance.CalculateKeyRoomWeight(), () => new Key(sessionService.NextItemId(), roomId)),
                 (_ => GameBalance.CalculateBagOfCoinsRoomWeight(), () => new BagOfCoins(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateChestRoomWeight(), () => new Chest(this, _enemyFactory, sessionService))
+                (_ => GameBalance.CalculateChestRoomWeight(), () =>
+                {
+                    //create items
+                    var itemsInChest = Random.Shared.Next(GameBalance.MinChestItemsAmount, GameBalance.MaxChestItemsAmount + 1);
+                    var items = new List<Item>(itemsInChest);
+                    for (int i = 0; i < itemsInChest; i++)
+                    {
+                        Item? item = CreateChestItem(sessionService);
+                        if (item != null) items.Add(item);
+                    }
+                    //create mimic
+                    var mimic = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? _enemyFactory.CreateMimic(sessionService) : null;
+
+                    return new Chest(sessionService.NextItemId(), items, mimic);
+                }
+            )
             );
 
             // Группа "Оружие" 
