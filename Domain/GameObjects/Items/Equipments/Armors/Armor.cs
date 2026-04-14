@@ -1,7 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameObjects.Items.Equipments;
-
-namespace TextGame.Domain.GameObjects.Items.Equipments.Armors
+﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Armors
 {
     public abstract class Armor : Equipment
     {
@@ -24,14 +21,12 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Armors
             }
             CalculateCost();
         }
-        public int Block(IGameSessionService sessionService)
+        public ArmorBlockResult Block()
         {
             Durability--;
             CalculateCost();
-            if (Durability <= 0) BreakDown(sessionService);
-            return DamageBlock;
+            return new(DamageBlock, Durability <= 0);
         }
-        protected abstract void BreakDown(IGameSessionService sessionService);
         private void CalculateCost()
         {
             Cost = GameBalance.CalculateArmorCost((int)Durability!, DamageBlock);

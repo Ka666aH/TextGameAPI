@@ -62,8 +62,23 @@ namespace TextGame.Application.Services
             Enemy enemy = _getEnemyByIdRepository.GetEnemyById();
             int enemyHealthBeforeAttack = enemy.Health;
             int damage = enemy.Attack();
-            int helmBlock = _sessionService.Helm != null ? _sessionService.Helm.Block(_sessionService) : 0;
-            int chestplateBlock = _sessionService.Chestplate != null ? _sessionService.Chestplate.Block(_sessionService) : 0;
+            //block
+            //int helmBlock = _sessionService.Helm != null ? _sessionService.Helm.Block().DamageBlock : 0;
+            int helmBlock = 0;
+            if (_sessionService.Helm != null)
+            {
+                var blockResult = _sessionService.Helm.Block();
+                if (blockResult.IsArmorBrokenDown) _sessionService.RemoveHelm();
+            }
+
+            //int chestplateBlock = _sessionService.Chestplate != null ? _sessionService.Chestplate.Block(_sessionService) : 0;
+            int chestplateBlock = 0;
+            if (_sessionService.Chestplate != null)
+            {
+                var blockResult = _sessionService.Chestplate.Block();
+                if (blockResult.IsArmorBrokenDown) _sessionService.RemoveChestplate();
+            }
+
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
             int playerHealthBeforeAttack = _sessionService.CurrentHealth;
             if (damageAfterBlock > 0) _sessionService.AddCurrentHealth(-damageAfterBlock);
