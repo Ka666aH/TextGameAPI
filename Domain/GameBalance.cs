@@ -9,14 +9,14 @@
 
         public const double StoreMargin = 2;
 
-        public static double ApplyGain(int roomId) => 1 + roomId * _gain;
-        public static (int min, int max) ApplySpread(int baseValue, int roomId)
+        public static double CalculateGain(int roomId) => 1 + roomId * _gain;
+        public static (int min, int max) CalculateSpread(int baseValue, int roomId)
         {
-            int minValue = (int)(baseValue * ApplyGain(roomId) * SpreadFloor);
-            int maxValue = (int)(baseValue * ApplyGain(roomId) * SpreadCeiling);
+            int minValue = (int)(baseValue * CalculateGain(roomId) * SpreadFloor);
+            int maxValue = (int)(baseValue * CalculateGain(roomId) * SpreadCeiling);
             return (minValue, maxValue);
         }
-        public static int ApplyShopMultiplier(int baseValue) => (int)(baseValue * ShopMultiplier);
+        public static int CalculateShopMultiplier(int baseValue) => (int)(baseValue * ShopMultiplier);
 
         //Игрок
         public const int DefaultMaxHealth = 100;

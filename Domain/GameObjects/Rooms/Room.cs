@@ -14,10 +14,8 @@ namespace TextGame.Domain.GameObjects.Rooms
         public bool IsDiscovered { get; protected set; } = false;
         public bool IsSearched { get; protected set; } = false;
 
-        public Room(string name, string description, int number)
+        public Room(string name, string description, int number) : base(name, description)
         {
-            Name = name;
-            Description = description;
             Number = number;
         }
         public void AddItem(Item item) => _items.Add(item);

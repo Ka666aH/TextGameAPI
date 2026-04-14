@@ -11,14 +11,14 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords
         }
         protected void Initialize(int durability, int damage)
         {
-            var (minDurability, maxDurability) = GameBalance.ApplySpread(durability, _roomId);
+            var (minDurability, maxDurability) = GameBalance.CalculateSpread(durability, _roomId);
             Durability = Random.Shared.Next(minDurability, maxDurability + 1);
-            var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
+            var (minDamage, maxDamage) = GameBalance.CalculateSpread(damage, _roomId);
             Damage = Random.Shared.Next(minDamage, maxDamage + 1);
             if (_fromShop)
             {
-                Durability = GameBalance.ApplyShopMultiplier((int)Durability!);
-                Damage = GameBalance.ApplyShopMultiplier(Damage);
+                Durability = GameBalance.CalculateShopMultiplier((int)Durability!);
+                Damage = GameBalance.CalculateShopMultiplier(Damage);
             }
             CalculateCost();
         }

@@ -11,9 +11,9 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands
         }
         protected void Initialize(int damage)
         {
-            var (min, max) = GameBalance.ApplySpread(damage, _roomId);
+            var (min, max) = GameBalance.CalculateSpread(damage, _roomId);
             Damage = Random.Shared.Next(min, max + 1);
-            if (_fromShop) Damage = GameBalance.ApplyShopMultiplier(Damage);
+            if (_fromShop) Damage = GameBalance.CalculateShopMultiplier(Damage);
             Cost = GameBalance.CalculateWandCost(Damage);
         }
         public override int Attack(IGameSessionService sessionService)

@@ -15,12 +15,12 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Armors
             Durability = Random.Shared.Next(
                 (int)(durability * GameBalance.SpreadFloor),
                 (int)(durability * GameBalance.SpreadCeiling + 1));
-            var (min, max) = GameBalance.ApplySpread(damageBlock, _roomId);
+            var (min, max) = GameBalance.CalculateSpread(damageBlock, _roomId);
             DamageBlock = Random.Shared.Next(min, max + 1);
             if (_fromShop)
             {
-                Durability = GameBalance.ApplyShopMultiplier((int)Durability!);
-                DamageBlock = GameBalance.ApplyShopMultiplier(DamageBlock);
+                Durability = GameBalance.CalculateShopMultiplier((int)Durability!);
+                DamageBlock = GameBalance.CalculateShopMultiplier(DamageBlock);
             }
             CalculateCost();
         }

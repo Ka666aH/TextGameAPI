@@ -8,10 +8,10 @@ namespace TextGame.Domain.GameObjects.Items.Heal
             : base("НЕИЗВЕСТНОЕ ЗЕЛЬЕ", "Пробирка с жижей непонятного цвета.", itemId, roomId, fromShop, null, null) { }
         public override void Use(IGameSessionService sessionService)
         {
-            double maxHealthFloor = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadFloor;
-            double maxHealthCeiling = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadCeiling;
-            double currentHealthFloor = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadFloor;
-            double currentHealthCeiling = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.ApplyGain(_roomId) * GameBalance.SpreadCeiling;
+            double maxHealthFloor = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadFloor;
+            double maxHealthCeiling = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadCeiling;
+            double currentHealthFloor = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadFloor;
+            double currentHealthCeiling = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadCeiling;
             if (_fromShop)
             {
                 maxHealthFloor *= 1 / GameBalance.ShopMultiplier;

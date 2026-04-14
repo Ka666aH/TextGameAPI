@@ -23,18 +23,18 @@ namespace TextGame.Domain.GameObjects.Items.Heal
             if (maxHealthBoost is null) MaxHealthBoost = null;
             else
             {
-                var (min, max) = GameBalance.ApplySpread((int)maxHealthBoost!, _roomId);
+                var (min, max) = GameBalance.CalculateSpread((int)maxHealthBoost!, _roomId);
                 MaxHealthBoost = Random.Shared.Next(min, max + 1);
-                if (_fromShop) GameBalance.ApplyShopMultiplier((int)MaxHealthBoost!);
+                if (_fromShop) GameBalance.CalculateShopMultiplier((int)MaxHealthBoost!);
                 Cost += (int)(MaxHealthBoost * GameBalance.MaxHealthCostMultiplier);
             }
 
             if (currentHealthBoost is null) CurrentHealthBoost = null;
             else
             {
-                var (min, max) = GameBalance.ApplySpread((int)currentHealthBoost!, _roomId);
+                var (min, max) = GameBalance.CalculateSpread((int)currentHealthBoost!, _roomId);
                 CurrentHealthBoost = Random.Shared.Next(min, max + 1);
-                if (_fromShop) GameBalance.ApplyShopMultiplier((int)CurrentHealthBoost!);
+                if (_fromShop) GameBalance.CalculateShopMultiplier((int)CurrentHealthBoost!);
                 Cost += (int)(CurrentHealthBoost * GameBalance.CurrentHealthCostMultiplier);
             }
         }

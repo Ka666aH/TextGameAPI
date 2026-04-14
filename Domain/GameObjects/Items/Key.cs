@@ -5,7 +5,7 @@
         public Key(int itemId, int roomId)
             : base("КЛЮЧ", "Непрочный продолговатый кусок металла. Что-то открывает.", itemId, true)
         {
-            Cost = (int)(GameBalance.KeyBaseCost * GameBalance.ApplyGain(roomId));
+            Cost = (int)(GameBalance.KeyBaseCost * GameBalance.CalculateGain(roomId));
         }
     }
 }
