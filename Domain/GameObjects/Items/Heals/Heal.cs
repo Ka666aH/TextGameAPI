@@ -1,6 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
-
-namespace TextGame.Domain.GameObjects.Items.Heal
+﻿namespace TextGame.Domain.GameObjects.Items.Heal
 {
     public abstract class Heal : Item
     {
@@ -10,7 +8,7 @@ namespace TextGame.Domain.GameObjects.Items.Heal
         protected readonly int _roomId;
         protected readonly bool _fromShop;
 
-        public Heal(string name, string description, int id, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost) : base(name, description, id, true)
+        public Heal(string name, string description, int id, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost) : base(name, description, id)
         {
             _roomId = roomId;
             _fromShop = fromShop;
@@ -38,10 +36,6 @@ namespace TextGame.Domain.GameObjects.Items.Heal
                 Cost += (int)(CurrentHealthBoost * GameBalance.CurrentHealthCostMultiplier);
             }
         }
-        public virtual void Use(IGameSessionService sessionService)
-        {
-            sessionService.AddMaxHealth((int)MaxHealthBoost!);
-            sessionService.AddCurrentHealth((int)CurrentHealthBoost!);
-        }
+        public virtual (int,int) Use() => ((int)MaxHealthBoost!, (int)CurrentHealthBoost!);
     }
 }

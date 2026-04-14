@@ -102,7 +102,9 @@ namespace TextGame.Application.Services
             Item item = GetInventoryItem(itemId);
             if (item is not Heal heal) throw new InvalidIdException("NOT_HEAL", "Это не предмет лечения.");
             _sessionService.RemoveItemFromInventory(heal);
-            heal.Use(_sessionService);
+            var (maxHealthBoost, currentHealthBoost) = heal.Use();
+            _sessionService.AddMaxHealth(maxHealthBoost);
+            _sessionService.AddCurrentHealth(currentHealthBoost);
             if (_sessionService.CurrentHealth <= 0) throw new DefeatException($"{heal.Name} приводит Вас к гибели!", GetGameInfo());
         }
 
