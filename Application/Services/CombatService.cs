@@ -28,7 +28,7 @@ namespace TextGame.Application.Services
             Enemy enemy = _getEnemyByIdRepository.GetEnemyById();
             int damage = _sessionService.Weapon.Attack(_sessionService);
             int enemyHealthBeforeAttack = enemy.Health;
-            int enemyHealthAfterAttack = enemy.GetDamage(damage, _sessionService.CurrentRoom!);
+            int enemyHealthAfterAttack = enemy.GetDamage(damage);
             int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
             BattleLog battleLog = new BattleLog(enemy.Name!, damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
             if (enemyHealthAfterAttack <= 0)

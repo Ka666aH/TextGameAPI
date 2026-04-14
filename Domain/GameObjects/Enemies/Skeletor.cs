@@ -4,6 +4,13 @@
     {
 
         public Skeletor(int roomId, int enemyId)
-            : base("СКЕЛЕТОР", "Чей-то скелет, наделёный возможностью двигаться.", roomId, enemyId, GameBalance.SkeletorBaseHealth, GameBalance.SkeletorBaseDamage, GameBalance.SkeletorBaseDamageBlock) { }
+            : base("СКЕЛЕТОР",
+                  "Чей-то скелет, наделёный возможностью двигаться.",
+                  roomId,
+                  enemyId,
+                  GameBalance.SkeletorBaseHealth,
+                  GameBalance.SkeletorBaseDamage,
+                  GameBalance.SkeletorBaseDamageBlock)
+        { }
     }
 }

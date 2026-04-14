@@ -1,6 +1,4 @@
-﻿using TextGame.Domain.GameObjects.Rooms;
-
-namespace TextGame.Domain.GameObjects.Enemies
+﻿namespace TextGame.Domain.GameObjects.Enemies
 {
     public abstract class Enemy : GameObject
     {
@@ -12,30 +10,25 @@ namespace TextGame.Domain.GameObjects.Enemies
         private readonly int _roomId;
 
         public Enemy(string name, string description, int roomId, int id, int health, int damage, int damageBlock)
+            : base(name, description)
         {
-            _roomId = roomId;
-
-            Name = name;
-            Description = description;
             Id = id;
+            _roomId = roomId;
             Initialize(health, damage, damageBlock);
         }
         public virtual void Initialize(int health, int damage, int damageBlock)
         {
-            var (minHealth, maxHealth) = GameBalance.ApplySpread(health, _roomId);
+            var (minHealth, maxHealth) = GameBalance.CalculateSpread(health, _roomId);
             Health = Random.Shared.Next(minHealth, maxHealth + 1);
 
-            var (minDamage, maxDamage) = GameBalance.ApplySpread(damage, _roomId);
+            var (minDamage, maxDamage) = GameBalance.CalculateSpread(damage, _roomId);
             Damage = Random.Shared.Next(minDamage, maxDamage + 1);
 
-            var (minDamageBlock, maxDamageBlock) = GameBalance.ApplySpread(damageBlock, _roomId);
+            var (minDamageBlock, maxDamageBlock) = GameBalance.CalculateSpread(damageBlock, _roomId);
             DamageBlock = Random.Shared.Next(minDamageBlock, maxDamageBlock + 1);
         }
-        public virtual int Attack()
-        {
-            return Damage;
-        }
-        public virtual int GetDamage(int damage, Room? room = null)
+        public virtual int Attack() => Damage;
+        public virtual int GetDamage(int damage)
         {
             if (damage > DamageBlock) Health -= damage - DamageBlock;
             return Health;
