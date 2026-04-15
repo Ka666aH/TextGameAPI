@@ -1,6 +1,6 @@
 ﻿namespace TextGame.Domain
 {
-    public class GameBalance
+    public static class GameBalance
     {
         public const double SpreadFloor = 0.8;
         public const double SpreadCeiling = 1.2;
