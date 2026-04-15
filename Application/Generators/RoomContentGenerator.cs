@@ -31,7 +31,7 @@ namespace TextGame.Application.Generators
         {
             for (int i = 0; i < GameBalance.SmallRoomItemsAmount; i++)
             {
-                Item? item = _itemFactory.CreateRoomItem(sessionService);
+                Item? item = _itemFactory.CreateRoomItem(sessionService, _enemyFactory);
                 if (item != null) room.AddItem(item);
             }
         }
@@ -39,7 +39,7 @@ namespace TextGame.Application.Generators
         {
             for (int i = 0; i < GameBalance.BigRoomItemsAmount; i++)
             {
-                Item? item = _itemFactory.CreateRoomItem(sessionService);
+                Item? item = _itemFactory.CreateRoomItem(sessionService, _enemyFactory);
                 if (item != null) room.AddItem(item);
             }
         }

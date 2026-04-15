@@ -7,6 +7,7 @@ using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
 using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
 using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Application.Interfaces.Generators;
+using TextGame.Domain.GameObjects.Items.Other;
 
 namespace TextGame.Application.Services
 {

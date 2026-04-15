@@ -2,6 +2,7 @@
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain;
 using TextGame.Domain.GameObjects.Items;
+using TextGame.Domain.GameObjects.Items.Other;
 using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
 using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
 using TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords;
@@ -12,13 +13,6 @@ namespace TextGame.Application.Factories
 {
     public class ItemFactory : IItemFactory
     {
-        private readonly IEnemyFactory _enemyFactory;
-        public ItemFactory(IEnemyFactory enemyFactory)
-        {
-
-            _enemyFactory = enemyFactory;
-        }
-
         private Item? SelectRandom(List<(int Weight, Func<Item?> Creator)> options)
         {
             // Суммируем все веса
@@ -74,7 +68,7 @@ namespace TextGame.Application.Factories
                     options.Add((absoluteWeight, items[i].Creator));
             }
         }
-        public Item? CreateRoomItem(IGameSessionService sessionService)
+        public Item? CreateRoomItem(IGameSessionService sessionService, IEnemyFactory enemyFactory)
         {
             int roomId = sessionService.RoomCounter;
 
@@ -97,7 +91,7 @@ namespace TextGame.Application.Factories
                         if (item != null) items.Add(item);
                     }
                     //create mimic
-                    var mimic = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? _enemyFactory.CreateMimic(sessionService) : null;
+                    var mimic = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? enemyFactory.CreateMimic(sessionService) : null;
 
                     return new Chest(sessionService.NextItemId(), items, mimic);
                 }

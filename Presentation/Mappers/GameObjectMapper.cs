@@ -7,6 +7,7 @@ using TextGame.Domain.GameObjects.Items.Heal;
 using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Presentation.DTO;
 using TextGame.Domain.GameObjects;
+using TextGame.Domain.GameObjects.Items.Other;
 
 namespace TextGame.Presentation.Mappers
 {

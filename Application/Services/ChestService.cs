@@ -2,6 +2,7 @@
 using TextGame.Domain.GameObjects.Items;
 using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
+using TextGame.Domain.GameObjects.Items.Other;
 
 namespace TextGame.Application.Services
 {

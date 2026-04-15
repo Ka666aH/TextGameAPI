@@ -1,4 +1,4 @@
-﻿namespace TextGame.Domain.GameObjects.Items
+﻿namespace TextGame.Domain.GameObjects.Items.Other
 {
     public class Map : Item
     {

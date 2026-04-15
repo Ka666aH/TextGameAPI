@@ -1,7 +1,7 @@
 ﻿using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameObjects.Enemies;
 
-namespace TextGame.Domain.GameObjects.Items
+namespace TextGame.Domain.GameObjects.Items.Other
 {
     public class Chest : Item
     {

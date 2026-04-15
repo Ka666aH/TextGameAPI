@@ -1,6 +1,7 @@
 ﻿using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameObjects.Items;
 using TextGame.Domain.GameExceptions;
+using TextGame.Domain.GameObjects.Items.Other;
 
 namespace TextGame.Application.Services
 {

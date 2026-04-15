@@ -2,6 +2,7 @@
 using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
 using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
 using TextGame.Domain.GameObjects.Items.Equipments.Weapons;
+using TextGame.Domain.GameObjects.Items.Other;
 using TextGame.Domain.GameObjects.Rooms;
 
 namespace TextGame.Domain

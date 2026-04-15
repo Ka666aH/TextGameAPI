@@ -1,4 +1,5 @@
 ﻿using TextGame.Domain.GameObjects.Items;
+using TextGame.Domain.GameObjects.Items.Other;
 using TextGame.Presentation.DTO;
 
 namespace TextGame.Application.Interfaces.Services

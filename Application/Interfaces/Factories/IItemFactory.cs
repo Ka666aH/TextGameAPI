@@ -5,7 +5,7 @@ namespace TextGame.Application.Interfaces.Factories
 {
     public interface IItemFactory
     {
-        public Item? CreateRoomItem(IGameSessionService sessionService);
+        public Item? CreateRoomItem(IGameSessionService sessionService, IEnemyFactory enemyFactory);
         public Item? CreateChestItem(IGameSessionService sessionService);
         public Item? CreateShopItem(IGameSessionService sessionService);
     }
