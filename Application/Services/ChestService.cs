@@ -1,6 +1,5 @@
 ﻿using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameObjects.Items;
-using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameObjects.Items.Other;
 
@@ -8,134 +7,58 @@ namespace TextGame.Application.Services
 {
     public class ChestService : IChestService
     {
-        private readonly IGameSessionService _sessionService;
-
-        private IGameInfoService _gameInfoRepository;
-        private IGetItemService _getItemByIdRepository;
-        private ICombatService _combatRepository;
-
-        private ICheckItemService _checkItemService;
-        public ChestService(
-            IGameSessionService sessionService,
-            IGameInfoService gameInfoRepository,
-            IGetItemService getItemByIdRepository,
-            ICombatService combatRepository,
-            ICheckItemService checkItemService
-            )
+        private readonly IGetItemService _getItemByIdRepository;
+        public ChestService(IGetItemService getItemByIdRepository)
         {
-            _sessionService = sessionService;
-            _gameInfoRepository = gameInfoRepository;
             _getItemByIdRepository = getItemByIdRepository;
-            _combatRepository = combatRepository;
-            _checkItemService = checkItemService;
         }
-        public ChestStateDTO ReturnChestDTO(Chest chest)
+        public Chest GetChest(int chestId, IEnumerable<Item> items)
         {
-            return new ChestStateDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
-        }
-        public ChestStateDTO ReturnChestDTO(int chestId)
-        {
-            Chest chest = GetChestById(chestId);
-            return new ChestStateDTO(chest.Name!, chest.Description!, chest.IsLocked, chest.IsClosed);
-        }
-        public Chest GetChestById(int chestId)
-        {
-            //Room room = GetRoomByIdRepository.GetRoomById(roomId);
-            Item item = _getItemByIdRepository.GetItem(chestId, _sessionService.CurrentRoom!.Items);
+            Item item = _getItemByIdRepository.GetItem(chestId, items);
             if (item is not Chest) throw new InvalidIdException("NOT_CHEST", "Это не сундук.");
             return (Chest)item;
         }
-        public BattleLog HitChest(int chestId)
+        public bool OpenChest(Chest chest)
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
+            RequireUnlocked(chest);
 
-            Chest chest = GetChestById(chestId);
-            //Room room = GetRoomByIdRepository.GetRoomById(roomId);
-
-            BattleLog battleLog;
-            if (chest.Mimic is not null)
-            {
-                _sessionService.SetCurrentMimicChest(chest);
-                _sessionService.RemoveItemFromCurrentRoom(chest);
-                _sessionService.AddEnemyToCurrentRoom(chest.Mimic);
-                _sessionService.StartBattle();
-                battleLog = _combatRepository.DealDamage();
-            }
-            else
-            {
-                int playerHealthBeforeAttack = _sessionService.CurrentHealth;
-                //attack
-                var attackResult = _sessionService.Weapon.Attack(_sessionService.CurrentRoom!.Number);
-                if (attackResult.SelfDamage != 0) _sessionService.AddCurrentHealth(-attackResult.SelfDamage);
-                if (attackResult.IsWeaponBrokenDown) _sessionService.RemoveWeapon();
-
-                int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
-                battleLog = new BattleLog("СУНДУК", attackResult.Damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
-            }
-            return battleLog;
-        }
-        public void OpenChest(int chestId)
-        {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
-
-            Chest chest = GetChestById(chestId);
-            if (chest.IsLocked) throw new LockedException();
-            if (chest.Mimic is not null)
-            {
-                _sessionService.EndGame();
-                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", _gameInfoRepository.GetGameInfo());
-            }
             chest.Open();
+            return chest.Mimic is null;
         }
-        public void UnlockChest(int chestId)
+        public void UnlockChest(Chest chest)
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
-
-            Chest chest = GetChestById(chestId);
-            if (_sessionService.Keys > 0) _sessionService.AddKeys(-1);
-            else throw new NoKeyException();
             chest.Unlock();
         }
-        public IEnumerable<Item> SearchChest(int chestId)
+        public List<Item> SearchChest(Chest chest)
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
+            RequireUnlocked(chest);
+            RequireOpened(chest);
 
-            Chest chest = GetChestById(chestId);
-            if (chest.IsClosed) throw new ClosedException();
             return chest.Search();
         }
-        public void TakeItemFromChest(int chestId, int itemId)
+        public void TakeItemFromChest(Chest chest, Item item)
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
+            RequireUnlocked(chest);
+            RequireOpened(chest);
 
-            Chest chest = GetChestById(chestId);
-            if (chest.IsLocked) throw new LockedException();
-            if (chest.IsClosed) throw new ClosedException();
-            Item item = _getItemByIdRepository.GetItem(itemId, chest.Items);
-            _checkItemService.CheckItem(item, _sessionService);
             chest.RemoveItem(item);
         }
-        public void TakeAllItemsFromChest(int chestId)
+        public List<Item> TakeAllItemsFromChest(Chest chest)
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
+            RequireUnlocked(chest);
+            RequireOpened(chest);
 
-            Chest chest = GetChestById(chestId);
-            if (chest.IsLocked) throw new LockedException();
+            var items = chest.Items.ToList();
+            chest.RemoveAllItems();
+            return items;
+        }
+        private void RequireOpened(Chest chest)
+        {
             if (chest.IsClosed) throw new ClosedException();
-            List<Item> carryableItems = chest.Items.Where(i => i.IsCarryable == true).ToList();
-            if (carryableItems.Count <= 0) throw new EmptyException();
-            foreach (Item item in carryableItems)
-            {
-                _checkItemService.CheckItem(item, _sessionService);
-                chest.RemoveItem(item);
-            }
-            //chest.Items.RemoveAll(x => x.IsCarryable);
+        }
+        private void RequireUnlocked(Chest chest)
+        {
+            if (chest.IsLocked) throw new LockedException();
         }
     }
 }

@@ -26,7 +26,8 @@ builder.Services.AddScoped<IGameControllerService, GameControllerService>();
 builder.Services.AddScoped<IRoomControllerService, RoomControllerService>();
 builder.Services.AddScoped<IGetEnemyService, GetEnemyService>();
 builder.Services.AddScoped<ICombatService, CombatService>();
-//here
+builder.Services.AddScoped<ICheckItemService, CheckItemService>();
+
 builder.Services.AddScoped<IRoomIdService, RoomIdService>();
 builder.Services.AddScoped<IItemIdService, ItemIdService>();
 builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
@@ -38,7 +39,6 @@ builder.Services.AddTransient<IEnemyFactory, EnemyFactory>();
 builder.Services.AddTransient<IMapGenerator, MapGenerator>();
 builder.Services.AddTransient<IRoomContentGenerator, RoomContentGenerator>();
 builder.Services.AddTransient<IGetItemService, GetItemService>();
-builder.Services.AddTransient<ICheckItemService, CheckItemService>();
 
 
 

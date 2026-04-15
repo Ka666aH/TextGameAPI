@@ -51,7 +51,7 @@ namespace TextGame.Application.Services
             CheckPlayerHealthAfterAttack();
             return battleLog;
         }
-        public void CheckPlayerHealthAfterAttack()
+        private void CheckPlayerHealthAfterAttack()
         {
             if (_sessionService.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", _gameInfoRepository.GetGameInfo());
         }

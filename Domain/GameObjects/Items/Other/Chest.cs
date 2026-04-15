@@ -25,9 +25,13 @@ namespace TextGame.Domain.GameObjects.Items.Other
             if (_items.Contains(item)) _items.Remove(item);
             else throw new NullItemIdException();
         }
+        public void RemoveAllItems()
+        {
+            _items.Clear();
+        }
         public void Open() => IsClosed = false;
         public void Unlock() => IsLocked = false;
-        public IEnumerable<Item> Search() => Items;
+        public List<Item> Search() => Items.ToList();
         public void KillMimic()
         {
             Mimic = null;

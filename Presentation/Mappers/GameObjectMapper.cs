@@ -27,7 +27,7 @@ namespace TextGame.Presentation.Mappers
                 Item item =>
                 item switch
                 {
-                    Chest chest => new ChestDTO(chest.Id, chest.Name!, chest.Description!),
+                    Chest chest => new ChestDTO(chest.Id, chest.Name!, chest.Description!, chest.IsClosed),
                     Heal heal => new HealDTO(heal.Id, heal.Name!, heal.Description!, heal.Cost, heal.MaxHealthBoost, heal.CurrentHealthBoost),
                     Equipment equipment =>
                     equipment switch
@@ -40,7 +40,7 @@ namespace TextGame.Presentation.Mappers
 
                     _ => new ItemDTO(item.Id, item.Name!, item.Description!, item.Cost),
                 },
-                _ => new GameObjectDTO(gameObject.Name ?? "НЕИЗВЕСТНО", gameObject.Description ?? "НЕИЗВЕСТНО")
+                _ => new GameObjectDTO(gameObject.Name ?? "НЕИЗВЕСТНО", gameObject.Description ?? "НЕОПИСУЕМО!")
             };
         }
         public static List<object> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject

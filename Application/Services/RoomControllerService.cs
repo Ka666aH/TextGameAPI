@@ -52,7 +52,7 @@ namespace TextGame.Application.Services
             if (_sessionService.CurrentRoom is EndRoom) throw new WinException(_gameInfoRepository.GetGameInfo());
             _sessionService.StartBattle();
         }
-        public IEnumerable<Item> Search()
+        public List<Item> Search()
         {
             if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
             if (_sessionService.IsInBattle) throw new InBattleException();
@@ -69,7 +69,7 @@ namespace TextGame.Application.Services
             //Room room = GetRoomById(roomId);
             //Room room = Session.CurrentRoom!;
             Item item = _getItemByIdRepository.GetItem(itemId, _sessionService.CurrentRoom!.Items);
-            _checkItemService.CheckItem(item, _sessionService);
+            _checkItemService.CheckItem(item);
             _sessionService.RemoveItemFromCurrentRoom(item);
         }
         public void TakeAllItems()
@@ -84,7 +84,7 @@ namespace TextGame.Application.Services
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
             {
-                _checkItemService.CheckItem(item, _sessionService);
+                _checkItemService.CheckItem(item);
                 _sessionService.RemoveItemFromCurrentRoom(item);
             }
         }
@@ -107,19 +107,99 @@ namespace TextGame.Application.Services
 
         public BattleLog DealDamage() => _combatRepository.DealDamage();
         public BattleLog GetDamage() => _combatRepository.GetDamage();
-
-        public ChestStateDTO ReturnChestDTO(Chest chest) => _chestRepository.ReturnChestDTO(chest);
-        public ChestStateDTO ReturnChestDTO(int chestId) => _chestRepository.ReturnChestDTO(chestId);
-        public BattleLog HitChest(int chestId) => _chestRepository.HitChest(chestId);
-        public void OpenChest(int chestId) => _chestRepository.OpenChest(chestId);
-        public void UnlockChest(int chestId) => _chestRepository.UnlockChest(chestId);
-        public IEnumerable<Item> SearchChest(int chestId) => _chestRepository.SearchChest(chestId);
-        public void TakeItemFromChest(int chestId, int itemId) => _chestRepository.TakeItemFromChest(chestId, itemId);
-        public void TakeAllItemsFromChest(int chestId) => _chestRepository.TakeAllItemsFromChest(chestId);
         public Room GetRoom(int roomId) => _getRoomByIdRepository.GetRoom(roomId);
         //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
         //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
         //public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
         public GameInfoDTO GetGameInfo() => _gameInfoRepository.GetGameInfo();
+
+        public BattleLog HitChest(int chestId)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+
+            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
+
+            BattleLog battleLog;
+            if (chest.Mimic is not null)
+            {
+                _sessionService.SetCurrentMimicChest(chest);
+                _sessionService.RemoveItemFromCurrentRoom(chest);
+                _sessionService.AddEnemyToCurrentRoom(chest.Mimic);
+                _sessionService.StartBattle();
+                battleLog = _combatRepository.DealDamage();
+            }
+            else
+            {
+                int playerHealthBeforeAttack = _sessionService.CurrentHealth;
+                //attack
+                var attackResult = _sessionService.Weapon.Attack(_sessionService.CurrentRoom!.Number);
+                if (attackResult.SelfDamage != 0) _sessionService.AddCurrentHealth(-attackResult.SelfDamage);
+                if (attackResult.IsWeaponBrokenDown) _sessionService.RemoveWeapon();
+
+                int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
+                battleLog = new BattleLog("СУНДУК", attackResult.Damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
+            }
+            return battleLog;
+        }
+        public Chest UnlockChest(int chestId)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+
+            if (_sessionService.Keys > 0) _sessionService.AddKeys(-1);
+            else throw new NoKeyException();
+
+            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
+            _chestRepository.UnlockChest(chest);
+            return chest;
+        }
+        public void OpenChest(int chestId)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+
+            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
+            if (_chestRepository.OpenChest(chest))
+            {
+                _sessionService.EndGame();
+                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", _gameInfoRepository.GetGameInfo());
+            }
+        }
+        public List<Item> SearchChest(int chestId)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+
+            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
+            return _chestRepository.SearchChest(chest);
+        }
+        public void TakeItemFromChest(int chestId, int itemId)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+
+            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
+            var item = _getItemByIdRepository.GetItem(itemId, chest.Items);
+            _chestRepository.TakeItemFromChest(chest, item);
+            _checkItemService.CheckItem(item);
+        }
+        public void TakeAllItemsFromChest(int chestId)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+
+            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
+            var items = _chestRepository.TakeAllItemsFromChest(chest);
+            items.ForEach(_checkItemService.CheckItem);
+        }
+        private void RequireGameStarted()
+        {
+            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
+        }
+        private void RequireNotInBattle()
+        {
+            if (_sessionService.IsInBattle) throw new InBattleException();
+        }
     }
 }

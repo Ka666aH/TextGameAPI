@@ -4,6 +4,6 @@ namespace TextGame.Application.Interfaces.Services
 {
     public interface ICheckItemService
     {
-        void CheckItem(Item item, IGameSessionService sessionService);
+        void CheckItem(Item item);
     }
 }
