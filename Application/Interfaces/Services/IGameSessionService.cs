@@ -24,14 +24,7 @@ namespace TextGame.Application.Interfaces.Services
         int MaxHealth { get; }
         int CurrentHealth { get; }
         Chest? CurrentMimicChest { get; }
-        int RoomCounter { get; }
-        int ItemCounter { get; }
-        int EnemyCounter { get; }
 
-        // Инкременты
-        public int NextRoomNumber();
-        public int NextItemId();
-        public int NextEnemyId();
         //Equipment
         public void RemoveWeapon();
         public void EquipWeapon(Weapon weapon);

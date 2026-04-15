@@ -5,11 +5,11 @@ namespace TextGame.Application.Interfaces.Factories
 {
     public interface IEnemyFactory
     {
-        Skeletor CreateSkeletor(IGameSessionService sessionService);
-        SkeletorArcher CreateSkeletorArcher(IGameSessionService sessionService);
-        Deadman CreateDeadman(IGameSessionService sessionService);
-        Ghost CreateGhost(IGameSessionService sessionService);
-        Lich CreateLich(IGameSessionService sessionService);
-        Mimic CreateMimic(IGameSessionService sessionService);
+        Skeletor CreateSkeletor();
+        SkeletorArcher CreateSkeletorArcher();
+        Deadman CreateDeadman();
+        Ghost CreateGhost();
+        Lich CreateLich();
+        Mimic CreateMimic();
     }
 }

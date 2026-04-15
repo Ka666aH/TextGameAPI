@@ -1,4 +1,6 @@
-﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons
+﻿using TextGame.Domain.DTO;
+
+namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons
 {
     public abstract class Weapon : Equipment
     {

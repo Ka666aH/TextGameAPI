@@ -9,35 +9,37 @@ namespace TextGame.Application.Generators
     public class MapGenerator : IMapGenerator
     {
         private readonly IRoomFactory _roomFactory;
+        private readonly IRoomIdService _roomIdService;
         private readonly IRoomContentGenerator _roomContentGenerator;
-        public MapGenerator(IRoomFactory roomFactory, IRoomContentGenerator roomContentGenerator) 
+        public MapGenerator(IRoomFactory roomFactory, IRoomContentGenerator roomContentGenerator, IRoomIdService roomIdService)
         {
             _roomFactory = roomFactory;
             _roomContentGenerator = roomContentGenerator;
+            _roomIdService = roomIdService;
         }
-        public List<Room> Generate(IGameSessionService sessionService)
+        public List<Room> Generate()
         {
             var rooms = new List<Room> { _roomFactory.CreateStartRoom() };
             var options = new (int Weight, Func<Room> Create)[]
             {
-            (GameBalance.EmptyRoomWeight, () => _roomFactory.CreateEmptyRoom(sessionService.NextRoomNumber())),
-            (GameBalance.SmallRoomWeight, () => _roomFactory.CreateSmallRoom(sessionService.NextRoomNumber())),
-            (GameBalance.BigRoomWeight, () => _roomFactory.CreateBigRoom(sessionService.NextRoomNumber())),
-            (GameBalance.ShopWeight, () => _roomFactory.CreateShopRoom(sessionService.NextRoomNumber()))
+            (GameBalance.EmptyRoomWeight, _roomFactory.CreateEmptyRoom),
+            (GameBalance.SmallRoomWeight, _roomFactory.CreateSmallRoom),
+            (GameBalance.BigRoomWeight, _roomFactory.CreateBigRoom),
+            (GameBalance.ShopWeight, _roomFactory.CreateShopRoom)
             };
             int baseWeightSum = options.Sum(x => x.Weight);
 
             while (rooms.Last() is not EndRoom)
             {
-                int endRoomWeight = sessionService.RoomCounter;
+                int endRoomWeight = _roomIdService.Current();
                 int totalWeight = baseWeightSum + endRoomWeight;
 
                 int roll = Random.Shared.Next(totalWeight);
 
                 if (roll >= baseWeightSum)
                 {
-                    Room room = (_roomFactory.CreateEndRoom(sessionService.NextRoomNumber()));
-                    _roomContentGenerator.GenerateContent(room,sessionService);
+                    Room room = _roomFactory.CreateEndRoom();
+                    _roomContentGenerator.GenerateContent(room);
                     rooms.Add(room);
                 }
                 else
@@ -48,7 +50,7 @@ namespace TextGame.Application.Generators
                         if (roll < acc + weight)
                         {
                             Room room = (create());
-                            _roomContentGenerator.GenerateContent(room, sessionService);
+                            _roomContentGenerator.GenerateContent(room);
                             rooms.Add(room);
                             break;
                         }
@@ -56,7 +58,6 @@ namespace TextGame.Application.Generators
                     }
                 }
             }
-
             return rooms;
         }
     }

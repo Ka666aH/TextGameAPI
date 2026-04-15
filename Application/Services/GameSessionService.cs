@@ -33,14 +33,14 @@ namespace TextGame.Application.Services
         public int MaxHealth { get => _session.MaxHealth; }
         public int CurrentHealth { get => _session.CurrentHealth; }
         public Chest? CurrentMimicChest { get => _session.CurrentMimicChest; }
-        public int RoomCounter { get => _session.RoomCounter; }
-        public int ItemCounter { get => _session.ItemCounter; }
-        public int EnemyCounter { get => _session.EnemyCounter; }
+        //public int RoomCounter { get => _session.RoomCounter; }
+        //public int ItemCounter { get => _session.ItemCounter; }
+        //public int EnemyCounter { get => _session.EnemyCounter; }
 
 
-        public int NextRoomNumber() => ++_session.RoomCounter;
-        public int NextItemId() => ++_session.ItemCounter;
-        public int NextEnemyId() => ++_session.EnemyCounter;
+        //public int NextRoomNumber() => ++_session.RoomCounter;
+        //public int NextItemId() => ++_session.ItemCounter;
+        //public int NextEnemyId() => ++_session.EnemyCounter;
 
 
         public void RemoveWeapon() => _session.Weapon = Fists.DefaultFists;
@@ -83,11 +83,11 @@ namespace TextGame.Application.Services
             _session.CurrentHealth = GameBalance.DefaultMaxHealth;
 
 
-            _session.RoomCounter = 0;
-            _session.ItemCounter = 0;
-            _session.EnemyCounter = 0;
+            //_session.RoomCounter = 0;
+            //_session.ItemCounter = 0;
+            //_session.EnemyCounter = 0;
 
-            _session.Rooms = _mapGenerator.Generate(this);
+            _session.Rooms = _mapGenerator.Generate();
             SetCurrentRoom(Rooms[0]);
 
             EndBattle();

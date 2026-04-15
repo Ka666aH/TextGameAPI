@@ -17,54 +17,54 @@ namespace TextGame.Application.Generators
             _itemFactory = itemFactory;
             _enemyFactory = enemyFactory;
         }
-        public void GenerateContent(Room room, IGameSessionService sessionService)
+        public void GenerateContent(Room room)
         {
             switch (room)
             {
-                case SmallRoom smallRoom: GenerateSmallRoomContent(smallRoom, sessionService); break;
-                case BigRoom bigRoom: GenerateBigRoomContent(bigRoom, sessionService); break;
-                case Shop shop: GenerateShopContent(shop, sessionService); break;
+                case SmallRoom smallRoom: GenerateSmallRoomContent(smallRoom); break;
+                case BigRoom bigRoom: GenerateBigRoomContent(bigRoom); break;
+                case Shop shop: GenerateShopContent(shop); break;
             }
-            if (room is not Shop && room is not StartRoom && room is not EndRoom) GenerateEnemy(room, sessionService);
+            if (room is not Shop && room is not StartRoom && room is not EndRoom) GenerateEnemy(room);
         }
-        private void GenerateSmallRoomContent(SmallRoom room, IGameSessionService sessionService)
+        private void GenerateSmallRoomContent(SmallRoom room)
         {
             for (int i = 0; i < GameBalance.SmallRoomItemsAmount; i++)
             {
-                Item? item = _itemFactory.CreateRoomItem(sessionService, _enemyFactory);
+                Item? item = _itemFactory.CreateRoomItem();
                 if (item != null) room.AddItem(item);
             }
         }
-        private void GenerateBigRoomContent(BigRoom room, IGameSessionService sessionService)
+        private void GenerateBigRoomContent(BigRoom room)
         {
             for (int i = 0; i < GameBalance.BigRoomItemsAmount; i++)
             {
-                Item? item = _itemFactory.CreateRoomItem(sessionService, _enemyFactory);
+                Item? item = _itemFactory.CreateRoomItem();
                 if (item != null) room.AddItem(item);
             }
         }
-        private void GenerateShopContent(Shop room, IGameSessionService sessionService)
+        private void GenerateShopContent(Shop room)
         {
             for (int i = 0; i < GameBalance.ShopItemsAmount; i++)
             {
-                Item? item = _itemFactory.CreateShopItem(sessionService);
+                Item? item = _itemFactory.CreateShopItem();
                 if (item == null) continue;
                 item.AddStoreMargin();
                 room.AddItem(item);
             }
         }
-        private void GenerateEnemy(Room room, IGameSessionService sessionService)
+        private void GenerateEnemy(Room room)
         {
             //Логика создания врагов
             //Формирование списка взвешенного выбора
             var options = new List<(int Weight, Func<Enemy?> Create)>
             {
                 (GameBalance.CalculateNoneWeight(room.Number),            () => null),
-                (GameBalance.CalculateSkeletorWeight(room.Number),        () => _enemyFactory.CreateSkeletor(sessionService)),
-                (GameBalance.CalculateSkeletorArcherWeight(room.Number),  () => _enemyFactory.CreateSkeletorArcher(sessionService)),
-                (GameBalance.CalculateDeadmanWeight(room.Number),         () => _enemyFactory.CreateDeadman(sessionService)),
-                (GameBalance.CalculateGhostWeight(room.Number),           () => _enemyFactory.CreateGhost(sessionService)),
-                (GameBalance.CalculateLichWeight(room.Number),            () => _enemyFactory.CreateLich(sessionService)),
+                (GameBalance.CalculateSkeletorWeight(room.Number),        _enemyFactory.CreateSkeletor),
+                (GameBalance.CalculateSkeletorArcherWeight(room.Number),  _enemyFactory.CreateSkeletorArcher),
+                (GameBalance.CalculateDeadmanWeight(room.Number),         _enemyFactory.CreateDeadman),
+                (GameBalance.CalculateGhostWeight(room.Number),           _enemyFactory.CreateGhost),
+                (GameBalance.CalculateLichWeight(room.Number),            _enemyFactory.CreateLich),
             };
             //Выбор
             int weightsSum = options.Sum(x => x.Weight);

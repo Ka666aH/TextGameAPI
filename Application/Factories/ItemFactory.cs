@@ -13,6 +13,17 @@ namespace TextGame.Application.Factories
 {
     public class ItemFactory : IItemFactory
     {
+        private readonly IItemIdService _itemIdService;
+        private readonly IEnemyFactory _enemyFactory;
+        private readonly int _roomId;
+
+        public ItemFactory(IEnemyFactory enemyFactory, IRoomIdService roomIdService, IItemIdService itemIdService)
+        {
+            _enemyFactory = enemyFactory;
+            _roomId = roomIdService.Current();
+            _itemIdService = itemIdService;
+        }
+
         private Item? SelectRandom(List<(int Weight, Func<Item?> Creator)> options)
         {
             // Суммируем все веса
@@ -40,12 +51,12 @@ namespace TextGame.Application.Factories
         }
         private void AddWeightedGroup(
     List<(int Weight, Func<Item?> Creator)> options,
-    int roomId,
+    int _roomId,
     double groupWeightWeight,
     params (Func<int, double> WeightCalc, Func<Item?> Creator)[] items)
         {
             // 1. Считаем "сырые" веса для предметов в группе (без отрицательных значений)
-            var rawWeights = items.Select(item => Math.Max(0, item.WeightCalc(roomId))).ToArray();
+            var rawWeights = items.Select(item => Math.Max(0, item.WeightCalc(_roomId))).ToArray();
 
             // 2. Сумма всех весов в группе
             double groupSum = rawWeights.Sum();
@@ -68,18 +79,16 @@ namespace TextGame.Application.Factories
                     options.Add((absoluteWeight, items[i].Creator));
             }
         }
-        public Item? CreateRoomItem(IGameSessionService sessionService, IEnemyFactory enemyFactory)
+        public Item? CreateRoomItem()
         {
-            int roomId = sessionService.RoomCounter;
-
             var options = new List<(int Weight, Func<Item?> Creator)>();
 
             // Группа "Прочее"
-            AddWeightedGroup(options, roomId, GameBalance.RoomOtherWeight,
+            AddWeightedGroup(options, _roomId, GameBalance.RoomOtherWeight,
                 // Относительные веса внутри группы (не в процентах)
                 (_ => GameBalance.CalculateNoneRoomWeight(), () => null),
-                (_ => GameBalance.CalculateKeyRoomWeight(), () => new Key(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateBagOfCoinsRoomWeight(), () => new BagOfCoins(sessionService.NextItemId(), roomId)),
+                (_ => GameBalance.CalculateKeyRoomWeight(), () => new Key(_itemIdService.Next(), _roomId)),
+                (_ => GameBalance.CalculateBagOfCoinsRoomWeight(), () => new BagOfCoins(_itemIdService.Next(), _roomId)),
                 (_ => GameBalance.CalculateChestRoomWeight(), () =>
                 {
                     //create items
@@ -87,110 +96,106 @@ namespace TextGame.Application.Factories
                     var items = new List<Item>(itemsInChest);
                     for (int i = 0; i < itemsInChest; i++)
                     {
-                        Item? item = CreateChestItem(sessionService);
+                        Item? item = CreateChestItem();
                         if (item != null) items.Add(item);
                     }
                     //create mimic
-                    var mimic = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? enemyFactory.CreateMimic(sessionService) : null;
+                    var mimic = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? _enemyFactory.CreateMimic() : null;
 
-                    return new Chest(sessionService.NextItemId(), items, mimic);
+                    return new Chest(_itemIdService.Next(), items, mimic);
                 }
             )
             );
 
             // Группа "Оружие" 
-            AddWeightedGroup(options, roomId, GameBalance.RoomWeaponWeight,
-                (r => GameBalance.CalculateRustSwordRoomWeight(r), () => new RustSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronSwordRoomWeight(r), () => new IronSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateSilverSwordRoomWeight(r), () => new SilverSword(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateGlassSwordRoomWeight(), () => new GlassSword(sessionService.NextItemId(), roomId, false)),
+            AddWeightedGroup(options, _roomId, GameBalance.RoomWeaponWeight,
+                (r => GameBalance.CalculateRustSwordRoomWeight(r), () => new RustSword(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateIronSwordRoomWeight(r), () => new IronSword(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateSilverSwordRoomWeight(r), () => new SilverSword(_itemIdService.Next(), _roomId, false)),
+                (_ => GameBalance.CalculateGlassSwordRoomWeight(), () => new GlassSword(_itemIdService.Next(), _roomId, false)),
 
-                (r => GameBalance.CalculateMagicWandRoomWeight(r), () => new MagicWand(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateRandomWandRoomWeight(r), () => new RandomWand(sessionService.NextItemId(), roomId, false))
+                (r => GameBalance.CalculateMagicWandRoomWeight(r), () => new MagicWand(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateRandomWandRoomWeight(r), () => new RandomWand(_itemIdService.Next(), _roomId, false))
             );
 
             // Группа "Броня"
-            AddWeightedGroup(options, roomId, GameBalance.RoomArmorWeight,
-                (r => GameBalance.CalculateWoodenBucketRoomWeight(r), () => new WoodenBucket(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateLeatherHelmRoomWeight(r), () => new LeatherHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronHelmRoomWeight(r), () => new IronHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateLeatherVestRoomWeight(r), () => new LeatherVest(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronCuirassRoomWeight(r), () => new IronCuirass(sessionService.NextItemId(), roomId, false))
+            AddWeightedGroup(options, _roomId, GameBalance.RoomArmorWeight,
+                (r => GameBalance.CalculateWoodenBucketRoomWeight(r), () => new WoodenBucket(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateLeatherHelmRoomWeight(r), () => new LeatherHelm(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateIronHelmRoomWeight(r), () => new IronHelm(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateLeatherVestRoomWeight(r), () => new LeatherVest(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateIronCuirassRoomWeight(r), () => new IronCuirass(_itemIdService.Next(), _roomId, false))
             );
 
             // Группа "Зелья"
-            AddWeightedGroup(options, roomId, GameBalance.RoomHealWeight,
-                (r => GameBalance.CalculateBandageRoomWeight(r), () => new Bandage(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateRegenPotionRoomWeight(r), () => new RegenPotion(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculatePowerPotionRoomWeight(r), () => new PowerPotion(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateRandomPotionRoomWeight(r), () => new RandomPotion(sessionService.NextItemId(), roomId, false))
+            AddWeightedGroup(options, _roomId, GameBalance.RoomHealWeight,
+                (r => GameBalance.CalculateBandageRoomWeight(r), () => new Bandage(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateRegenPotionRoomWeight(r), () => new RegenPotion(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculatePowerPotionRoomWeight(r), () => new PowerPotion(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateRandomPotionRoomWeight(r), () => new RandomPotion(_itemIdService.Next(), _roomId, false))
             );
 
             return SelectRandom(options);
         }
-        public Item? CreateChestItem(IGameSessionService sessionService)
+        public Item? CreateChestItem()
         {
-            int roomId = sessionService.RoomCounter;
-
             var options = new List<(int Weight, Func<Item?> Creator)>();
 
-            AddWeightedGroup(options, roomId, GameBalance.ChestOtherWeight,
-                (_ => GameBalance.CalculateKeyChestWeight(), () => new Key(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateBagOfCoinsChestWeight(), () => new BagOfCoins(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateMapChestWeight(), () => new Map(sessionService.NextItemId()))
+            AddWeightedGroup(options, _roomId, GameBalance.ChestOtherWeight,
+                (_ => GameBalance.CalculateKeyChestWeight(), () => new Key(_itemIdService.Next(), _roomId)),
+                (_ => GameBalance.CalculateBagOfCoinsChestWeight(), () => new BagOfCoins(_itemIdService.Next(), _roomId)),
+                (_ => GameBalance.CalculateMapChestWeight(), () => new Map(_itemIdService.Next()))
             );
-            AddWeightedGroup(options, roomId, GameBalance.ChestWeaponWeight,
-                (r => GameBalance.CalculateRustSwordChestWeight(r), () => new RustSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronSwordChestWeight(r), () => new IronSword(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateSilverSwordChestWeight(r), () => new SilverSword(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateGlassSwordChestWeight(), () => new GlassSword(sessionService.NextItemId(), roomId, false)),
+            AddWeightedGroup(options, _roomId, GameBalance.ChestWeaponWeight,
+                (r => GameBalance.CalculateRustSwordChestWeight(r), () => new RustSword(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateIronSwordChestWeight(r), () => new IronSword(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateSilverSwordChestWeight(r), () => new SilverSword(_itemIdService.Next(), _roomId, false)),
+                (_ => GameBalance.CalculateGlassSwordChestWeight(), () => new GlassSword(_itemIdService.Next(), _roomId, false)),
 
-                (r => GameBalance.CalculateMagicWandChestWeight(r), () => new MagicWand(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateRandomWandChestWeight(), () => new RandomWand(sessionService.NextItemId(), roomId, false))
+                (r => GameBalance.CalculateMagicWandChestWeight(r), () => new MagicWand(_itemIdService.Next(), _roomId, false)),
+                (_ => GameBalance.CalculateRandomWandChestWeight(), () => new RandomWand(_itemIdService.Next(), _roomId, false))
             );
-            AddWeightedGroup(options, roomId, GameBalance.ChestArmorWeight,
-                (r => GameBalance.CalculateLeatherHelmChestWeight(r), () => new LeatherHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronHelmChestWeight(r), () => new IronHelm(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateLeatherVestChestWeight(r), () => new LeatherVest(sessionService.NextItemId(), roomId, false)),
-                (r => GameBalance.CalculateIronCuirassChestWeight(r), () => new IronCuirass(sessionService.NextItemId(), roomId, false))
+            AddWeightedGroup(options, _roomId, GameBalance.ChestArmorWeight,
+                (r => GameBalance.CalculateLeatherHelmChestWeight(r), () => new LeatherHelm(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateIronHelmChestWeight(r), () => new IronHelm(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateLeatherVestChestWeight(r), () => new LeatherVest(_itemIdService.Next(), _roomId, false)),
+                (r => GameBalance.CalculateIronCuirassChestWeight(r), () => new IronCuirass(_itemIdService.Next(), _roomId, false))
             );
-            AddWeightedGroup(options, roomId, GameBalance.ChestHealWeight,
-                (_ => GameBalance.CalculateRegenPotionChestWeight(), () => new RegenPotion(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculatePowerPotionChestWeight(), () => new PowerPotion(sessionService.NextItemId(), roomId, false)),
-                (_ => GameBalance.CalculateRandomPotionChestWeight(), () => new RandomPotion(sessionService.NextItemId(), roomId, false))
+            AddWeightedGroup(options, _roomId, GameBalance.ChestHealWeight,
+                (_ => GameBalance.CalculateRegenPotionChestWeight(), () => new RegenPotion(_itemIdService.Next(), _roomId, false)),
+                (_ => GameBalance.CalculatePowerPotionChestWeight(), () => new PowerPotion(_itemIdService.Next(), _roomId, false)),
+                (_ => GameBalance.CalculateRandomPotionChestWeight(), () => new RandomPotion(_itemIdService.Next(), _roomId, false))
             );
             return SelectRandom(options);
         }
-        public Item? CreateShopItem(IGameSessionService sessionService)
+        public Item? CreateShopItem()
         {
-            int roomId = sessionService.RoomCounter;
-
             var options = new List<(int Weight, Func<Item?> Creator)>();
 
-            AddWeightedGroup(options, roomId, GameBalance.ShopOtherWeight,
-                (_ => GameBalance.CalculateKeyShopWeight(), () => new Key(sessionService.NextItemId(), roomId)),
-                (_ => GameBalance.CalculateMapShopWeight(), () => new Map(sessionService.NextItemId()))
+            AddWeightedGroup(options, _roomId, GameBalance.ShopOtherWeight,
+                (_ => GameBalance.CalculateKeyShopWeight(), () => new Key(_itemIdService.Next(), _roomId)),
+                (_ => GameBalance.CalculateMapShopWeight(), () => new Map(_itemIdService.Next()))
             );
-            AddWeightedGroup(options, roomId, GameBalance.ShopWeaponWeight,
-                (r => GameBalance.CalculateRustSwordShopWeight(r), () => new RustSword(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateIronSwordShopWeight(r), () => new IronSword(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateSilverSwordShopWeight(r), () => new SilverSword(sessionService.NextItemId(), roomId, true)),
+            AddWeightedGroup(options, _roomId, GameBalance.ShopWeaponWeight,
+                (r => GameBalance.CalculateRustSwordShopWeight(r), () => new RustSword(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculateIronSwordShopWeight(r), () => new IronSword(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculateSilverSwordShopWeight(r), () => new SilverSword(_itemIdService.Next(), _roomId, true)),
 
-                (_ => GameBalance.CalculateMagicWandShopWeight(), () => new MagicWand(sessionService.NextItemId(), roomId, true)),
-                (_ => GameBalance.CalculateRandomWandShopWeight(), () => new RandomWand(sessionService.NextItemId(), roomId, true))
+                (_ => GameBalance.CalculateMagicWandShopWeight(), () => new MagicWand(_itemIdService.Next(), _roomId, true)),
+                (_ => GameBalance.CalculateRandomWandShopWeight(), () => new RandomWand(_itemIdService.Next(), _roomId, true))
             );
-            AddWeightedGroup(options, roomId, GameBalance.ShopArmorWeight,
-                (r => GameBalance.CalculateWoodenBucketShopWeight(r), () => new WoodenBucket(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateLeatherHelmShopWeight(r), () => new LeatherHelm(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateIronHelmShopWeight(r), () => new IronHelm(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateLeatherVestShopWeight(r), () => new LeatherVest(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateIronCuirassShopWeight(r), () => new IronCuirass(sessionService.NextItemId(), roomId, true))
+            AddWeightedGroup(options, _roomId, GameBalance.ShopArmorWeight,
+                (r => GameBalance.CalculateWoodenBucketShopWeight(r), () => new WoodenBucket(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculateLeatherHelmShopWeight(r), () => new LeatherHelm(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculateIronHelmShopWeight(r), () => new IronHelm(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculateLeatherVestShopWeight(r), () => new LeatherVest(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculateIronCuirassShopWeight(r), () => new IronCuirass(_itemIdService.Next(), _roomId, true))
             );
-            AddWeightedGroup(options, roomId, GameBalance.ShopHealWeight,
-                (r => GameBalance.CalculateBandageShopWeight(r), () => new Bandage(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculateRegenPotionShopWeight(r), () => new RegenPotion(sessionService.NextItemId(), roomId, true)),
-                (r => GameBalance.CalculatePowerPotionShopWeight(r), () => new PowerPotion(sessionService.NextItemId(), roomId, true)),
-                (_ => GameBalance.CalculateRandomPotionShopWeight(), () => new RandomPotion(sessionService.NextItemId(), roomId, true))
+            AddWeightedGroup(options, _roomId, GameBalance.ShopHealWeight,
+                (r => GameBalance.CalculateBandageShopWeight(r), () => new Bandage(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculateRegenPotionShopWeight(r), () => new RegenPotion(_itemIdService.Next(), _roomId, true)),
+                (r => GameBalance.CalculatePowerPotionShopWeight(r), () => new PowerPotion(_itemIdService.Next(), _roomId, true)),
+                (_ => GameBalance.CalculateRandomPotionShopWeight(), () => new RandomPotion(_itemIdService.Next(), _roomId, true))
             );
             return SelectRandom(options);
         }

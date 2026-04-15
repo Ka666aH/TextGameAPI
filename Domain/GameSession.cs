@@ -22,9 +22,5 @@ namespace TextGame.Domain
         public bool IsGameStarted { get; set; }
         public bool IsInBattle { get; set; } = false;
         public Chest? CurrentMimicChest { get; set; } = null;
-
-        public int RoomCounter { get; set; }
-        public int ItemCounter { get; set; }
-        public int EnemyCounter { get; set; }
     }
 }

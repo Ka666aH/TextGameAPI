@@ -5,6 +5,6 @@ namespace TextGame.Application.Interfaces.Generators
 {
     public interface IRoomContentGenerator
     {
-        void GenerateContent(Room room, IGameSessionService sessionService);
+        void GenerateContent(Room room);
     }
 }

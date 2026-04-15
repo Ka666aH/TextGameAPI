@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<GameSession>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 
-//Репозитории
+//Сервисы
 builder.Services.AddScoped<IGetCurrentRoomService, GetCurrentRoomService>();
 builder.Services.AddScoped<IChestService, ChestService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -26,15 +26,20 @@ builder.Services.AddScoped<IGameControllerService, GameControllerService>();
 builder.Services.AddScoped<IRoomControllerService, RoomControllerService>();
 builder.Services.AddScoped<IGetEnemyService, GetEnemyService>();
 builder.Services.AddScoped<ICombatService, CombatService>();
+//here
+builder.Services.AddScoped<IRoomIdService, RoomIdService>();
+builder.Services.AddScoped<IItemIdService, ItemIdService>();
+builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
 
 //Общие
-builder.Services.AddSingleton<IRoomFactory, RoomFactory>();
-builder.Services.AddSingleton<IItemFactory, ItemFactory>();
-builder.Services.AddSingleton<IEnemyFactory, EnemyFactory>();
-builder.Services.AddSingleton<IMapGenerator, MapGenerator>();
-builder.Services.AddSingleton<IRoomContentGenerator, RoomContentGenerator>();
-builder.Services.AddSingleton<IGetItemService, GetItemService>();
-builder.Services.AddSingleton<ICheckItemService, CheckItemService>();
+builder.Services.AddTransient<IRoomFactory, RoomFactory>();
+builder.Services.AddTransient<IItemFactory, ItemFactory>();
+builder.Services.AddTransient<IEnemyFactory, EnemyFactory>();
+builder.Services.AddTransient<IMapGenerator, MapGenerator>();
+builder.Services.AddTransient<IRoomContentGenerator, RoomContentGenerator>();
+builder.Services.AddTransient<IGetItemService, GetItemService>();
+builder.Services.AddTransient<ICheckItemService, CheckItemService>();
+
 
 
 // Add services to the container.

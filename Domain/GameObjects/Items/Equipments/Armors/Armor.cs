@@ -1,4 +1,6 @@
-﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Armors
+﻿using TextGame.Domain.DTO;
+
+namespace TextGame.Domain.GameObjects.Items.Equipments.Armors
 {
     public abstract class Armor : Equipment
     {
