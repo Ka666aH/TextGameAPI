@@ -13,7 +13,7 @@ namespace TextGame.Application.Factories
             _roomIdService = roomIdService;
         }
 
-        public StartRoom CreateStartRoom() => new StartRoom(0);
+        public StartRoom CreateStartRoom() => new StartRoom();
         public EndRoom CreateEndRoom() => new EndRoom(_roomIdService.Next());
         public EmptyRoom CreateEmptyRoom() => new EmptyRoom(_roomIdService.Next());
         public SmallRoom CreateSmallRoom() => new SmallRoom(_roomIdService.Next());

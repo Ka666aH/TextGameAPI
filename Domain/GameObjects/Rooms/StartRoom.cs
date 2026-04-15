@@ -2,8 +2,8 @@
 {
     public class StartRoom : Room
     {
-        public StartRoom(int number) 
-            : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра, через которую Вы сюда провалились.", number)
+        public StartRoom() 
+            : base("СТАРТОВАЯ КОМАНТА", "В потолке дыра, через которую Вы сюда провалились.", 0)
         {
             IsDiscovered = true;
         }
