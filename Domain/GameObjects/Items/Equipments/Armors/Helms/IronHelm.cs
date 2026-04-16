@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms
 {
     public class IronHelm : Helm
     {
         public IronHelm(int itemId, int roomId, bool fromShop)
-            : base("ЖЕЛЕЗНЫЙ ШЛЕМ",
-                  "Крепкий шлем из качественного металла.",
+            : base(ItemsLabeles.IronHelmName,
+                  ItemsLabeles.IronHelmDescription,
                   itemId,
                   roomId,
                   fromShop,

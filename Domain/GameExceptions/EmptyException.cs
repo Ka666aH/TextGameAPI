@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class EmptyException : GameException
     {
-        public EmptyException() : base("EMPTY_ERROR", "Тут ничего нет!") { }
+        public EmptyException() : base(ExceptionLabels.EmptyCode, ExceptionLabels.EmptyText) { }
     }
 }

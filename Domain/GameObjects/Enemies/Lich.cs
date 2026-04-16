@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Enemies
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Enemies
 {
     public class Lich : Enemy
     {
         public Lich(int roomId, int enemyId)
-            : base("ЛИЧ",
-                  "Тебя ждёт вечный параЛИЧ. Ха-ха.",
+            : base(EnemiesLabeles.LichName,
+                  EnemiesLabeles.LichDescription,
                   roomId,
                   enemyId,
                   GameBalance.LichBaseHealth,

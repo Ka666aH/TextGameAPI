@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class UnsellableItemException : GameException
     {
-        public UnsellableItemException() : base("UNSELLABLE_ERROR", "Невозможно продать этот предмет!") { }
+        public UnsellableItemException() : base(ExceptionLabels.UnsellableItemCode, ExceptionLabels.UnsellableItemText) { }
     }
 }

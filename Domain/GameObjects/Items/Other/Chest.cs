@@ -1,5 +1,6 @@
 ﻿using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameObjects.Enemies;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.GameObjects.Items.Other
 {
@@ -12,7 +13,7 @@ namespace TextGame.Domain.GameObjects.Items.Other
         public IReadOnlyList<Item> Items => _items.AsReadOnly();
 
         public Chest(int itemId, List<Item> items, Mimic? mimic = null)
-            : base("СУНДУК", "Хранит предметы. Может оказаться мимиком.", itemId, false)
+            : base(ItemsLabeles.ChestName, ItemsLabeles.ChestDescription, itemId, false)
         {
             Cost = null;
             IsLocked = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
@@ -35,8 +36,8 @@ namespace TextGame.Domain.GameObjects.Items.Other
         public void KillMimic()
         {
             Mimic = null;
-            Name = "МЁРТВЫЙ МИМИК";
-            Description = "Мёртвый сундук с руками и зубами. Интересно, что у него внутри.";
+            Name = ItemsLabeles.DeadMimicName;
+            Description = ItemsLabeles.DeadMimicDescription;
             IsLocked = false;
             IsClosed = false;
         }

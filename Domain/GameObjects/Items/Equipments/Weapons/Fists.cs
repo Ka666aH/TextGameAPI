@@ -1,4 +1,5 @@
 ﻿using TextGame.Domain.DTO;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons
 {
@@ -6,7 +7,15 @@ namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons
     {
         public static readonly Fists DefaultFists = new Fists();
 
-        public Fists() : base("КУЛАКИ", "То, что есть (почти) у каждого. Базовое оружие самозащиты. Может быть больно.", null, null, GameBalance.FistsBaseDamage, 0, false) { }
+        public Fists()
+            : base(ItemsLabeles.FistsName,
+                  ItemsLabeles.FistsDescription,
+                  null,
+                  null,
+                  GameBalance.FistsBaseDamage,
+                  0,
+                  false)
+        { }
         public override WeaponAttackResult Attack(int roomId)
         {
             var (min, max) = GameBalance.CalculateSpread(GameBalance.FistsBaseDamage, roomId);

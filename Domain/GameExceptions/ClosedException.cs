@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class ClosedException : GameException
     {
-        public ClosedException() : base("CLOSED", "Сундук закрыт!") { }
+        public ClosedException() : base(ExceptionLabels.ClosedCode, ExceptionLabels.ClosedText) { }
     }
 }

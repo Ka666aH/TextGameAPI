@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class NotShopException : GameException
     {
-        public NotShopException() : base("NOT_IN_SHOP", "Невозможно вне магазина!") { }
+        public NotShopException() : base(ExceptionLabels.NotShopCode, ExceptionLabels.NotShopText) { }
     }
 }

@@ -1,7 +1,10 @@
-﻿namespace TextGame.Domain.GameObjects.Rooms
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Rooms
 {
     public class SmallRoom : Room
     {
-        public SmallRoom(int number) : base("МАЛЕНЬКАЯ КОМНАТА", "Тесная комната. Внутри может быть предмет.", number) { }
+        public SmallRoom(int number) 
+            : base(RoomsLabeles.SmallRoomName, RoomsLabeles.SmallRoomDescription, number) { }
     }
 }

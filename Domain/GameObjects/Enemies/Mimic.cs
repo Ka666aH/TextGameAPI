@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Enemies
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Enemies
 {
     public class Mimic : Enemy
     {
         public Mimic(int roomId, int enemyId)
-            : base("МИМИК",
-                  "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.",
+            : base(EnemiesLabeles.MimicName,
+                  EnemiesLabeles.MimicDescription,
                   roomId,
                   enemyId,
                   GameBalance.MimicBaseHealth,

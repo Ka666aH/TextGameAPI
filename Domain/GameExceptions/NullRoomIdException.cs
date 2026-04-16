@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class NullRoomIdException : GameException
     {
-        public NullRoomIdException() : base("ROOM_NOT_FOUND", "Комната не найдена.") { }
+        public NullRoomIdException() : base(ExceptionLabels.NullRoomIdCode, ExceptionLabels.NullRoomIdText) { }
     }
 }

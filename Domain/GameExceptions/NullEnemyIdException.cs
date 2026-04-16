@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class NullEnemyIdException : GameException
     {
-        public NullEnemyIdException() : base("ENEMY_NOT_FOUND", "Противник не найден.") { }
+        public NullEnemyIdException() : base(ExceptionLabels.NullEnemyIdCode, ExceptionLabels.NullEnemyIdText) { }
     }
 }

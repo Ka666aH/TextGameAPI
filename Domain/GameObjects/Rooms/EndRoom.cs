@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameObjects.Rooms
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Rooms
 {
     public class EndRoom : Room
     {
-        public EndRoom(int number) : base("ВЫХОД", "Выход наружу. Свобода.", number) { }
+        public EndRoom(int number) : base(RoomsLabeles.EndRoomName, RoomsLabeles.EndRoomDescription, number) { }
     }
 }

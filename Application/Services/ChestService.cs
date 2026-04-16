@@ -2,6 +2,7 @@
 using TextGame.Domain.GameObjects.Items;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameObjects.Items.Other;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Services
 {
@@ -15,7 +16,7 @@ namespace TextGame.Application.Services
         public Chest GetChest(int chestId, IEnumerable<Item> items)
         {
             Item item = _getItemByIdRepository.GetItem(chestId, items);
-            if (item is not Chest) throw new InvalidIdException("NOT_CHEST", "Это не сундук.");
+            if (item is not Chest) throw new InvalidIdException(ExceptionLabels.NotChestCode, ExceptionLabels.NotChestText);
             return (Chest)item;
         }
         public bool OpenChest(Chest chest)

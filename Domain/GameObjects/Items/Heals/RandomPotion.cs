@@ -1,12 +1,13 @@
 ﻿using TextGame.Application.Interfaces.Services;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.GameObjects.Items.Heal
 {
     public class RandomPotion : Heal
     {
         public RandomPotion(int itemId, int roomId, bool fromShop)
-            : base("НЕИЗВЕСТНОЕ ЗЕЛЬЕ",
-                  "Пробирка с жижей непонятного цвета.",
+            : base(ItemsLabeles.RandomPotionName,
+                  ItemsLabeles.RandomPotionDescription,
                   itemId,
                   roomId,
                   fromShop,

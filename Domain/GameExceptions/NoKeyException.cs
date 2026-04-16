@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class NoKeyException : GameException
     {
-        public NoKeyException() : base("NO_KEY_ERROR", "Нет ключа!") { }
+        public NoKeyException() : base(ExceptionLabels.NoKeyCode, ExceptionLabels.NoKeyText) { }
     }
 }

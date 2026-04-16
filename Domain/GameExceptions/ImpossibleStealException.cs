@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class ImpossibleStealException : GameException
     {
-        public ImpossibleStealException() : base("CAN_NOT_STEAL", "Невозможно украсть. За Вами следят.") { }
+        public ImpossibleStealException() : base(ExceptionLabels.ImpossibleStealCode, ExceptionLabels.ImpossibleStealText) { }
     }
 }

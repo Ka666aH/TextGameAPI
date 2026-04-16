@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class LockedException : GameException
     {
-        public LockedException() : base("LOCKED", "Сундук заперт!") { }
+        public LockedException() : base(ExceptionLabels.LockedCode, ExceptionLabels.LockedText) { }
     }
 }

@@ -2,6 +2,7 @@
 using TextGame.Domain.GameObjects.Enemies;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.DTO;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Services
 {
@@ -32,7 +33,7 @@ namespace TextGame.Application.Services
             int enemyHealthBeforeAttack = enemy.Health;
             int enemyHealthAfterAttack = enemy.GetDamage(attackResult.Damage);
             int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
-            BattleLog battleLog = new BattleLog(enemy.Name!, attackResult.Damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
+            BattleLog battleLog = new BattleLog(enemy.Name!, attackResult.Damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
 
             if (enemyHealthAfterAttack <= 0)
             {
@@ -45,14 +46,14 @@ namespace TextGame.Application.Services
                 }
                 CheckPlayerHealthAfterAttack();
                 _sessionService.EndBattle();
-                throw new BattleWinException($"{enemy.Name!} повержен.", battleLog);
+                throw new BattleWinException(string.Format(ExceptionLabels.EnemyDefeated, enemy.Name), battleLog);
             }
             CheckPlayerHealthAfterAttack();
             return battleLog;
         }
         private void CheckPlayerHealthAfterAttack()
         {
-            if (_sessionService.CurrentHealth <= 0) throw new DefeatException("Вы погибли от своей же атаки. Как отчаянно.", _gameInfoService.GetGameInfo());
+            if (_sessionService.CurrentHealth <= 0) throw new DefeatException(ExceptionLabels.SuicideText, _gameInfoService.GetGameInfo());
         }
         public BattleLog GetDamage()
         {
@@ -80,9 +81,9 @@ namespace TextGame.Application.Services
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
             int playerHealthBeforeAttack = _sessionService.CurrentHealth;
             if (damageAfterBlock > 0) _sessionService.AddCurrentHealth(-damageAfterBlock);
-            if (_sessionService.CurrentHealth <= 0) throw new DefeatException($"Вы были повержены {enemy.Name}ОМ.", _gameInfoService.GetGameInfo());
+            if (_sessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerDefeated,enemy.Name), _gameInfoService.GetGameInfo());
             int enemyHealthAfterAttack = enemyHealthBeforeAttack - enemy.Health;
-            return new BattleLog("ИГРОК", damage, playerHealthBeforeAttack, _sessionService.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
+            return new BattleLog(GeneralLabeles.PlayerName, damage, playerHealthBeforeAttack, _sessionService.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
         }
     }
 }

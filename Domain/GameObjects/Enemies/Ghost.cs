@@ -1,12 +1,13 @@
 ﻿using TextGame.Domain.GameObjects.Rooms;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.GameObjects.Enemies
 {
     public class Ghost : Enemy
     {
         public Ghost(int roomId, int enemyId)
-            : base("ПРИЗРАК",
-                  "Злой полуматериальный дух. Попробуй попади.",
+            : base(EnemiesLabeles.GhostName,
+                  EnemiesLabeles.GhostDescription,
                   roomId,
                   enemyId,
                   GameBalance.GhostBaseHealth,

@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class NoMoneyException : GameException
     {
-        public NoMoneyException() : base("NO_MONEY", "Недостаточно средств!") { }
+        public NoMoneyException() : base(ExceptionLabels.NoMoneyCode, ExceptionLabels.NoMoneyText) { }
     }
 }

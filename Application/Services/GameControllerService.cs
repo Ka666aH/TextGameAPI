@@ -7,6 +7,7 @@ using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
 using TextGame.Application.Interfaces.Factories;
 using TextGame.Domain.GameObjects.Items.Other;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Services
 {
@@ -94,19 +95,19 @@ namespace TextGame.Application.Services
         {
             if (!_sessionService.IsGameStarted && _sessionService.Rooms.Count <= 1) throw new UnstartedGameException();
             if (!_sessionService.Inventory.OfType<Map>().Any()) throw new NoMapException();
-            return _sessionService.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? "НЕИЗВЕСТНО")).ToList();
+            return _sessionService.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? GeneralLabeles.GameObjectDefaultName)).ToList();
         }
         public void UseInventoryItem(int itemId)
         {
             if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
 
             Item item = GetInventoryItem(itemId);
-            if (item is not Heal heal) throw new InvalidIdException("NOT_HEAL", "Это не предмет лечения.");
+            if (item is not Heal heal) throw new InvalidIdException(ExceptionLabels.NotHealCode, ExceptionLabels.NotHealText);
             _sessionService.RemoveItemFromInventory(heal);
             var (maxHealthBoost, currentHealthBoost) = heal.Use();
             _sessionService.AddMaxHealth(maxHealthBoost);
             _sessionService.AddCurrentHealth(currentHealthBoost);
-            if (_sessionService.CurrentHealth <= 0) throw new DefeatException($"{heal.Name} приводит Вас к гибели!", GetGameInfo());
+            if (_sessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerPoisoned, heal.Name), GetGameInfo());
         }
 
         public Item GetInventoryItem(int itemId) => _inventoryRepository.GetInventoryItem(itemId);

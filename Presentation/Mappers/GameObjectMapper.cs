@@ -8,6 +8,7 @@ using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Presentation.DTO;
 using TextGame.Domain.GameObjects;
 using TextGame.Domain.GameObjects.Items.Other;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Presentation.Mappers
 {
@@ -40,7 +41,7 @@ namespace TextGame.Presentation.Mappers
 
                     _ => new ItemDTO(item.Id, item.Name!, item.Description!, item.Cost),
                 },
-                _ => new GameObjectDTO(gameObject.Name ?? "НЕИЗВЕСТНО", gameObject.Description ?? "НЕОПИСУЕМО!")
+                _ => new GameObjectDTO(gameObject.Name ?? GeneralLabeles.GameObjectDefaultName, gameObject.Description ?? GeneralLabeles.GameObjectDefaultDescription)
             };
         }
         public static List<object> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject

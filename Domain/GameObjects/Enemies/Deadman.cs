@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Enemies
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Enemies
 {
     public class Deadman : Enemy
     {
         public Deadman(int roomId, int enemyId)
-            : base("МЕРТВЯК",
-                  "Мёртвое полуразложившееся тело. Источник жуткого смрада.",
+            : base(EnemiesLabeles.DeadmanName,
+                  EnemiesLabeles.DeadmanDescription,
                   roomId,
                   enemyId,
                   GameBalance.DeadmanBaseHealth,

@@ -1,11 +1,13 @@
-﻿namespace TextGame.Domain.GameObjects.Enemies
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Enemies
 {
     public class Skeletor : Enemy
     {
 
         public Skeletor(int roomId, int enemyId)
-            : base("СКЕЛЕТОР",
-                  "Чей-то скелет, наделёный возможностью двигаться.",
+            : base(EnemiesLabeles.SkeletorName,
+                  EnemiesLabeles.SkeletorDescription,
                   roomId,
                   enemyId,
                   GameBalance.SkeletorBaseHealth,

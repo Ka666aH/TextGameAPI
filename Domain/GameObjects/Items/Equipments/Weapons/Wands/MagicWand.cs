@@ -1,11 +1,13 @@
-﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands
 {
     public class MagicWand : Wand
     {
 
         public MagicWand(int itemId, int roomId, bool fromShop)
-            : base("ВОЛШЕБНЫЙ ЖЕЗЛ",
-                  "Простое магическое оружие. Может использовать каждый.",
+            : base(ItemsLabeles.MagicWandName,
+                  ItemsLabeles.MagicWandDescription,
                   itemId,
                   roomId,
                   fromShop,

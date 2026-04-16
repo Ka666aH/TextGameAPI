@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class NoMapException : GameException
     {
-        public NoMapException() : base("NO_MAP_ERROR", "Нет карты!") { }
+        public NoMapException() : base(ExceptionLabels.NoMapCode, ExceptionLabels.NoMapText) { }
     }
 }

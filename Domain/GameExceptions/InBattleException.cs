@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class InBattleException : GameException
     {
-        public InBattleException() : base("IN_BATTLE", "В бою!") { }
+        public InBattleException() : base(ExceptionLabels.InBattleCode, ExceptionLabels.InBattleText) { }
     }
 }

@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Items.Heal
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Items.Heal
 {
     public class Bandage : Heal
     {
         public Bandage(int itemId, int roomId, bool fromShop)
-            : base("ПОВЯЗКА",
-                  "Менее грязная тряпка, из тех, что здесь обычно встречаются.",
+            : base(ItemsLabeles.BandageName,
+                  ItemsLabeles.BandageDescription,
                   itemId,
                   roomId,
                   fromShop,

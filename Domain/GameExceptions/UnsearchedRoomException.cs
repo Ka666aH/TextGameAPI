@@ -1,7 +1,9 @@
-﻿namespace TextGame.Domain.GameExceptions
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameExceptions
 {
     public class UnsearchedRoomException : GameException
     {
-        public UnsearchedRoomException() : base("ROOM_NOT_SEARCHED", "Комната ещё не обыскана!") { }
+        public UnsearchedRoomException() : base(ExceptionLabels.UnsearchedRoomCode, ExceptionLabels.UnsearchedRoomText) { }
     }
 }

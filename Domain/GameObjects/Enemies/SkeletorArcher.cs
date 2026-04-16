@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Enemies
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Enemies
 {
     public class SkeletorArcher : Enemy
     {
         public SkeletorArcher(int roomId, int enemyId)
-            : base("СКЕЛЕТОР-ЛУЧНИК",
-                  "Из тех, кто при жизни умел обращаться с луком.",
+            : base(EnemiesLabeles.SkeletorArcherName,
+                  EnemiesLabeles.SkeletorArcherDescription,
                   roomId,
                   enemyId,
                   GameBalance.SkeletorArcherBaseHealth,

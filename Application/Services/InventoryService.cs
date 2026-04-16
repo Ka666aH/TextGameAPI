@@ -7,6 +7,7 @@ using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
 using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
 using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Domain.GameExceptions;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Services
 {
@@ -36,7 +37,7 @@ namespace TextGame.Application.Services
             if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
 
             Item item = GetInventoryItem(itemId);
-            if (item is not Equipment equipment) throw new InvalidIdException("NOT_EQUIPMENT", "Это не снаряжение.");
+            if (item is not Equipment equipment) throw new InvalidIdException(ExceptionLabels.NotEqiipmentCode, ExceptionLabels.NotEqiipmentText);
             switch (equipment)
             {
                 case Weapon weapon:

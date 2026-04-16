@@ -6,6 +6,7 @@ using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameObjects.Items.Other;
 using TextGame.Domain.DTO;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Services
 {
@@ -148,7 +149,7 @@ namespace TextGame.Application.Services
                 if (attackResult.IsWeaponBrokenDown) _sessionService.RemoveWeapon();
 
                 int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
-                battleLog = new BattleLog("СУНДУК", attackResult.Damage, null, null, "ИГРОК", playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
+                battleLog = new BattleLog(ItemsLabeles.ChestName, attackResult.Damage, null, null, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
             }
             return battleLog;
         }
@@ -173,7 +174,7 @@ namespace TextGame.Application.Services
             if (_chestRepository.OpenChest(chest))
             {
                 _sessionService.EndGame();
-                throw new DefeatException("НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!", _gameInfoRepository.GetGameInfo());
+                throw new DefeatException(ExceptionLabels.PlayerEaten, _gameInfoRepository.GetGameInfo());
             }
         }
         public List<Item> SearchChest(int chestId)

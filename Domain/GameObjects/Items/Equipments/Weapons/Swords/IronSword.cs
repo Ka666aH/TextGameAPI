@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords
 {
     public class IronSword : Sword
     {
         public IronSword(int itemId, int roomId, bool fromShop)
-            : base("ЖЕЛЕЗНЫЙ МЕЧ",
-                  "Добротное оружие воина. На лезвии оттиск \"304\".Номер, наверное.",
+            : base(ItemsLabeles.IronSwordName,
+                  ItemsLabeles.IronSwordDescription,
                   itemId,
                   roomId,
                   fromShop,

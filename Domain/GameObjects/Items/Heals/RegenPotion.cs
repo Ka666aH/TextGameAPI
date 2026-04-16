@@ -1,10 +1,12 @@
-﻿namespace TextGame.Domain.GameObjects.Items.Heal
+﻿using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.GameObjects.Items.Heal
 {
     public class RegenPotion : Heal
     {
         public RegenPotion(int itemId, int roomId, bool fromShop)
-            : base("ЗЕЛЬЕ РЕГЕНЕРАЦИИ",
-                  "Пыльный бутылёк с субстанцией тёмного цвета.",
+            : base(ItemsLabeles.RegenPotionName,
+                  ItemsLabeles.RegenPotionDescription,
                   itemId,
                   roomId,
                   fromShop,
