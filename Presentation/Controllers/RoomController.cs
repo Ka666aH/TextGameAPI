@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
+using TextGame.Domain.DTO;
 using TextGame.Domain.GameObjects.Enemies;
-using TextGame.Presentation.DTO;
 using TextGame.Presentation.Mappers;
 using TextGame.Presentation.ResponseTemplates;
 namespace TextGame.Presentation.Controllers
@@ -62,7 +62,6 @@ namespace TextGame.Presentation.Controllers
             _roomControllerService.BuyItem(itemId);
             return Results.Ok(new SuccessfulResponse(_roomControllerService.GetGameInfo()));
         }
-
         #region CHEST
 
         [HttpPost("current/items/{chestId}/chest/hit")]
@@ -118,7 +117,7 @@ namespace TextGame.Presentation.Controllers
         [HttpGet("current/enemy")]
         public IResult GetEnemy()
         {
-            Enemy enemy = _roomControllerService.GetEnemyById();
+            Enemy enemy = _roomControllerService.GetEnemy();
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemy)));
         }
         //[HttpPost("current/enemy/{enemyId}/attack")]

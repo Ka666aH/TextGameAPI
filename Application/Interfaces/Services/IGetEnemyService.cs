@@ -4,7 +4,7 @@ namespace TextGame.Application.Interfaces.Services
 {
     public interface IGetEnemyService
     {
-        Enemy GetEnemyById();
+        Enemy GetEnemy();
         //List<Enemy> GetEnemies();
     }
 }

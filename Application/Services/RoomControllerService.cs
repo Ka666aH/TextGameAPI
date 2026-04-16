@@ -5,6 +5,7 @@ using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameObjects.Items.Other;
+using TextGame.Domain.DTO;
 
 namespace TextGame.Application.Services
 {
@@ -103,10 +104,19 @@ namespace TextGame.Application.Services
             _sessionService.AddItemToInventory(item);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
-        public Enemy GetEnemyById() => _getEnemyByIdRepository.GetEnemyById();
+        public Enemy GetEnemy() => _getEnemyByIdRepository.GetEnemy();
 
-        public BattleLog DealDamage() => _combatRepository.DealDamage();
-        public BattleLog GetDamage() => _combatRepository.GetDamage();
+        public BattleLog DealDamage()
+        {
+            RequireGameStarted();
+            return _combatRepository.DealDamage();
+
+        }
+        public BattleLog GetDamage()
+        {
+            RequireGameStarted();
+            return _combatRepository.GetDamage();
+        }
         public Room GetRoom(int roomId) => _getRoomByIdRepository.GetRoom(roomId);
         //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
         //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);

@@ -12,7 +12,7 @@ namespace TextGame.Application.Services
         {
             _sessionService = sessionService;
         }
-        public Enemy GetEnemyById()
+        public Enemy GetEnemy()
         {
             if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
 

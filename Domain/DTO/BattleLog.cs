@@ -1,4 +1,4 @@
-﻿namespace TextGame.Presentation.DTO
+﻿namespace TextGame.Domain.DTO
 {
     public record BattleLog(string target, int damageToTarget, int? targetHealthBeforeAttack, int? targetHealthAfterAttack, string attacker, int damageToAttacker, int? healthBeforeAttack, int? healthAfterAttack);
 }
