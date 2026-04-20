@@ -33,15 +33,6 @@ namespace TextGame.Application.Services
         public int MaxHealth { get => _session.MaxHealth; }
         public int CurrentHealth { get => _session.CurrentHealth; }
         public Chest? CurrentMimicChest { get => _session.CurrentMimicChest; }
-        //public int RoomCounter { get => _session.RoomCounter; }
-        //public int ItemCounter { get => _session.ItemCounter; }
-        //public int EnemyCounter { get => _session.EnemyCounter; }
-
-
-        //public int NextRoomNumber() => ++_session.RoomCounter;
-        //public int NextItemId() => ++_session.ItemCounter;
-        //public int NextEnemyId() => ++_session.EnemyCounter;
-
 
         public void RemoveWeapon() => _session.Weapon = Fists.DefaultFists;
         public void EquipWeapon(Weapon weapon) => _session.Weapon = weapon;
@@ -82,11 +73,6 @@ namespace TextGame.Application.Services
             _session.MaxHealth = GameBalance.DefaultMaxHealth;
             _session.CurrentHealth = GameBalance.DefaultMaxHealth;
 
-
-            //_session.RoomCounter = 0;
-            //_session.ItemCounter = 0;
-            //_session.EnemyCounter = 0;
-
             _session.Rooms = _mapGenerator.Generate();
             SetCurrentRoom(Rooms[0]);
 
@@ -94,14 +80,8 @@ namespace TextGame.Application.Services
             _session.IsGameStarted = true;
         }
         public void EndGame() => _session.IsGameStarted = false;
-        public void StartBattle()
-        {
-            if (CurrentRoom.Enemies.Any()) _session.IsInBattle = true;
-        }
-        public void EndBattle()
-        {
-            if (!CurrentRoom.Enemies.Any()) _session.IsInBattle = false;
-        }
+        public void StartBattle() => _session.IsInBattle = true;
+        public void EndBattle() => _session.IsInBattle = false;
         public void AddCoins(int value) => _session.Coins += value;
         public void AddKeys(int value) => _session.Keys += value;
         public void AddItemToInventory(Item item) => _session.Inventory.Add(item);

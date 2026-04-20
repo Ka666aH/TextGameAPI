@@ -45,7 +45,7 @@ namespace TextGame.Application.Services
                     _sessionService.RemoveCurrentMimicChest();
                 }
                 CheckPlayerHealthAfterAttack();
-                _sessionService.EndBattle();
+                if (!_sessionService.CurrentRoom.Enemies.Any()) _sessionService.EndBattle();
                 throw new BattleWinException(string.Format(ExceptionLabels.EnemyDefeated, enemy.Name), battleLog);
             }
             CheckPlayerHealthAfterAttack();
@@ -81,7 +81,7 @@ namespace TextGame.Application.Services
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
             int playerHealthBeforeAttack = _sessionService.CurrentHealth;
             if (damageAfterBlock > 0) _sessionService.AddCurrentHealth(-damageAfterBlock);
-            if (_sessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerDefeated,enemy.Name), _gameInfoService.GetGameInfo());
+            if (_sessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerDefeated, enemy.Name), _gameInfoService.GetGameInfo());
             int enemyHealthAfterAttack = enemyHealthBeforeAttack - enemy.Health;
             return new BattleLog(GeneralLabeles.PlayerName, damage, playerHealthBeforeAttack, _sessionService.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
         }

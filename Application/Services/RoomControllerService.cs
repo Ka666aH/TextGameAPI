@@ -42,7 +42,7 @@ namespace TextGame.Application.Services
         }
         public Room GetCurrentRoom()
         {
-            RequireGameStartedAndNotAStartRoom();
+            RequireGameStartedAndNotStartRoom();
             return _sessionService.CurrentRoom!;
         }
         public void GoNextRoom()
@@ -52,37 +52,35 @@ namespace TextGame.Application.Services
 
             _sessionService.SetCurrentRoom(_sessionService.Rooms[_sessionService.CurrentRoom!.Number + 1]);
             _sessionService.CurrentRoom.Discover();
-            if (_sessionService.CurrentRoom is EndRoom) throw new WinException(_gameInfoRepository.GetGameInfo());
-            _sessionService.StartBattle();
+
+            RequireNotEndRoom();
+            if (_sessionService.CurrentRoom.Enemies.Any()) _sessionService.StartBattle();
         }
         public List<Item> Search()
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
+            RequireGameStarted();
+            RequireNotInBattle();
 
             return _sessionService.SearchCurrentRoom();
         }
         public void TakeItem(int itemId)
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
-            if (!_sessionService.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
-            if (_sessionService.CurrentRoom is Shop) throw new ImpossibleStealException();
+            RequireGameStarted();
+            RequireNotInBattle();
+            RequireCurrentRoomIsSearched();
+            RequireNotShop();
 
-            //Room room = GetRoomById(roomId);
-            //Room room = Session.CurrentRoom!;
             Item item = _getItemByIdRepository.GetItem(itemId, _sessionService.CurrentRoom!.Items);
             _checkItemService.CheckItem(item);
             _sessionService.RemoveItemFromCurrentRoom(item);
         }
         public void TakeAllItems()
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
-            if (!_sessionService.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
-            if (_sessionService.CurrentRoom is Shop) throw new ImpossibleStealException();
+            RequireGameStarted();
+            RequireNotInBattle();
+            RequireCurrentRoomIsSearched();
+            RequireNotShop();
 
-            //Room room = GetRoomById(roomId);
             List<Item> carryableItems = _sessionService.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
@@ -93,11 +91,11 @@ namespace TextGame.Application.Services
         }
         public void BuyItem(int itemId)
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
-            if (!_sessionService.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            RequireGameStarted();
+            RequireNotInBattle();
+            RequireCurrentRoomIsSearched();
+            RequireShop();
 
-            if (_sessionService.CurrentRoom is not Shop) throw new NotShopException();
             Item item = _getItemByIdRepository.GetItem(itemId, _sessionService.CurrentRoom.Items);
             if (item.Cost > _sessionService.Coins) throw new NoMoneyException();
 
@@ -213,9 +211,25 @@ namespace TextGame.Application.Services
         {
             if (_sessionService.IsInBattle) throw new InBattleException();
         }
-        private void RequireGameStartedAndNotAStartRoom()
+        private void RequireGameStartedAndNotStartRoom()
         {
             if (!_sessionService.IsGameStarted && _sessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+        }
+        private void RequireNotEndRoom()
+        {
+            if (_sessionService.CurrentRoom is EndRoom) throw new WinException(_gameInfoRepository.GetGameInfo());
+        }
+        private void RequireCurrentRoomIsSearched()
+        {
+            if (!_sessionService.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+        }
+        private void RequireNotShop()
+        {
+            if (_sessionService.CurrentRoom is Shop) throw new ImpossibleStealException();
+        }
+        private void RequireShop()
+        {
+            if (_sessionService.CurrentRoom is not Shop) throw new NotShopException();
         }
     }
 }
