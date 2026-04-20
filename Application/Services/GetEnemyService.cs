@@ -14,12 +14,11 @@ namespace TextGame.Application.Services
         }
         public Enemy GetEnemy()
         {
-            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
+            //if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
 
             Room room = _gameSessionService.CurrentRoom!;
             Enemy? enemy = room.Enemies.FirstOrDefault();
-            if (enemy == null) throw new NullEnemyIdException();
-            return enemy;
+            return enemy ?? throw new NullEnemyIdException();
         }
     }
 }

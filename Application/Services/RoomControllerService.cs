@@ -105,7 +105,11 @@ namespace TextGame.Application.Services
             _gameSessionService.AddItemToInventory(item);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
-        public Enemy GetEnemy() => _getEnemyService.GetEnemy();
+        public Enemy GetEnemy()
+        {
+            RequireGameStarted();
+            return _getEnemyService.GetEnemy();
+        }
 
         public BattleLog DealDamage()
         {

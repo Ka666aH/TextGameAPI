@@ -7,14 +7,9 @@ namespace TextGame.Application.Services
     public class GetRoomService : IGetRoomService
     {
         private readonly IGameSessionService _gameSessionService;
-        private readonly IGameInfoService _gameInfoService;
-        public GetRoomService(
-            IGameSessionService gameSessionService,
-            IGameInfoService gameInfoService
-            )
+        public GetRoomService(IGameSessionService gameSessionService)
         {
             _gameSessionService = gameSessionService;
-            _gameInfoService = gameInfoService;
         }
         public Room GetRoom(int roomId)
         {
