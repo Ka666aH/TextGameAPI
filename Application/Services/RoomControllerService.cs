@@ -81,7 +81,7 @@ namespace TextGame.Application.Services
             RequireCurrentRoomIsSearched();
             RequireNotShop();
 
-            List<Item> carryableItems = _gameSessionService.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
+            List<Item> carryableItems = [.. _gameSessionService.CurrentRoom!.Items.Where(i => i.IsCarryable)];
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
             {
@@ -117,7 +117,15 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             return _combatService.GetDamage();
         }
-        public Room GetRoom(int roomId) => _getRoomService.GetRoom(roomId);
+        public Room GetRoom(int roomId)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+            var room = _getRoomService.GetRoom(roomId);
+            _gameSessionService.SetCurrentRoom(room);
+            RequireNotEndRoom();
+            return room;
+        }
         //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
         //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
         //public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);

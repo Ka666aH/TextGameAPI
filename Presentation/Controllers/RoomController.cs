@@ -27,8 +27,8 @@ namespace TextGame.Presentation.Controllers
         [HttpPost("{roomId}")]
         public IResult GoRoom(int roomId)
         {
-            _roomControllerService.GetRoom(roomId);
-            var room = _roomControllerService.GetCurrentRoom();
+            var room = _roomControllerService.GetRoom(roomId);
+            /*var room = */_roomControllerService.GetCurrentRoom();
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
         }
         [HttpGet("current")]
