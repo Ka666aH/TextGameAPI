@@ -12,56 +12,56 @@ namespace TextGame.Application.Services
 {
     public class RoomControllerService : IRoomControllerService
     {
-        private readonly IGameSessionService _sessionService;
-        private readonly IChestService _chestRepository;
-        private readonly IGameInfoService _gameInfoRepository;
-        private readonly IGetRoomService _getRoomByIdRepository;
-        private readonly IGetItemService _getItemByIdRepository;
-        private readonly IGetEnemyService _getEnemyByIdRepository;
-        private readonly ICombatService _combatRepository;
+        private readonly IGameSessionService _gameSessionService;
+        private readonly IChestService _chestService;
+        private readonly IGameInfoService _gameInfoService;
+        private readonly IGetRoomService _getRoomService;
+        private readonly IGetItemService _getItemService;
+        private readonly IGetEnemyService _getEnemyService;
+        private readonly ICombatService _combatService;
         private readonly ICheckItemService _checkItemService;
         public RoomControllerService(
-            IGameSessionService sessionService,
-            IChestService chestRepository,
-            IGameInfoService gameInfoRepository,
-            IGetRoomService getRoomByIdRepository,
-            IGetItemService getItemByIdRepository,
-            IGetEnemyService getEnemyByIdRepository,
-            ICombatService combatRepository,
+            IGameSessionService gameSessionService,
+            IChestService chestService,
+            IGameInfoService gameInfoService,
+            IGetRoomService getRoomService,
+            IGetItemService getItemService,
+            IGetEnemyService getEnemyService,
+            ICombatService combatService,
             ICheckItemService checkItemService
             )
         {
-            _sessionService = sessionService;
-            _chestRepository = chestRepository;
-            _gameInfoRepository = gameInfoRepository;
-            _getRoomByIdRepository = getRoomByIdRepository;
-            _getItemByIdRepository = getItemByIdRepository;
-            _combatRepository = combatRepository;
-            _getEnemyByIdRepository = getEnemyByIdRepository;
+            _gameSessionService = gameSessionService;
+            _chestService = chestService;
+            _gameInfoService = gameInfoService;
+            _getRoomService = getRoomService;
+            _getItemService = getItemService;
+            _combatService = combatService;
+            _getEnemyService = getEnemyService;
             _checkItemService = checkItemService;
         }
         public Room GetCurrentRoom()
         {
             RequireGameStartedAndNotStartRoom();
-            return _sessionService.CurrentRoom!;
+            return _gameSessionService.CurrentRoom!;
         }
         public void GoNextRoom()
         {
             RequireGameStarted();
             RequireNotInBattle();
 
-            _sessionService.SetCurrentRoom(_sessionService.Rooms[_sessionService.CurrentRoom!.Number + 1]);
-            _sessionService.CurrentRoom.Discover();
+            _gameSessionService.SetCurrentRoom(_gameSessionService.Rooms[_gameSessionService.CurrentRoom!.Number + 1]);
+            _gameSessionService.CurrentRoom.Discover();
 
             RequireNotEndRoom();
-            if (_sessionService.CurrentRoom.Enemies.Any()) _sessionService.StartBattle();
+            if (_gameSessionService.CurrentRoom.Enemies.Any()) _gameSessionService.StartBattle();
         }
         public List<Item> Search()
         {
             RequireGameStarted();
             RequireNotInBattle();
 
-            return _sessionService.SearchCurrentRoom();
+            return _gameSessionService.SearchCurrentRoom();
         }
         public void TakeItem(int itemId)
         {
@@ -70,9 +70,9 @@ namespace TextGame.Application.Services
             RequireCurrentRoomIsSearched();
             RequireNotShop();
 
-            Item item = _getItemByIdRepository.GetItem(itemId, _sessionService.CurrentRoom!.Items);
+            Item item = _getItemService.GetItem(itemId, _gameSessionService.CurrentRoom!.Items);
             _checkItemService.CheckItem(item);
-            _sessionService.RemoveItemFromCurrentRoom(item);
+            _gameSessionService.RemoveItemFromCurrentRoom(item);
         }
         public void TakeAllItems()
         {
@@ -81,12 +81,12 @@ namespace TextGame.Application.Services
             RequireCurrentRoomIsSearched();
             RequireNotShop();
 
-            List<Item> carryableItems = _sessionService.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
+            List<Item> carryableItems = _gameSessionService.CurrentRoom!.Items.Where(i => i.IsCarryable == true).ToList();
             if (carryableItems.Count <= 0) throw new EmptyException();
             foreach (Item item in carryableItems)
             {
                 _checkItemService.CheckItem(item);
-                _sessionService.RemoveItemFromCurrentRoom(item);
+                _gameSessionService.RemoveItemFromCurrentRoom(item);
             }
         }
         public void BuyItem(int itemId)
@@ -96,59 +96,59 @@ namespace TextGame.Application.Services
             RequireCurrentRoomIsSearched();
             RequireShop();
 
-            Item item = _getItemByIdRepository.GetItem(itemId, _sessionService.CurrentRoom.Items);
-            if (item.Cost > _sessionService.Coins) throw new NoMoneyException();
+            Item item = _getItemService.GetItem(itemId, _gameSessionService.CurrentRoom.Items);
+            if (item.Cost > _gameSessionService.Coins) throw new NoMoneyException();
 
-            _sessionService.AddCoins(-(int)item.Cost!);
-            _sessionService.RemoveItemFromCurrentRoom(item);
-            _sessionService.AddItemToInventory(item);
+            _gameSessionService.AddCoins(-(int)item.Cost!);
+            _gameSessionService.RemoveItemFromCurrentRoom(item);
+            _gameSessionService.AddItemToInventory(item);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
-        public Enemy GetEnemy() => _getEnemyByIdRepository.GetEnemy();
+        public Enemy GetEnemy() => _getEnemyService.GetEnemy();
 
         public BattleLog DealDamage()
         {
             RequireGameStarted();
-            return _combatRepository.DealDamage();
+            return _combatService.DealDamage();
 
         }
         public BattleLog GetDamage()
         {
             RequireGameStarted();
-            return _combatRepository.GetDamage();
+            return _combatService.GetDamage();
         }
-        public Room GetRoom(int roomId) => _getRoomByIdRepository.GetRoom(roomId);
+        public Room GetRoom(int roomId) => _getRoomService.GetRoom(roomId);
         //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
         //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
         //public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
-        public GameInfoDTO GetGameInfo() => _gameInfoRepository.GetGameInfo();
+        public GameInfoDTO GetGameInfo() => _gameInfoService.GetGameInfo();
 
         public BattleLog HitChest(int chestId)
         {
             RequireGameStarted();
             RequireNotInBattle();
 
-            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
 
             BattleLog battleLog;
             if (chest.Mimic is not null)
             {
-                _sessionService.SetCurrentMimicChest(chest);
-                _sessionService.RemoveItemFromCurrentRoom(chest);
-                _sessionService.AddEnemyToCurrentRoom(chest.Mimic);
-                _sessionService.StartBattle();
-                battleLog = _combatRepository.DealDamage();
+                _gameSessionService.SetCurrentMimicChest(chest);
+                _gameSessionService.RemoveItemFromCurrentRoom(chest);
+                _gameSessionService.AddEnemyToCurrentRoom(chest.Mimic);
+                _gameSessionService.StartBattle();
+                battleLog = _combatService.DealDamage();
             }
             else
             {
-                int playerHealthBeforeAttack = _sessionService.CurrentHealth;
+                int playerHealthBeforeAttack = _gameSessionService.CurrentHealth;
                 //attack
-                var attackResult = _sessionService.Weapon.Attack(_sessionService.CurrentRoom!.Number);
-                if (attackResult.SelfDamage != 0) _sessionService.AddCurrentHealth(-attackResult.SelfDamage);
-                if (attackResult.IsWeaponBrokenDown) _sessionService.RemoveWeapon();
+                var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Number);
+                if (attackResult.SelfDamage != 0) _gameSessionService.AddCurrentHealth(-attackResult.SelfDamage);
+                if (attackResult.IsWeaponBrokenDown) _gameSessionService.RemoveWeapon();
 
-                int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
-                battleLog = new BattleLog(ItemsLabeles.ChestName, attackResult.Damage, null, null, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
+                int playerHealthAfterAttack = playerHealthBeforeAttack - _gameSessionService.CurrentHealth;
+                battleLog = new BattleLog(ItemsLabeles.ChestName, attackResult.Damage, null, null, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _gameSessionService.CurrentHealth);
             }
             return battleLog;
         }
@@ -157,11 +157,11 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            if (_sessionService.Keys > 0) _sessionService.AddKeys(-1);
+            if (_gameSessionService.Keys > 0) _gameSessionService.AddKeys(-1);
             else throw new NoKeyException();
 
-            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
-            _chestRepository.UnlockChest(chest);
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
+            _chestService.UnlockChest(chest);
             return chest;
         }
         public void OpenChest(int chestId)
@@ -169,11 +169,11 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
-            if (_chestRepository.OpenChest(chest))
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
+            if (_chestService.OpenChest(chest))
             {
-                _sessionService.EndGame();
-                throw new DefeatException(ExceptionLabels.PlayerEaten, _gameInfoRepository.GetGameInfo());
+                _gameSessionService.EndGame();
+                throw new DefeatException(ExceptionLabels.PlayerEaten, _gameInfoService.GetGameInfo());
             }
         }
         public List<Item> SearchChest(int chestId)
@@ -181,17 +181,17 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
-            return _chestRepository.SearchChest(chest);
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
+            return _chestService.SearchChest(chest);
         }
         public void TakeItemFromChest(int chestId, int itemId)
         {
             RequireGameStarted();
             RequireNotInBattle();
 
-            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
-            var item = _getItemByIdRepository.GetItem(itemId, chest.Items);
-            _chestRepository.TakeItemFromChest(chest, item);
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
+            var item = _getItemService.GetItem(itemId, chest.Items);
+            _chestService.TakeItemFromChest(chest, item);
             _checkItemService.CheckItem(item);
         }
         public void TakeAllItemsFromChest(int chestId)
@@ -199,37 +199,37 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            var chest = _chestRepository.GetChest(chestId, _sessionService.CurrentRoom!.Items);
-            var items = _chestRepository.TakeAllItemsFromChest(chest);
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
+            var items = _chestService.TakeAllItemsFromChest(chest);
             items.ForEach(_checkItemService.CheckItem);
         }
         private void RequireGameStarted()
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
+            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
         }
         private void RequireNotInBattle()
         {
-            if (_sessionService.IsInBattle) throw new InBattleException();
+            if (_gameSessionService.IsInBattle) throw new InBattleException();
         }
         private void RequireGameStartedAndNotStartRoom()
         {
-            if (!_sessionService.IsGameStarted && _sessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+            if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
         }
         private void RequireNotEndRoom()
         {
-            if (_sessionService.CurrentRoom is EndRoom) throw new WinException(_gameInfoRepository.GetGameInfo());
+            if (_gameSessionService.CurrentRoom is EndRoom) throw new WinException(_gameInfoService.GetGameInfo());
         }
         private void RequireCurrentRoomIsSearched()
         {
-            if (!_sessionService.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
+            if (!_gameSessionService.CurrentRoom!.IsSearched) throw new UnsearchedRoomException();
         }
         private void RequireNotShop()
         {
-            if (_sessionService.CurrentRoom is Shop) throw new ImpossibleStealException();
+            if (_gameSessionService.CurrentRoom is Shop) throw new ImpossibleStealException();
         }
         private void RequireShop()
         {
-            if (_sessionService.CurrentRoom is not Shop) throw new NotShopException();
+            if (_gameSessionService.CurrentRoom is not Shop) throw new NotShopException();
         }
     }
 }

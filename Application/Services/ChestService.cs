@@ -9,9 +9,9 @@ namespace TextGame.Application.Services
     public class ChestService : IChestService
     {
         private readonly IGetItemService _getItemService;
-        public ChestService(IGetItemService getItemByIdRepository)
+        public ChestService(IGetItemService getItemService)
         {
-            _getItemService = getItemByIdRepository;
+            _getItemService = getItemService;
         }
         public Chest GetChest(int chestId, IEnumerable<Item> items)
         {

@@ -7,16 +7,16 @@ namespace TextGame.Application.Services
 {
     public class GetEnemyService : IGetEnemyService
     {
-        private readonly IGameSessionService _sessionService;
-        public GetEnemyService(IGameSessionService sessionService)
+        private readonly IGameSessionService _gameSessionService;
+        public GetEnemyService(IGameSessionService gameSessionService)
         {
-            _sessionService = sessionService;
+            _gameSessionService = gameSessionService;
         }
         public Enemy GetEnemy()
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
+            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
 
-            Room room = _sessionService.CurrentRoom!;
+            Room room = _gameSessionService.CurrentRoom!;
             Enemy? enemy = room.Enemies.FirstOrDefault();
             if (enemy == null) throw new NullEnemyIdException();
             return enemy;

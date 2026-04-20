@@ -8,44 +8,44 @@ namespace TextGame.Application.Services
 {
     public class CombatService : ICombatService
     {
-        private readonly IGameSessionService _sessionService;
+        private readonly IGameSessionService _gameSessionService;
         private readonly IGetEnemyService _getEnemyService;
         private readonly IGameInfoService _gameInfoService;
         public CombatService(
-            IGameSessionService sessionService,
+            IGameSessionService gameSessionService,
             IGetEnemyService getEnemyService,
             IGameInfoService gameInfoService
             )
         {
-            _sessionService = sessionService;
+            _gameSessionService = gameSessionService;
             _getEnemyService = getEnemyService;
             _gameInfoService = gameInfoService;
         }
         public BattleLog DealDamage()
         {
-            int playerHealthBeforeAttack = _sessionService.CurrentHealth;
+            int playerHealthBeforeAttack = _gameSessionService.CurrentHealth;
             Enemy enemy = _getEnemyService.GetEnemy();
             //attack
-            var attackResult = _sessionService.Weapon.Attack(_sessionService.CurrentRoom!.Number);
-            if (attackResult.SelfDamage != 0) _sessionService.AddCurrentHealth(-attackResult.SelfDamage);
-            if (attackResult.IsWeaponBrokenDown) _sessionService.RemoveWeapon();
+            var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Number);
+            if (attackResult.SelfDamage != 0) _gameSessionService.AddCurrentHealth(-attackResult.SelfDamage);
+            if (attackResult.IsWeaponBrokenDown) _gameSessionService.RemoveWeapon();
 
             int enemyHealthBeforeAttack = enemy.Health;
             int enemyHealthAfterAttack = enemy.GetDamage(attackResult.Damage);
-            int playerHealthAfterAttack = playerHealthBeforeAttack - _sessionService.CurrentHealth;
-            BattleLog battleLog = new BattleLog(enemy.Name!, attackResult.Damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _sessionService.CurrentHealth);
+            int playerHealthAfterAttack = playerHealthBeforeAttack - _gameSessionService.CurrentHealth;
+            BattleLog battleLog = new BattleLog(enemy.Name!, attackResult.Damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _gameSessionService.CurrentHealth);
 
             if (enemyHealthAfterAttack <= 0)
             {
-                _sessionService.RemoveEnemyFromCurrentRoom(enemy);
-                if (_sessionService.CurrentMimicChest is not null)
+                _gameSessionService.RemoveEnemyFromCurrentRoom(enemy);
+                if (_gameSessionService.CurrentMimicChest is not null)
                 {
-                    _sessionService.CurrentMimicChest.KillMimic();
-                    _sessionService.AddItemToCurrentRoom(_sessionService.CurrentMimicChest);
-                    _sessionService.RemoveCurrentMimicChest();
+                    _gameSessionService.CurrentMimicChest.KillMimic();
+                    _gameSessionService.AddItemToCurrentRoom(_gameSessionService.CurrentMimicChest);
+                    _gameSessionService.RemoveCurrentMimicChest();
                 }
                 CheckPlayerHealthAfterAttack();
-                if (!_sessionService.CurrentRoom.Enemies.Any()) _sessionService.EndBattle();
+                if (!_gameSessionService.CurrentRoom.Enemies.Any()) _gameSessionService.EndBattle();
                 throw new BattleWinException(string.Format(ExceptionLabels.EnemyDefeated, enemy.Name), battleLog);
             }
             CheckPlayerHealthAfterAttack();
@@ -53,7 +53,7 @@ namespace TextGame.Application.Services
         }
         private void CheckPlayerHealthAfterAttack()
         {
-            if (_sessionService.CurrentHealth <= 0) throw new DefeatException(ExceptionLabels.SuicideText, _gameInfoService.GetGameInfo());
+            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(ExceptionLabels.SuicideText, _gameInfoService.GetGameInfo());
         }
         public BattleLog GetDamage()
         {
@@ -63,27 +63,27 @@ namespace TextGame.Application.Services
 
             //block
             int helmBlock = 0;
-            if (_sessionService.Helm != null)
+            if (_gameSessionService.Helm != null)
             {
-                var blockResult = _sessionService.Helm.Block();
+                var blockResult = _gameSessionService.Helm.Block();
                 helmBlock = blockResult.DamageBlock;
-                if (blockResult.IsArmorBrokenDown) _sessionService.RemoveHelm();
+                if (blockResult.IsArmorBrokenDown) _gameSessionService.RemoveHelm();
             }
 
             int chestplateBlock = 0;
-            if (_sessionService.Chestplate != null)
+            if (_gameSessionService.Chestplate != null)
             {
-                var blockResult = _sessionService.Chestplate.Block();
+                var blockResult = _gameSessionService.Chestplate.Block();
                 chestplateBlock = blockResult.DamageBlock;
-                if (blockResult.IsArmorBrokenDown) _sessionService.RemoveChestplate();
+                if (blockResult.IsArmorBrokenDown) _gameSessionService.RemoveChestplate();
             }
 
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
-            int playerHealthBeforeAttack = _sessionService.CurrentHealth;
-            if (damageAfterBlock > 0) _sessionService.AddCurrentHealth(-damageAfterBlock);
-            if (_sessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerDefeated, enemy.Name), _gameInfoService.GetGameInfo());
+            int playerHealthBeforeAttack = _gameSessionService.CurrentHealth;
+            if (damageAfterBlock > 0) _gameSessionService.AddCurrentHealth(-damageAfterBlock);
+            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerDefeated, enemy.Name), _gameInfoService.GetGameInfo());
             int enemyHealthAfterAttack = enemyHealthBeforeAttack - enemy.Health;
-            return new BattleLog(GeneralLabeles.PlayerName, damage, playerHealthBeforeAttack, _sessionService.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
+            return new BattleLog(GeneralLabeles.PlayerName, damage, playerHealthBeforeAttack, _gameSessionService.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
         }
     }
 }

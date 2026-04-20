@@ -7,20 +7,20 @@ namespace TextGame.Application.Services
 {
     public class GameInfoService : IGameInfoService
     {
-        private readonly IGameSessionService _sessionService;
-        public GameInfoService(IGameSessionService sessionService)
+        private readonly IGameSessionService _gameSessionService;
+        public GameInfoService(IGameSessionService gameSessionService)
         {
-            _sessionService = sessionService;
+            _gameSessionService = gameSessionService;
         }
         public GameInfoDTO GetGameInfo()
         {
-            if (!_sessionService.IsGameStarted && _sessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+            if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
             //RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
-            var roomDTO = GameObjectMapper.ToDTO(_sessionService.CurrentRoom!);
-            WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(_sessionService.Weapon);
-            ArmorDTO? helmDTO = _sessionService.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(_sessionService.Helm) : null;
-            ArmorDTO? chestplateDTO = _sessionService.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(_sessionService.Chestplate) : null;
-            return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, _sessionService.MaxHealth, _sessionService.CurrentHealth, _sessionService.Coins, _sessionService.Keys, GameObjectMapper.ToDTO(_sessionService.Inventory));
+            var roomDTO = GameObjectMapper.ToDTO(_gameSessionService.CurrentRoom!);
+            WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(_gameSessionService.Weapon);
+            ArmorDTO? helmDTO = _gameSessionService.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(_gameSessionService.Helm) : null;
+            ArmorDTO? chestplateDTO = _gameSessionService.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(_gameSessionService.Chestplate) : null;
+            return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, _gameSessionService.MaxHealth, _gameSessionService.CurrentHealth, _gameSessionService.Coins, _gameSessionService.Keys, GameObjectMapper.ToDTO(_gameSessionService.Inventory));
         }
     }
 }
