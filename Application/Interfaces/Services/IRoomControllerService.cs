@@ -6,9 +6,11 @@ using TextGame.Domain.GameObjects.Rooms;
 namespace TextGame.Application.Interfaces.Services
 {
     public interface IRoomControllerService :
-        IGetRoomService, IGameInfoService, IGetEnemyService, ICombatService
+        IGameInfoService, IGetEnemyService, ICombatService
     {
-        void GoNextRoom();
+        Room GetCurrentRoom();
+        Room GoNextRoom();
+        Room GoToRoom(int roomId);
         List<Item> Search();
         void TakeItem(int itemId);
         void TakeAllItems();
@@ -21,6 +23,5 @@ namespace TextGame.Application.Interfaces.Services
         void TakeItemFromChest(int chestId, int itemId);
         void TakeAllItemsFromChest(int chestId);
 
-        Room GetCurrentRoom();
     }
 }

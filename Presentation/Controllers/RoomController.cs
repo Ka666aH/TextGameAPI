@@ -20,15 +20,13 @@ namespace TextGame.Presentation.Controllers
         [HttpPost("next")]
         public IResult GoNextRoom()
         {
-            _roomControllerService.GoNextRoom();
-            var room = _roomControllerService.GetCurrentRoom();
+            var room = _roomControllerService.GoNextRoom();
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
         }
         [HttpPost("{roomId}")]
         public IResult GoRoom(int roomId)
         {
-            var room = _roomControllerService.GetRoom(roomId);
-            /*var room = */_roomControllerService.GetCurrentRoom();
+            var room = _roomControllerService.GoToRoom(roomId);
             return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
         }
         [HttpGet("current")]

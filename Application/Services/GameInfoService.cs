@@ -1,7 +1,6 @@
 ﻿using TextGame.Application.Interfaces.Services;
 using TextGame.Presentation.DTO;
 using TextGame.Presentation.Mappers;
-using TextGame.Domain.GameExceptions;
 
 namespace TextGame.Application.Services
 {
@@ -14,7 +13,7 @@ namespace TextGame.Application.Services
         }
         public GameInfoDTO GetGameInfo()
         {
-            if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+            //if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
             //RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
             var roomDTO = GameObjectMapper.ToDTO(_gameSessionService.CurrentRoom!);
             WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(_gameSessionService.Weapon);

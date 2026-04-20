@@ -43,9 +43,9 @@ namespace TextGame.Application.Services
         public Room GetCurrentRoom()
         {
             RequireGameStartedAndNotStartRoom();
-            return _gameSessionService.CurrentRoom!;
+            return _gameSessionService.CurrentRoom;
         }
-        public void GoNextRoom()
+        public Room GoNextRoom()
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -55,6 +55,7 @@ namespace TextGame.Application.Services
 
             RequireNotEndRoom();
             if (_gameSessionService.CurrentRoom.Enemies.Any()) _gameSessionService.StartBattle();
+            return _gameSessionService.CurrentRoom;
         }
         public List<Item> Search()
         {
@@ -117,7 +118,7 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             return _combatService.GetDamage();
         }
-        public Room GetRoom(int roomId)
+        public Room GoToRoom(int roomId)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -129,7 +130,11 @@ namespace TextGame.Application.Services
         //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
         //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
         //public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
-        public GameInfoDTO GetGameInfo() => _gameInfoService.GetGameInfo();
+        public GameInfoDTO GetGameInfo()
+        {
+            RequireGameStartedAndNotStartRoom();
+            return _gameInfoService.GetGameInfo();
+        }
 
         public BattleLog HitChest(int chestId)
         {

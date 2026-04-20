@@ -18,13 +18,12 @@ builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 
 //Сервисы
 //builder.Services.AddScoped<IGetCurrentRoomService, GetCurrentRoomService>();
-builder.Services.AddScoped<IChestService, ChestService>();
-builder.Services.AddScoped<IInventoryService, InventoryService>();
-builder.Services.AddScoped<IGameInfoService, GameInfoService>();
-builder.Services.AddScoped<IGetRoomService, GetRoomService>();
-builder.Services.AddScoped<IGameControllerService, GameControllerService>();
 builder.Services.AddScoped<IRoomControllerService, RoomControllerService>();
-builder.Services.AddScoped<IGetEnemyService, GetEnemyService>();
+builder.Services.AddScoped<IGameControllerService, GameControllerService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IGameInfoService, GameInfoService>(); 
+builder.Services.AddScoped<IGetEnemyService, GetEnemyService>(); //зависимый
+builder.Services.AddScoped<IGetRoomService, GetRoomService>(); //зависимый
 builder.Services.AddScoped<ICombatService, CombatService>(); //зависимый
 builder.Services.AddScoped<ICheckItemService, CheckItemService>(); //зависимый
 
@@ -39,6 +38,7 @@ builder.Services.AddTransient<IEnemyFactory, EnemyFactory>();
 builder.Services.AddTransient<IMapGenerator, MapGenerator>();
 builder.Services.AddTransient<IRoomContentGenerator, RoomContentGenerator>();
 builder.Services.AddTransient<IGetItemService, GetItemService>();
+builder.Services.AddTransient<IChestService, ChestService>();
 
 
 
