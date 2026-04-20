@@ -5,7 +5,6 @@ using TextGame.Domain.GameObjects.Items.Heal;
 using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
-using TextGame.Application.Interfaces.Factories;
 using TextGame.Domain.GameObjects.Items.Other;
 using TextGame.Domain.GameText;
 

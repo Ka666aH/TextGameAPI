@@ -16,32 +16,34 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<GameSession>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 
-//Сервисы
-//builder.Services.AddScoped<IGetCurrentRoomService, GetCurrentRoomService>();
+//Оркестраторные
 builder.Services.AddScoped<IRoomControllerService, RoomControllerService>();
 builder.Services.AddScoped<IGameControllerService, GameControllerService>();
+//Зависимые
 builder.Services.AddScoped<IInventoryService, InventoryService>();
-builder.Services.AddScoped<IGameInfoService, GameInfoService>(); 
-builder.Services.AddScoped<IGetEnemyService, GetEnemyService>(); //зависимый
-builder.Services.AddScoped<IGetRoomService, GetRoomService>(); //зависимый
-builder.Services.AddScoped<ICombatService, CombatService>(); //зависимый
-builder.Services.AddScoped<ICheckItemService, CheckItemService>(); //зависимый
+builder.Services.AddScoped<IGameInfoService, GameInfoService>();
+builder.Services.AddScoped<IGetEnemyService, GetEnemyService>();
+builder.Services.AddScoped<IGetRoomService, GetRoomService>();
+builder.Services.AddScoped<ICombatService, CombatService>();
+builder.Services.AddScoped<ICheckItemService, CheckItemService>();
 
 //Счётчики
 builder.Services.AddScoped<IRoomIdService, RoomIdService>();
 builder.Services.AddScoped<IItemIdService, ItemIdService>();
 builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
 
-//Общие
-builder.Services.AddTransient<IRoomFactory, RoomFactory>();
-builder.Services.AddTransient<IItemFactory, ItemFactory>();
-builder.Services.AddTransient<IEnemyFactory, EnemyFactory>();
-builder.Services.AddTransient<IMapGenerator, MapGenerator>();
-builder.Services.AddTransient<IRoomContentGenerator, RoomContentGenerator>();
-builder.Services.AddTransient<IGetItemService, GetItemService>();
-builder.Services.AddTransient<IChestService, ChestService>();
+//Фабрики
+builder.Services.AddScoped<IRoomFactory, RoomFactory>();
+builder.Services.AddScoped<IItemFactory, ItemFactory>();
+builder.Services.AddScoped<IEnemyFactory, EnemyFactory>();
 
+//Генераторы
+builder.Services.AddScoped<IMapGenerator, MapGenerator>();
+builder.Services.AddScoped<IRoomContentGenerator, RoomContentGenerator>();
 
+//Синглтоны
+builder.Services.AddSingleton<IGetItemService, GetItemService>();
+builder.Services.AddSingleton<IChestService, ChestService>();
 
 // Add services to the container.
 
@@ -83,15 +85,15 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                     case InvalidIdException or UncarryableException or UnsellableItemException:
                         result = Results.UnprocessableEntity(new ErrorResponse(gameEx));
                         break;
-                    case 
-                    LockedException or 
-                    NoKeyException or 
-                    NoMapException or 
-                    ClosedException or 
-                    UndiscoveredRoomException or 
-                    InBattleException or 
-                    UnsearchedRoomException or 
-                    NotShopException or 
+                    case
+                    LockedException or
+                    NoKeyException or
+                    NoMapException or
+                    ClosedException or
+                    UndiscoveredRoomException or
+                    InBattleException or
+                    UnsearchedRoomException or
+                    NotShopException or
                     NoMoneyException:
                         result = Results.Json(new ErrorResponse(gameEx), statusCode: 403);
                         break;
