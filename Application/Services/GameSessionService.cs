@@ -67,8 +67,8 @@ namespace TextGame.Application.Services
             RemoveHelm();
             RemoveChestplate();
 
-            _session.Inventory = new List<Item>();
-            _session.Rooms = new List<Room>();
+            _session.Inventory = [];
+            _session.Rooms = [];
 
             _session.MaxHealth = GameBalance.DefaultMaxHealth;
             _session.CurrentHealth = GameBalance.DefaultMaxHealth;

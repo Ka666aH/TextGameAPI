@@ -10,12 +10,12 @@ namespace TextGame.Application.Generators
     {
         private readonly IRoomFactory _roomFactory;
         private readonly IRoomContentGenerator _roomContentGenerator;
-        private readonly int _roomId;
+        private readonly IRoomIdService _roomIdService;
         public MapGenerator(IRoomFactory roomFactory, IRoomContentGenerator roomContentGenerator, IRoomIdService roomIdService)
         {
             _roomFactory = roomFactory;
             _roomContentGenerator = roomContentGenerator;
-            _roomId = roomIdService.Current();
+            _roomIdService = roomIdService;
         }
         public List<Room> Generate()
         {
@@ -31,7 +31,7 @@ namespace TextGame.Application.Generators
 
             while (rooms.Last() is not EndRoom)
             {
-                int endRoomWeight = _roomId;
+                int endRoomWeight = _roomIdService.Current();
                 int totalWeight = baseWeightSum + endRoomWeight;
 
                 int roll = Random.Shared.Next(totalWeight);

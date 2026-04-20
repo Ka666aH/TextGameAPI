@@ -13,11 +13,11 @@ namespace TextGame.Application.Factories
             _roomIdService = roomIdService;
         }
 
-        public StartRoom CreateStartRoom() => new StartRoom();
-        public EndRoom CreateEndRoom() => new EndRoom(_roomIdService.Next());
-        public EmptyRoom CreateEmptyRoom() => new EmptyRoom(_roomIdService.Next());
-        public SmallRoom CreateSmallRoom() => new SmallRoom(_roomIdService.Next());
-        public BigRoom CreateBigRoom() => new BigRoom(_roomIdService.Next());
-        public Shop CreateShopRoom() => new Shop(_roomIdService.Next());
+        public StartRoom CreateStartRoom() => new();
+        public EndRoom CreateEndRoom() => new(_roomIdService.Next());
+        public EmptyRoom CreateEmptyRoom() => new(_roomIdService.Next());
+        public SmallRoom CreateSmallRoom() => new(_roomIdService.Next());
+        public BigRoom CreateBigRoom() => new(_roomIdService.Next());
+        public Shop CreateShopRoom() => new(_roomIdService.Next());
     }
 }

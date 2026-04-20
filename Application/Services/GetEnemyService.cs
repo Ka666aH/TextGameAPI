@@ -14,8 +14,6 @@ namespace TextGame.Application.Services
         }
         public Enemy GetEnemy()
         {
-            //if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
-
             Room room = _gameSessionService.CurrentRoom!;
             Enemy? enemy = room.Enemies.FirstOrDefault();
             return enemy ?? throw new NullEnemyIdException();

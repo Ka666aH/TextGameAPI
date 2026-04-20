@@ -27,6 +27,7 @@ builder.Services.AddScoped<IGetRoomService, GetRoomService>(); //зависим�
 builder.Services.AddScoped<ICombatService, CombatService>(); //зависимый
 builder.Services.AddScoped<ICheckItemService, CheckItemService>(); //зависимый
 
+//Счётчики
 builder.Services.AddScoped<IRoomIdService, RoomIdService>();
 builder.Services.AddScoped<IItemIdService, ItemIdService>();
 builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
