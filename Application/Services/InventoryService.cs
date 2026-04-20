@@ -7,7 +7,6 @@ using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
 using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
 using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Domain.GameExceptions;
-using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Services
 {
@@ -18,27 +17,16 @@ namespace TextGame.Application.Services
         {
             _gameSessionService = gameSessionService;
         }
-
-        public Item GetInventoryItem(int itemId)
-        {
-            Item? item = _gameSessionService.Inventory.FirstOrDefault(i => i.Id == itemId);
-            if (item == null) throw new NullItemIdException();
-            return item;
-        }
         public List<Equipment> GetEquipment()
         {
-            List<Equipment> equipmentList = new List<Equipment>() { _gameSessionService.Weapon };
+            List<Equipment> equipmentList = [_gameSessionService.Weapon];
             if (_gameSessionService.Helm != null) equipmentList.Add(_gameSessionService.Helm);
             if (_gameSessionService.Chestplate != null) equipmentList.Add(_gameSessionService.Chestplate);
             return equipmentList;
         }
-        public List<Equipment> EquipInventoryItem(int itemId)
+        public void EquipInventoryItem(Equipment equip)
         {
-            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
-
-            Item item = GetInventoryItem(itemId);
-            if (item is not Equipment equipment) throw new InvalidIdException(ExceptionLabels.NotEqiipmentCode, ExceptionLabels.NotEqiipmentText);
-            switch (equipment)
+            switch (equip)
             {
                 case Weapon weapon:
                     if (_gameSessionService.Weapon != Fists.DefaultFists) _gameSessionService.AddItemToInventory(_gameSessionService.Weapon);
@@ -61,54 +49,30 @@ namespace TextGame.Application.Services
                     }
                     break;
             }
-            List<Equipment> equipmentList = new List<Equipment>() { _gameSessionService.Weapon };
-            if (_gameSessionService.Helm != null) equipmentList.Add(_gameSessionService.Helm);
-            if (_gameSessionService.Chestplate != null) equipmentList.Add(_gameSessionService.Chestplate);
-            return equipmentList;
         }
-        public List<Equipment> UnequipWeapon()
+        public void UnequipWeapon()
         {
-            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
-
             if (_gameSessionService.Weapon == Fists.DefaultFists) throw new EmptyException();
+
             _gameSessionService.AddItemToInventory(_gameSessionService.Weapon);
             _gameSessionService.RemoveWeapon();
-            List<Equipment> equipmentList = new List<Equipment>() { _gameSessionService.Weapon };
-            if (_gameSessionService.Helm != null) equipmentList.Add(_gameSessionService.Helm);
-            if (_gameSessionService.Chestplate != null) equipmentList.Add(_gameSessionService.Chestplate);
-            return equipmentList;
         }
-        public List<Equipment> UnequipHelm()
+        public void UnequipHelm()
         {
-            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
-
             if (_gameSessionService.Helm == null) throw new EmptyException();
-            _gameSessionService.AddItemToInventory(_gameSessionService.Helm!);
+
+            _gameSessionService.AddItemToInventory(_gameSessionService.Helm);
             _gameSessionService.RemoveHelm();
-            List<Equipment> equipmentList = new List<Equipment>() { _gameSessionService.Weapon };
-            if (_gameSessionService.Helm != null) equipmentList.Add(_gameSessionService.Helm);
-            if (_gameSessionService.Chestplate != null) equipmentList.Add(_gameSessionService.Chestplate);
-            return equipmentList;
         }
-        public List<Equipment> UnequipChestplate()
+        public void UnequipChestplate()
         {
-            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
-
             if (_gameSessionService.Chestplate == null) throw new EmptyException();
-            _gameSessionService.AddItemToInventory(_gameSessionService.Chestplate!);
-            _gameSessionService.RemoveChestplate();
-            List<Equipment> equipmentList = new List<Equipment>() { _gameSessionService.Weapon };
-            if (_gameSessionService.Helm != null) equipmentList.Add(_gameSessionService.Helm);
-            if (_gameSessionService.Chestplate != null) equipmentList.Add(_gameSessionService.Chestplate);
-            return equipmentList;
-        }
-        public void SellInventoryItem(int itemId)
-        {
-            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_gameSessionService.IsInBattle) throw new InBattleException();
 
-            if (_gameSessionService.CurrentRoom is not Shop) throw new NotShopException();
-            Item item = GetInventoryItem(itemId);
+            _gameSessionService.AddItemToInventory(_gameSessionService.Chestplate);
+            _gameSessionService.RemoveChestplate();
+        }
+        public void SellInventoryItem(Item item)
+        {
             if (item.Cost == null) throw new UnsellableItemException();
 
             _gameSessionService.RemoveItemFromInventory(item);

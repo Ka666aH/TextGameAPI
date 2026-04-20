@@ -14,96 +14,60 @@ namespace TextGame.Application.Services
     public class GameControllerService : IGameControllerService
     {
         private readonly IGameSessionService _gameSessionService;
-        
-        private readonly IRoomFactory _roomFactory;
-
         private readonly IInventoryService _inventoryRepository;
         private readonly IGameInfoService _gameInfoService;
+        private readonly IGetItemService _getItemService;
         public GameControllerService(
             IGameSessionService gameSessionService,
-            IRoomFactory roomFactory,
             IInventoryService inventoryRepository,
-            IGameInfoService gameInfoService
-            )
+            IGameInfoService gameInfoService,
+            IGetItemService getItemService)
         {
             _gameSessionService = gameSessionService;
-            _roomFactory = roomFactory;
             _inventoryRepository = inventoryRepository;
             _gameInfoService = gameInfoService;
+            _getItemService = getItemService;
         }
         public Room GetCurrentRoom()
         {
-            RequireGameStartedAndNotAStartRoom();
-            return _gameSessionService.CurrentRoom!;
+            RequireGameStartedAndNotStartRoom();
+
+            return _gameSessionService.CurrentRoom;
         }
         public void Start() => _gameSessionService.StartGame();
-        //public List<Room> GenerateMap()
-        //{
-        //    var rooms = new List<Room> { _roomFactory.CreateStartRoom() };
-        //    var options = new (int Weight, Func<Room> Create)[]
-        //    {
-        //(GameBalance.EmptyRoomWeight, () => _roomFactory.CreateEmptyRoom(_gameSessionService)),
-        //(GameBalance.SmallRoomWeight, () => _roomFactory.CreateSmallRoom(_gameSessionService)),
-        //(GameBalance.BigRoomWeight, () => _roomFactory.CreateBigRoom(_gameSessionService)),
-        //(GameBalance.ShopWeight, () => _roomFactory.CreateShopRoom(_gameSessionService))
-        //    };
-        //    int baseWeightSum = options.Sum(x => x.Weight);
-
-        //    while (rooms.Last() is not EndRoom)
-        //    {
-        //        int endRoomWeight = _gameSessionService.RoomCounter;
-        //        int totalWeight = baseWeightSum + endRoomWeight;
-
-        //        int roll = Random.Shared.Next(totalWeight);
-
-        //        if (roll >= baseWeightSum)
-        //        {
-        //            rooms.Add(_roomFactory.CreateEndRoom(_gameSessionService));
-        //        }
-        //        else
-        //        {
-        //            int acc = 0;
-        //            foreach (var (weight, create) in options)
-        //            {
-        //                if (roll < acc + weight)
-        //                {
-        //                    rooms.Add(create());
-        //                    break;
-        //                }
-        //                acc += weight;
-        //            }
-        //        }
-        //    }
-
-        //    return rooms;
-        //}
         public IEnumerable<Item> GetInventory()
         {
-            if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+            RequireGameStartedAndNotStartRoom();
+
             return _gameSessionService.Inventory;
         }
         public int GetCoins()
         {
-            if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+            RequireGameStartedAndNotStartRoom();
+
             return _gameSessionService.Coins;
         }
         public int GetKeys()
         {
-            if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+            RequireGameStartedAndNotStartRoom();
+
             return _gameSessionService.Keys;
         }
         public List<MapRoomDTO> GetMap()
         {
-            if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+            RequireGameStartedAndNotStartRoom();
+
             if (!_gameSessionService.Inventory.OfType<Map>().Any()) throw new NoMapException();
             return _gameSessionService.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? GeneralLabeles.GameObjectDefaultName)).ToList();
         }
         public void UseInventoryItem(int itemId)
         {
-            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
+            RequireGameStarted();
 
             Item item = GetInventoryItem(itemId);
+
             if (item is not Heal heal) throw new InvalidIdException(ExceptionLabels.NotHealCode, ExceptionLabels.NotHealText);
+
             _gameSessionService.RemoveItemFromInventory(heal);
             var (maxHealthBoost, currentHealthBoost) = heal.Use();
             _gameSessionService.AddMaxHealth(maxHealthBoost);
@@ -111,19 +75,55 @@ namespace TextGame.Application.Services
             if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerPoisoned, heal.Name), GetGameInfo());
         }
 
-        public Item GetInventoryItem(int itemId) => _inventoryRepository.GetInventoryItem(itemId);
+        public Item GetInventoryItem(int itemId) => _getItemService.GetItem(itemId, _gameSessionService.Inventory);
         public List<Equipment> GetEquipment() => _inventoryRepository.GetEquipment();
-        public List<Equipment> EquipInventoryItem(int itemId) => _inventoryRepository.EquipInventoryItem(itemId);
-        public List<Equipment> UnequipWeapon() => _inventoryRepository.UnequipWeapon();
-        public List<Equipment> UnequipHelm() => _inventoryRepository.UnequipHelm();
-        public List<Equipment> UnequipChestplate() => _inventoryRepository.UnequipChestplate();
+        public void EquipInventoryItem(int itemId)
+        {
+            RequireGameStarted();
+            Item item = GetInventoryItem(itemId);
+            if (item is not Equipment equip) throw new InvalidIdException(ExceptionLabels.NotEqiipmentCode, ExceptionLabels.NotEqiipmentText);
+            _inventoryRepository.EquipInventoryItem(equip);
+        }
+        public void UnequipWeapon()
+        {
+            RequireGameStarted();
+            _inventoryRepository.UnequipWeapon();
+        }
+        public void UnequipHelm()
+        {
+            RequireGameStarted();
+            _inventoryRepository.UnequipHelm();
+        }
+        public void UnequipChestplate()
+        {
+            RequireGameStarted();
+            _inventoryRepository.UnequipChestplate();
+        }
+        public void SellInventoryItem(int itemId)
+        {
+            RequireGameStarted();
+            //RequireNotInBattle();
+            RequireShop();
+
+            Item item = GetInventoryItem(itemId);
+            _inventoryRepository.SellInventoryItem(item);
+        }
         public GameInfoDTO GetGameInfo() => _gameInfoService.GetGameInfo();
-
-        public void SellInventoryItem(int itemId) => _inventoryRepository.SellInventoryItem(itemId);
-
-        private void RequireGameStartedAndNotAStartRoom()
+        private void RequireGameStarted()
+        {
+            if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
+        }
+        private void RequireNotInBattle()
+        {
+            if (_gameSessionService.IsInBattle) throw new InBattleException();
+        }
+        private void RequireGameStartedAndNotStartRoom()
         {
             if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+        }
+        private void RequireShop()
+        {
+            if (_gameSessionService.CurrentRoom is not Shop) throw new NotShopException();
         }
     }
 }
