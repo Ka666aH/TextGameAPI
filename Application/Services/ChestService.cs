@@ -8,14 +8,14 @@ namespace TextGame.Application.Services
 {
     public class ChestService : IChestService
     {
-        private readonly IGetItemService _getItemByIdRepository;
+        private readonly IGetItemService _getItemService;
         public ChestService(IGetItemService getItemByIdRepository)
         {
-            _getItemByIdRepository = getItemByIdRepository;
+            _getItemService = getItemByIdRepository;
         }
         public Chest GetChest(int chestId, IEnumerable<Item> items)
         {
-            Item item = _getItemByIdRepository.GetItem(chestId, items);
+            Item item = _getItemService.GetItem(chestId, items);
             if (item is not Chest) throw new InvalidIdException(ExceptionLabels.NotChestCode, ExceptionLabels.NotChestText);
             return (Chest)item;
         }

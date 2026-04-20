@@ -17,7 +17,7 @@ builder.Services.AddScoped<GameSession>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 
 //Сервисы
-builder.Services.AddScoped<IGetCurrentRoomService, GetCurrentRoomService>();
+//builder.Services.AddScoped<IGetCurrentRoomService, GetCurrentRoomService>();
 builder.Services.AddScoped<IChestService, ChestService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IGameInfoService, GameInfoService>();

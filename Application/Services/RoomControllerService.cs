@@ -13,7 +13,6 @@ namespace TextGame.Application.Services
     public class RoomControllerService : IRoomControllerService
     {
         private readonly IGameSessionService _sessionService;
-        private readonly IGetCurrentRoomService _getCurrentRoomRepository;
         private readonly IChestService _chestRepository;
         private readonly IGameInfoService _gameInfoRepository;
         private readonly IGetRoomService _getRoomByIdRepository;
@@ -23,7 +22,6 @@ namespace TextGame.Application.Services
         private readonly ICheckItemService _checkItemService;
         public RoomControllerService(
             IGameSessionService sessionService,
-            IGetCurrentRoomService getCurrentRoomRepository,
             IChestService chestRepository,
             IGameInfoService gameInfoRepository,
             IGetRoomService getRoomByIdRepository,
@@ -34,7 +32,6 @@ namespace TextGame.Application.Services
             )
         {
             _sessionService = sessionService;
-            _getCurrentRoomRepository = getCurrentRoomRepository;
             _chestRepository = chestRepository;
             _gameInfoRepository = gameInfoRepository;
             _getRoomByIdRepository = getRoomByIdRepository;
@@ -43,11 +40,15 @@ namespace TextGame.Application.Services
             _getEnemyByIdRepository = getEnemyByIdRepository;
             _checkItemService = checkItemService;
         }
-        public Room GetCurrentRoom() => _getCurrentRoomRepository.GetCurrentRoom();
+        public Room GetCurrentRoom()
+        {
+            RequireGameStartedAndNotAStartRoom();
+            return _sessionService.CurrentRoom!;
+        }
         public void GoNextRoom()
         {
-            if (!_sessionService.IsGameStarted) throw new UnstartedGameException();
-            if (_sessionService.IsInBattle) throw new InBattleException();
+            RequireGameStarted();
+            RequireNotInBattle();
 
             _sessionService.SetCurrentRoom(_sessionService.Rooms[_sessionService.CurrentRoom!.Number + 1]);
             _sessionService.CurrentRoom.Discover();
@@ -211,6 +212,10 @@ namespace TextGame.Application.Services
         private void RequireNotInBattle()
         {
             if (_sessionService.IsInBattle) throw new InBattleException();
+        }
+        private void RequireGameStartedAndNotAStartRoom()
+        {
+            if (!_sessionService.IsGameStarted && _sessionService.Rooms.Count <= 1) throw new UnstartedGameException();
         }
     }
 }

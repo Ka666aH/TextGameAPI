@@ -1,11 +1,12 @@
 ﻿using TextGame.Domain.DTO;
 using TextGame.Domain.GameObjects.Items;
 using TextGame.Domain.GameObjects.Items.Other;
+using TextGame.Domain.GameObjects.Rooms;
 
 namespace TextGame.Application.Interfaces.Services
 {
     public interface IRoomControllerService :
-        IGetCurrentRoomService, IGetRoomService, IGameInfoService, IGetEnemyService, ICombatService
+        IGetRoomService, IGameInfoService, IGetEnemyService, ICombatService
     {
         void GoNextRoom();
         List<Item> Search();
@@ -19,5 +20,7 @@ namespace TextGame.Application.Interfaces.Services
         List<Item> SearchChest(int chestId);
         void TakeItemFromChest(int chestId, int itemId);
         void TakeAllItemsFromChest(int chestId);
+
+        Room GetCurrentRoom();
     }
 }

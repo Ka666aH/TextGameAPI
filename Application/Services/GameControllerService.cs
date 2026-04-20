@@ -14,27 +14,28 @@ namespace TextGame.Application.Services
     public class GameControllerService : IGameControllerService
     {
         private readonly IGameSessionService _sessionService;
-        private readonly IGetCurrentRoomService _getCurrentRoomRepository;
-
+        
         private readonly IRoomFactory _roomFactory;
 
         private readonly IInventoryService _inventoryRepository;
         private readonly IGameInfoService _gameInfoRepository;
         public GameControllerService(
             IGameSessionService sessionService,
-            IGetCurrentRoomService getCurrentRoomRepository,
             IRoomFactory roomFactory,
             IInventoryService inventoryRepository,
             IGameInfoService gameInfoRepository
             )
         {
             _sessionService = sessionService;
-            _getCurrentRoomRepository = getCurrentRoomRepository;
             _roomFactory = roomFactory;
             _inventoryRepository = inventoryRepository;
             _gameInfoRepository = gameInfoRepository;
         }
-        public Room GetCurrentRoom() => _getCurrentRoomRepository.GetCurrentRoom();
+        public Room GetCurrentRoom()
+        {
+            RequireGameStartedAndNotAStartRoom();
+            return _sessionService.CurrentRoom!;
+        }
         public void Start() => _sessionService.StartGame();
         //public List<Room> GenerateMap()
         //{
@@ -119,5 +120,10 @@ namespace TextGame.Application.Services
         public GameInfoDTO GetGameInfo() => _gameInfoRepository.GetGameInfo();
 
         public void SellInventoryItem(int itemId) => _inventoryRepository.SellInventoryItem(itemId);
+
+        private void RequireGameStartedAndNotAStartRoom()
+        {
+            if (!_sessionService.IsGameStarted && _sessionService.Rooms.Count <= 1) throw new UnstartedGameException();
+        }
     }
 }
