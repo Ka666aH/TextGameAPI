@@ -14,7 +14,7 @@ namespace TextGame.Presentation.Mappers
 {
     public static class GameObjectMapper
     {
-        public static object ToDTO(GameObject gameObject)
+        public static GameObjectDTO ToDTO(GameObject gameObject)
         {
             return gameObject switch
             {
@@ -22,7 +22,7 @@ namespace TextGame.Presentation.Mappers
                 room switch
                 {
                     StartRoom or EndRoom or Shop => new RoomWithoutEnemiesDTO(room.Number, room.Name!, room.Description!),
-                    _ => new RoomDTO(room.Number, room.Name!, room.Description!, room.Enemies),
+                    _ => new RoomWithEnemiesDTO(room.Number, room.Name!, room.Description!, ToDTO(room.Enemies).Cast<EnemyDTO>()),
                 },
                 Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name!, enemy.Description!, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>
@@ -44,14 +44,16 @@ namespace TextGame.Presentation.Mappers
                 _ => new GameObjectDTO(gameObject.Name ?? GeneralLabeles.GameObjectDefaultName, gameObject.Description ?? GeneralLabeles.GameObjectDefaultDescription)
             };
         }
-        public static List<object> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject
-        {
-            List<object> gameObjectsDTO = new List<object>();
-            foreach (T gameObject in gameObjects)
-            {
-                gameObjectsDTO.Add(ToDTO(gameObject));
-            }
-            return gameObjectsDTO;
-        }
+        public static List<GameObjectDTO> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject 
+            => [.. gameObjects.Select(ToDTO)];
+        //{
+        //    //List<GameObjectDTO> gameObjectsDTO = [];
+        //    //foreach (T gameObject in gameObjects)
+        //    //{
+        //    //    gameObjectsDTO.Add(ToDTO(gameObject));
+        //    //}
+        //    //return gameObjectsDTO;
+        //    return [.. gameObjects.Select(ToDTO)];
+        //}
     }
 }

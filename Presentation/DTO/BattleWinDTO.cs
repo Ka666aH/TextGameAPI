@@ -2,5 +2,5 @@
 
 namespace TextGame.Presentation.DTO
 {
-    public record BattleWinDTO(string message, BattleLog BattleLog);
+    public record BattleWinDTO(string Message, BattleLog BattleLog);
 }

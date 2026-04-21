@@ -9,6 +9,7 @@ using TextGame.Domain;
 var builder = WebApplication.CreateBuilder(args);
 
 //Ядро состояния
+//builder.Services.AddSingleton<GameSession>();
 builder.Services.AddScoped<GameSession>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 

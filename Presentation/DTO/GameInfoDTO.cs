@@ -1,4 +1,6 @@
-﻿namespace TextGame.Presentation.DTO
+﻿using TextGame.Presentation.DTO.GameObjectsDTO;
+
+namespace TextGame.Presentation.DTO
 {
-    public record GameInfoDTO(object room, WeaponDTO Weapon, ArmorDTO? Helm, ArmorDTO? Chestplate, int MaxHealth, int CurrentHealth, int coins, int keys, IEnumerable<object> Inventory);
+    public record GameInfoDTO(RoomDTOBase Room, WeaponDTO Weapon, ArmorDTO? Helm, ArmorDTO? Chestplate, int MaxHealth, int CurrentHealth, int Coins, int Keys, IEnumerable<ItemDTO> Inventory);
 }

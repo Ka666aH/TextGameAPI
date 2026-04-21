@@ -1,5 +1,6 @@
 ﻿using TextGame.Application.Interfaces.Services;
 using TextGame.Presentation.DTO;
+using TextGame.Presentation.DTO.GameObjectsDTO;
 using TextGame.Presentation.Mappers;
 
 namespace TextGame.Application.Services
@@ -15,11 +16,12 @@ namespace TextGame.Application.Services
         {
             //if (!_gameSessionService.IsGameStarted && _gameSessionService.Rooms.Count <= 1) throw new UnstartedGameException();
             //RoomDTO roomDTO = new RoomDTO(Session.CurrentRoom!.Number, Session.CurrentRoom!.Name!, Session.CurrentRoom!.Description!, Session.CurrentRoom!.Enemies);
-            var roomDTO = GameObjectMapper.ToDTO(_gameSessionService.CurrentRoom!);
+            var roomDTO = (RoomDTOBase)GameObjectMapper.ToDTO(_gameSessionService.CurrentRoom!);
             WeaponDTO weaponDTO = (WeaponDTO)GameObjectMapper.ToDTO(_gameSessionService.Weapon);
             ArmorDTO? helmDTO = _gameSessionService.Helm != null ? (ArmorDTO)GameObjectMapper.ToDTO(_gameSessionService.Helm) : null;
             ArmorDTO? chestplateDTO = _gameSessionService.Chestplate != null ? (ArmorDTO)GameObjectMapper.ToDTO(_gameSessionService.Chestplate) : null;
-            return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, _gameSessionService.MaxHealth, _gameSessionService.CurrentHealth, _gameSessionService.Coins, _gameSessionService.Keys, GameObjectMapper.ToDTO(_gameSessionService.Inventory));
+            var inventoryItems = GameObjectMapper.ToDTO(_gameSessionService.Inventory).Cast<ItemDTO>();
+            return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, _gameSessionService.MaxHealth, _gameSessionService.CurrentHealth, _gameSessionService.Coins, _gameSessionService.Keys, inventoryItems);
         }
     }
 }
