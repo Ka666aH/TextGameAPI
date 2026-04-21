@@ -21,51 +21,51 @@ namespace TextGame.Presentation.Controllers
         public IResult GoNextRoom()
         {
             var room = _roomControllerService.GoNextRoom();
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
+            return Results.Ok(GameObjectMapper.ToDTO(room));
         }
         [HttpPost("{roomId}")]
         public IResult GoRoom(int roomId)
         {
             var room = _roomControllerService.GoToRoom(roomId);
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
+            return Results.Ok(GameObjectMapper.ToDTO(room));
         }
         [HttpGet("current")]
         public IResult GetCurrentRoom()
         {
             var room = _roomControllerService.GetCurrentRoom();
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(room)));
+            return Results.Ok(GameObjectMapper.ToDTO(room));
         }
         [HttpPost("current/items")]
         public IResult Search()
         {
             var items = _roomControllerService.Search();
             var itemsDTOs = items.Select(item => GameObjectMapper.ToDTO(item)).ToList();
-            return Results.Ok(new SuccessfulResponse(itemsDTOs));
+            return Results.Ok(itemsDTOs);
         }
         [HttpPost("current/items/{itemId}/take")]
         public IResult TakeItem(int itemId)
         {
             _roomControllerService.TakeItem(itemId);
-            return Results.Ok(new SuccessfulResponse(_roomControllerService.GetGameInfo()));
+            return Results.Ok(_roomControllerService.GetGameInfo());
         }
         [HttpPost("current/items/takeall")]
         public IResult TakeAllItems()
         {
             _roomControllerService.TakeAllItems();
-            return Results.Ok(new SuccessfulResponse(_roomControllerService.GetGameInfo()));
+            return Results.Ok(_roomControllerService.GetGameInfo());
         }
         [HttpPost("current/items/{itemId}/buy")]
         public IResult BuyItem(int itemId)
         {
             _roomControllerService.BuyItem(itemId);
-            return Results.Ok(new SuccessfulResponse(_roomControllerService.GetGameInfo()));
+            return Results.Ok(_roomControllerService.GetGameInfo());
         }
         #region CHEST
 
         [HttpPost("current/items/{chestId}/chest/hit")]
         public IResult HitChest(int chestId)
         {
-            return Results.Ok(new SuccessfulResponse(_roomControllerService.HitChest(chestId)));
+            return Results.Ok(_roomControllerService.HitChest(chestId));
         }
         [HttpPost("current/items/{chestId}/chest/open")]
         public IResult OpenChest(int chestId)
@@ -77,26 +77,26 @@ namespace TextGame.Presentation.Controllers
         public IResult UnlockChest(int chestId)
         {
             var chest = _roomControllerService.UnlockChest(chestId);
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(chest)));
+            return Results.Ok(GameObjectMapper.ToDTO(chest));
         }
         [HttpPost("current/items/{chestId}/chest/items")]
         public IResult SearchChest(int chestId)
         {
             var items = _roomControllerService.SearchChest(chestId);
             var itemsDTOs = items.Select(GameObjectMapper.ToDTO).ToList();
-            return Results.Ok(new SuccessfulResponse(itemsDTOs));
+            return Results.Ok(itemsDTOs);
         }
         [HttpPost("current/items/{chestId}/chest/items/{itemId}/take")]
         public IResult TakeItemFromChest(int chestId, int itemId)
         {
             _roomControllerService.TakeItemFromChest(chestId, itemId);
-            return Results.Ok(new SuccessfulResponse(_roomControllerService.GetGameInfo()));
+            return Results.Ok(_roomControllerService.GetGameInfo());
         }
         [HttpPost("current/items/{chestId}/chest/items/takeall")]
         public IResult TakeAllItemsFromChest(int chestId)
         {
             _roomControllerService.TakeAllItemsFromChest(chestId);
-            return Results.Ok(new SuccessfulResponse(_roomControllerService.GetGameInfo()));
+            return Results.Ok(_roomControllerService.GetGameInfo());
         }
         #endregion
         #region ENEMIES
@@ -116,16 +116,16 @@ namespace TextGame.Presentation.Controllers
         public IResult GetEnemy()
         {
             Enemy enemy = _roomControllerService.GetEnemy();
-            return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemy)));
+            return Results.Ok(GameObjectMapper.ToDTO(enemy));
         }
         //[HttpPost("current/enemy/{enemyId}/attack")]
         [HttpPost("current/enemy/attack")]
         public IResult AttackEnemy()
         {
-            List<BattleLog> battleLogs = new List<BattleLog>();
-            battleLogs.Add(_roomControllerService.DealDamage());
-            battleLogs.Add(_roomControllerService.GetDamage());
-            return Results.Ok(new SuccessfulResponse(battleLogs));
+            List<BattleLog> battleLogs = [
+                _roomControllerService.DealDamage(),
+                _roomControllerService.GetDamage()];
+            return Results.Ok(battleLogs);
         }
         #endregion
     }

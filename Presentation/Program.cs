@@ -99,14 +99,10 @@ app.UseExceptionHandler(exceptionHandlerApp =>
                         break;
                     case DefeatException or WinException:
                         EndExeption endEx = (EndExeption)gameEx;
-                        result = Results.Ok(new SuccessfulResponse(
-                            new GameOverDTO(endEx.Message, endEx.GameInfo)
-                        ));
+                        result = Results.Ok(new GameOverDTO(endEx.Message, endEx.GameInfo));
                         break;
                     case BattleWinException battleWinEx:
-                        result = Results.Ok(new SuccessfulResponse(
-                            new BattleWinDTO(battleWinEx.Message, battleWinEx.BattleLog)
-                            ));
+                        result = Results.Ok(new BattleWinDTO(battleWinEx.Message, battleWinEx.BattleLog));
                         break;
                     default: //UnstartedGameException ImpossibleStealException
                         //result = Results.BadRequest(new ErrorResponse(gameEx));
