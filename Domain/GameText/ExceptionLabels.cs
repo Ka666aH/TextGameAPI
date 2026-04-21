@@ -71,5 +71,8 @@
         public const string PlayerDefeated = "Вы были повержены {enemyName}ОМ.";
         public const string PlayerPoisoned = "{healName} приводит Вас к гибели!";
         public const string PlayerEaten = "НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!";
+
+        public const string InternalServerErrorCode = "INTERNAL_SERVER_ERROR";
+        public const string InternalServerErrorMessage = "Непредвиденная ошибка сервера.";
     }
 }

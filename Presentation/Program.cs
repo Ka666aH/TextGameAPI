@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Diagnostics;
 using TextGame.Application.Factories;
 using TextGame.Application.Generators;
 using TextGame.Application.Interfaces.Factories;
@@ -6,9 +5,6 @@ using TextGame.Application.Interfaces.Generators;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Services;
 using TextGame.Domain;
-using TextGame.Domain.GameExceptions;
-using TextGame.Presentation.DTO;
-using TextGame.Presentation.ResponseTemplates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +48,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -65,68 +63,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.UseExceptionHandler(exceptionHandlerApp =>
-{
-    exceptionHandlerApp.Run(async context =>
-    {
-        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
 
-        IResult result;
-
-        switch (exception)
-        {
-            case GameException gameEx:
-
-                switch (gameEx)
-                {
-                    case NullRoomIdException or NullItemIdException or EmptyException:
-                        result = Results.NotFound(new ErrorResponse(gameEx));
-                        break;
-                    case InvalidIdException or UncarryableException or UnsellableItemException:
-                        result = Results.UnprocessableEntity(new ErrorResponse(gameEx));
-                        break;
-                    case
-                    LockedException or
-                    NoKeyException or
-                    NoMapException or
-                    ClosedException or
-                    UndiscoveredRoomException or
-                    InBattleException or
-                    UnsearchedRoomException or
-                    NotShopException or
-                    NoMoneyException:
-                        result = Results.Json(new ErrorResponse(gameEx), statusCode: 403);
-                        break;
-                    case DefeatException or WinException:
-                        EndExeption endEx = (EndExeption)gameEx;
-                        result = Results.Ok(new GameOverDTO(endEx.Message, endEx.GameInfo));
-                        break;
-                    case BattleWinException battleWinEx:
-                        result = Results.Ok(new BattleWinDTO(battleWinEx.Message, battleWinEx.BattleLog));
-                        break;
-                    default: //UnstartedGameException ImpossibleStealException
-                        //result = Results.BadRequest(new ErrorResponse(gameEx));
-                        result = Results.Json(new ErrorResponse(gameEx), statusCode: 401);
-                        break;
-                }
-                break;
-
-            case Exception ex:
-                result = Results.Json(
-                    new ErrorResponse("INTERNAL_SERVER_ERROR", ex.Message),
-                    statusCode: 500);
-                break;
-            //exception == null
-            default:
-                result = Results.Json(
-                    new ErrorResponse("INTERNAL_SERVER_ERROR", "Неизвестная ошибка сервера."),
-                    statusCode: 500);
-                break;
-        }
-
-        await result.ExecuteAsync(context);
-    });
-});
+app.UseExceptionHandler("/exception");
 
 app.MapControllers();
 

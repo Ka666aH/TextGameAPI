@@ -3,7 +3,7 @@ using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.DTO;
 using TextGame.Domain.GameObjects.Enemies;
 using TextGame.Presentation.Mappers;
-using TextGame.Presentation.ResponseTemplates;
+
 namespace TextGame.Presentation.Controllers
 {
 

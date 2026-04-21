@@ -1,0 +1,59 @@
+﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using TextGame.Domain.GameExceptions;
+using TextGame.Domain.GameText;
+using TextGame.Presentation.DTO;
+
+namespace TextGame.Presentation.Controllers
+{
+    [ApiController]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [Route("/exception")]
+    public class ExceptionController : ControllerBase
+    {
+        [HttpGet, HttpPost, HttpPut, HttpDelete, HttpPatch]
+        public IActionResult Handle()
+        {
+            var exception = HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+            return MapException(exception);
+        }
+        private IActionResult MapException(Exception? exception)
+        {
+            var originalPath = HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Path ?? HttpContext.Request.Path;
+            if (exception is not GameException gameEx)
+                return InternalServerError(originalPath, exception?.Message);
+
+            return gameEx switch
+            {
+                DefeatException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
+                WinException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
+
+                BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog)),
+
+                NullRoomIdException or NullItemIdException or EmptyException =>
+                    Problem(404, originalPath, gameEx),
+
+                InvalidIdException or UncarryableException or ImpossibleStealException or UnsellableItemException =>
+                    Problem(422, originalPath, gameEx),
+
+                UnstartedGameException or LockedException or NoKeyException or NoMapException or
+                ClosedException or UndiscoveredRoomException or InBattleException or UnsearchedRoomException or
+                NotShopException or NoMoneyException =>
+                    Problem(403, originalPath, gameEx),
+
+                _ => InternalServerError(originalPath, gameEx?.Message)
+            };
+        }
+
+        private IActionResult Problem(int statusCode, string instance, GameException ex) =>
+            Problem(statusCode: statusCode, title: ex.Code, detail: ex.Message, instance: instance);
+
+        private IActionResult InternalServerError(string instance, string? detail = null) =>
+            Problem(
+                statusCode: StatusCodes.Status500InternalServerError,
+                title: ExceptionLabels.InternalServerErrorCode,
+                detail: detail ?? ExceptionLabels.InternalServerErrorMessage,
+                instance: HttpContext.Request.Path
+            );
+    }
+}
