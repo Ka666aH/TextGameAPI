@@ -6,7 +6,7 @@ namespace TextGame.Presentation.Controllers
 {
     [ApiController]
     [Route("game")]
-    public class GameController
+    public class GameController : ControllerBase
     {
         private readonly IGameControllerService _gameControllerService;
 
@@ -16,80 +16,79 @@ namespace TextGame.Presentation.Controllers
         }
 
         [HttpPost("start")]
-        public IResult Start()
+        public IActionResult Start()
         {
             _gameControllerService.Start();
-            //return Results.Ok(new SuccessfulResponse("Игра успешно начата."));
             var room = _gameControllerService.GetCurrentRoom();
-            return Results.Ok(GameObjectMapper.ToDTO(room));
+            return Ok(GameObjectMapper.ToDTO(room));
         }
         [HttpGet("info")]
-        public IResult GetInfo()
+        public IActionResult GetInfo()
         {
-            return Results.Ok(_gameControllerService.GetGameInfo());
+            return Ok(_gameControllerService.GetGameInfo());
         }
         [HttpGet("map")]
-        public IResult GetMap()
+        public IActionResult GetMap()
         {
-            return Results.Ok(_gameControllerService.GetMap());
+            return Ok(_gameControllerService.GetMap());
         }
         [HttpGet("coins")]
-        public IResult GetCoins()
+        public IActionResult GetCoins()
         {
-            return Results.Ok(_gameControllerService.GetCoins());
+            return Ok(_gameControllerService.GetCoins());
         }
         [HttpGet("keys")]
-        public IResult GetKeys()
+        public IActionResult GetKeys()
         {
-            return Results.Ok(_gameControllerService.GetKeys());
+            return Ok(_gameControllerService.GetKeys());
         }
         [HttpGet("inventory")]
-        public IResult GetInventory()
+        public IActionResult GetInventory()
         {
-            return Results.Ok(_gameControllerService.GetInventory());
+            return Ok(_gameControllerService.GetInventory());
         }
         [HttpGet("inventory/{itemId}")]
-        public IResult GetInventoryItem(int itemId)
+        public IActionResult GetInventoryItem(int itemId)
         {
-            return Results.Ok(_gameControllerService.GetInventoryItem(itemId));
+            return Ok(_gameControllerService.GetInventoryItem(itemId));
         }
         [HttpPost("inventory/{itemId}/sell")]
-        public IResult SellInventoryItem(int itemId)
+        public IActionResult SellInventoryItem(int itemId)
         {
             _gameControllerService.SellInventoryItem(itemId);
             return GetInfo();
         }
         [HttpPost("inventory/{itemId}/use")]
-        public IResult UseInventoryItem(int itemId)
+        public IActionResult UseInventoryItem(int itemId)
         {
             _gameControllerService.UseInventoryItem(itemId);
             return GetInfo();
         }
         [HttpGet("equipment")]
-        public IResult GetEquipment()
+        public IActionResult GetEquipment()
         {
-            return Results.Ok(_gameControllerService.GetEquipment());
+            return Ok(_gameControllerService.GetEquipment());
         }
         [HttpPost("inventory/{itemId}/equip")]
-        public IResult EquipInventoryItem(int itemId)
+        public IActionResult EquipInventoryItem(int itemId)
         {
             _gameControllerService.EquipInventoryItem(itemId);
             return GetEquipment();
         }
         [HttpPost("equipment/weapon/unequip")]
-        public IResult UnequipWeapon()
+        public IActionResult UnequipWeapon()
         {
             _gameControllerService.UnequipWeapon();
             return GetEquipment();
         }
         [HttpPost("equipment/helm/unequip")]
-        public IResult UnequipHelm()
+        public IActionResult UnequipHelm()
         {
             _gameControllerService.UnequipHelm();
             return GetEquipment();
         }
         [HttpPost("equipment/chestplate/unequip")]
-        public IResult UnequipChestplate()
+        public IActionResult UnequipChestplate()
         {
             _gameControllerService.UnequipChestplate();
             return GetEquipment();
