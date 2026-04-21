@@ -30,7 +30,7 @@ namespace TextGame.Presentation.Controllers
 
                 BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog)),
 
-                NullRoomIdException or NullItemIdException or EmptyException =>
+                NullRoomIdException or NullItemIdException or EmptyException or NullEnemyIdException =>
                     Problem(404, originalPath, gameEx),
 
                 InvalidIdException or UncarryableException or ImpossibleStealException or UnsellableItemException =>
