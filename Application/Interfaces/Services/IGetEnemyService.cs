@@ -1,4 +1,4 @@
-﻿using TextGame.Domain.GameObjects.Enemies;
+﻿using TextGame.Domain.Entities.GameObjects.Enemies;
 
 namespace TextGame.Application.Interfaces.Services
 {

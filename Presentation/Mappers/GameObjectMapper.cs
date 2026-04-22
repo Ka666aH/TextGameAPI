@@ -1,14 +1,14 @@
-﻿using TextGame.Domain.GameObjects.Enemies;
-using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Items.Equipments;
-using TextGame.Domain.GameObjects.Items.Equipments.Weapons;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors;
-using TextGame.Domain.GameObjects.Items.Heal;
-using TextGame.Domain.GameObjects.Rooms;
-using TextGame.Presentation.DTO;
-using TextGame.Domain.GameObjects;
-using TextGame.Domain.GameObjects.Items.Other;
+﻿using TextGame.Presentation.DTO;
 using TextGame.Domain.GameText;
+using TextGame.Domain.Entities.GameObjects;
+using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Rooms;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments;
+using TextGame.Domain.Entities.GameObjects.Items.Heals;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
 
 namespace TextGame.Presentation.Mappers
 {

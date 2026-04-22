@@ -1,4 +1,4 @@
-﻿using TextGame.Domain.GameObjects.Rooms;
+﻿using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Application.Interfaces.Factories
 {

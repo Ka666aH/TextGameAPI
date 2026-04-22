@@ -1,10 +1,10 @@
-﻿using TextGame.Domain.GameObjects.Enemies;
-using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Items.Equipments.Weapons;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
-using TextGame.Domain.GameObjects.Rooms;
-using TextGame.Domain.GameObjects.Items.Other;
+﻿using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Rooms;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplates;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
 
 namespace TextGame.Application.Interfaces.Services
 {

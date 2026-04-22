@@ -4,7 +4,7 @@ using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Generators;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Services;
-using TextGame.Domain;
+using TextGame.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 

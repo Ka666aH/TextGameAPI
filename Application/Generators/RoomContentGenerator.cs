@@ -1,9 +1,9 @@
 ﻿using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Generators;
 using TextGame.Domain;
-using TextGame.Domain.GameObjects.Enemies;
-using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Rooms;
+using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Application.Generators
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.DTO;
-using TextGame.Domain.GameObjects.Enemies;
+using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Presentation.Mappers;
 
 namespace TextGame.Presentation.Controllers

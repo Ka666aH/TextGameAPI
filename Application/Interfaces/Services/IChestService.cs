@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Items.Other;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
 
 namespace TextGame.Application.Interfaces.Services
 {

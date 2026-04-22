@@ -1,11 +1,11 @@
 ﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Items.Equipments;
-using TextGame.Domain.GameObjects.Items.Equipments.Weapons;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
 using TextGame.Domain.GameExceptions;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplates;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
 
 namespace TextGame.Application.Services
 {

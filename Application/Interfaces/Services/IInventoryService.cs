@@ -1,5 +1,5 @@
-﻿using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Items.Equipments;
+﻿using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments;
 
 namespace TextGame.Application.Interfaces.Services
 {

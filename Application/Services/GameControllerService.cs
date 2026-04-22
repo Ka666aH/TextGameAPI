@@ -1,12 +1,12 @@
 ﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Items.Equipments;
-using TextGame.Domain.GameObjects.Items.Heal;
-using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
-using TextGame.Domain.GameObjects.Items.Other;
 using TextGame.Domain.GameText;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Rooms;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments;
+using TextGame.Domain.Entities.GameObjects.Items.Heals;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
 
 namespace TextGame.Application.Services
 {

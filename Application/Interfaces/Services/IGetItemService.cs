@@ -1,4 +1,4 @@
-﻿using TextGame.Domain.GameObjects.Items;
+﻿using TextGame.Domain.Entities.GameObjects.Items;
 
 namespace TextGame.Application.Interfaces.Services
 {

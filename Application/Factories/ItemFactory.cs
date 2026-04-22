@@ -1,13 +1,13 @@
 ﻿using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain;
-using TextGame.Domain.GameObjects.Items;
-using TextGame.Domain.GameObjects.Items.Other;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors.Chestplates;
-using TextGame.Domain.GameObjects.Items.Equipments.Armors.Helms;
-using TextGame.Domain.GameObjects.Items.Equipments.Weapons.Swords;
-using TextGame.Domain.GameObjects.Items.Equipments.Weapons.Wands;
-using TextGame.Domain.GameObjects.Items.Heal;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplates;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands;
+using TextGame.Domain.Entities.GameObjects.Items.Heals;
+using TextGame.Domain.Entities.GameObjects.Items;
 
 namespace TextGame.Application.Factories
 {

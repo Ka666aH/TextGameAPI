@@ -2,7 +2,7 @@
 using TextGame.Application.Interfaces.Generators;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain;
-using TextGame.Domain.GameObjects.Rooms;
+using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Application.Generators
 {

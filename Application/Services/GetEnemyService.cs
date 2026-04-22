@@ -1,7 +1,7 @@
 ﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameObjects.Enemies;
-using TextGame.Domain.GameObjects.Rooms;
 using TextGame.Domain.GameExceptions;
+using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Application.Services
 {
