@@ -14,9 +14,13 @@ namespace TextGame.Domain.Entities
         public User User { get; private set; }
 
         public List<Room> Rooms { get; set; } = [];
+        public int? CurrentRoomId { get; set; }
         public Room? CurrentRoom { get; set; }
+        public int WeaponId { get; set; }
         public Weapon Weapon { get; set; } = Fists.DefaultFists;
+        public int? HelmId { get; set; }
         public Helm? Helm { get; set; }
+        public int? ChestplateId { get; set; }
         public Chestplate? Chestplate { get; set; }
         public int MaxHealth { get; set; } = GameBalance.DefaultMaxHealth;
         public int CurrentHealth { get; set; } = GameBalance.DefaultMaxHealth;
@@ -25,6 +29,7 @@ namespace TextGame.Domain.Entities
         public List<Item> Inventory { get; set; } = [];
         public bool IsGameStarted { get; set; }
         public bool IsInBattle { get; set; } = false;
+        public int? CurrentMimicChestId { get; set; }
         public Chest? CurrentMimicChest { get; set; } = null;
         private GameSession() { }
         public GameSession(Guid userId)

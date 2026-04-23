@@ -1,6 +1,4 @@
-﻿using TextGame.Domain.Entities.GameObjects.Items;
-
-namespace TextGame.Domain.Entities.GameObjects.Items.Equipments
+﻿namespace TextGame.Domain.Entities.GameObjects.Items.Equipments
 {
     public abstract class Equipment : Item
     {
@@ -9,7 +7,7 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments
 
         public int? Durability { get; protected set; }
         public Equipment(int id, string name, string description, int? durability, int roomId, bool fromShop)
-            : base(id, name, description, true)
+            : base(id, name, description, roomId)
         {
             _roomId = roomId;
             _fromShop = fromShop;

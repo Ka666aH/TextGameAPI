@@ -103,7 +103,7 @@ namespace TextGame.Application.Factories
                     //create mimic
                     var mimic = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.MimicProbabilityDenominator ? _enemyFactory.CreateMimic() : null;
 
-                    return new Chest(_itemIdService.Next(), items, mimic);
+                    return new Chest(_itemIdService.Next(), roomId, items, mimic);
                 }
             )
             );
@@ -146,7 +146,7 @@ namespace TextGame.Application.Factories
             AddWeightedGroup(options, roomId, GameBalance.ChestOtherWeight,
                 (_ => GameBalance.CalculateKeyChestWeight(), () => new Key(_itemIdService.Next(), roomId)),
                 (_ => GameBalance.CalculateBagOfCoinsChestWeight(), () => new BagOfCoins(_itemIdService.Next(), roomId)),
-                (_ => GameBalance.CalculateMapChestWeight(), () => new Map(_itemIdService.Next()))
+                (_ => GameBalance.CalculateMapChestWeight(), () => new Map(_itemIdService.Next(), roomId))
             );
             AddWeightedGroup(options, roomId, GameBalance.ChestWeaponWeight,
                 (r => GameBalance.CalculateRustSwordChestWeight(r), () => new RustSword(_itemIdService.Next(), roomId, false)),
@@ -177,7 +177,7 @@ namespace TextGame.Application.Factories
 
             AddWeightedGroup(options, roomId, GameBalance.ShopOtherWeight,
                 (_ => GameBalance.CalculateKeyShopWeight(), () => new Key(_itemIdService.Next(), roomId)),
-                (_ => GameBalance.CalculateMapShopWeight(), () => new Map(_itemIdService.Next()))
+                (_ => GameBalance.CalculateMapShopWeight(), () => new Map(_itemIdService.Next(), roomId))
             );
             AddWeightedGroup(options, roomId, GameBalance.ShopWeaponWeight,
                 (r => GameBalance.CalculateRustSwordShopWeight(r), () => new RustSword(_itemIdService.Next(), roomId, true)),

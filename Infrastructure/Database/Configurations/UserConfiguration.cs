@@ -8,8 +8,6 @@ namespace TextGame.Infrastructure.Database.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasKey(x => x.Id);
-
             builder.Property(x => x.Login)
                 .IsRequired()
                 .HasMaxLength(100);

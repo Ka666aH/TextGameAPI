@@ -1,7 +1,4 @@
-﻿using System.Xml.Linq;
-using TextGame.Domain.Entities.GameObjects.Items;
-
-namespace TextGame.Domain.Entities.GameObjects.Items.Heals
+﻿namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
     public abstract class Heal : Item
     {
@@ -12,7 +9,7 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
         protected readonly bool _fromShop;
 
         public Heal(int id, string name, string description, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost)
-            : base(id, name, description)
+            : base(id, name, description, roomId)
         {
             _roomId = roomId;
             _fromShop = fromShop;

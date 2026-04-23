@@ -1,5 +1,4 @@
 ﻿using TextGame.Domain.Entities.GameObjects.Enemies;
-using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
 
@@ -9,16 +8,18 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
     {
         public bool IsLocked { get; set; }
         public bool IsClosed { get; set; } = true;
+        public int? MimicId { get; private set; }
         public Mimic? Mimic { get; private set; }
         public readonly List<Item> _items = new();
         public IReadOnlyList<Item> Items => _items.AsReadOnly();
 
-        public Chest(int id, List<Item> items, Mimic? mimic = null)
-            : base(id, ItemsLabeles.ChestName, ItemsLabeles.ChestDescription, false)
+        public Chest(int id, int roomId, List<Item> items, Mimic? mimic = null)
+            : base(id, ItemsLabeles.ChestName, ItemsLabeles.ChestDescription, roomId, false)
         {
             Cost = null;
             IsLocked = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
             Mimic = mimic;
+            MimicId = mimic?.Id;
             _items = items;
         }
         //public void AddItem(Item item) => _items.Add(item);

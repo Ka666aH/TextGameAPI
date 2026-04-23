@@ -1,6 +1,4 @@
 ﻿using TextGame.Domain.DTO;
-using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
-
 namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
 {
     public abstract class Wand : Weapon
