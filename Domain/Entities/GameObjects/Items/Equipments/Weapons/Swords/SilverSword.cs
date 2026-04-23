@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
                   GameBalance.
                   SilverSwordBaseDurability, GameBalance.SilverSwordBaseDamage)
         { }
+        private SilverSword() { }
     }
 }

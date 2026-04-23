@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
                   GameBalance.MimicBaseDamage,
                   GameBalance.MimicBaseDamageBlock)
         { }
+        private Mimic() { }
     }
 }

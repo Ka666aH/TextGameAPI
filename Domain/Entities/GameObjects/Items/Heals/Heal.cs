@@ -39,5 +39,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
             }
         }
         public virtual (int,int) Use() => ((int)MaxHealthBoost!, (int)CurrentHealthBoost!);
+        protected Heal() { }
     }
 }

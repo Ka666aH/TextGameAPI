@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
                   GameBalance.SkeletorArcherBaseDamage,
                   GameBalance.SkeletorArcherBaseDamageBlock)
         { }
+        private SkeletorArcher() { }
     }
 }

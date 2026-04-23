@@ -17,5 +17,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
             Cost = GameBalance.CalculateWandCost(Damage);
         }
         public override WeaponAttackResult Attack(int roomId) => new WeaponAttackResult(Damage);
+        protected Wand() { }
     }
 }

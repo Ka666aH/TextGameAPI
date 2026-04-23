@@ -11,5 +11,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
             var (min, max) = GameBalance.CalculateSpread(GameBalance.BagOfCoinsBaseCost, roomId);
             Cost = Random.Shared.Next(min, max + 1);
         }
+        private BagOfCoins() { }
     }
 }

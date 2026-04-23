@@ -38,5 +38,6 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
             return _items;
         }
         public void Discover() => IsDiscovered = true;
+        protected Room() { }
     }
 }

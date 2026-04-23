@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms
                   GameBalance.IronHelmBaseDurability,
                   GameBalance.IronHelmBaseDamageBlock)
         { }
+        private IronHelm() { }
     }
 }

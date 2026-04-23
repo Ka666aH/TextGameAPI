@@ -1,4 +1,5 @@
-﻿using TextGame.Domain.Entities.GameObjects.Items;
+﻿using System.Security.AccessControl;
+using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.Entities.GameObjects.Items.Other
@@ -10,5 +11,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
         {
             Cost = GameBalance.MapBaseCost;
         }
+        private Map() { }
     }
 }

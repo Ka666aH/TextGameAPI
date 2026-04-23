@@ -31,5 +31,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
             CurrentHealthBoost = Random.Shared.Next((int)currentHealthFloor, (int)currentHealthCeiling + 1);
             return base.Use();
         }
+        private RandomPotion() { }
     }
 }

@@ -42,5 +42,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
             IsLocked = false;
             IsClosed = false;
         }
+        private Chest() { }
     }
 }

@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
                   GameBalance.IronSwordBaseDurability,
                   GameBalance.IronSwordBaseDamage)
         { }
+        private IronSword() { }
     }
 }

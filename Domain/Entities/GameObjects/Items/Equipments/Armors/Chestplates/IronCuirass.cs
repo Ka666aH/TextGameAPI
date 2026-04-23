@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplat
                   GameBalance.IronCuirassBaseDurability,
                   GameBalance.IronCuirassBaseDamageBlock)
         { }
+        private IronCuirass() { }
     }
 }

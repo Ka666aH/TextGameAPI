@@ -18,5 +18,6 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
             if (Random.Shared.Next(GameBalance.GhostHitDivider) == 0) Health -= damage;
             return Health;
         }
+        private Ghost() { }
     }
 }

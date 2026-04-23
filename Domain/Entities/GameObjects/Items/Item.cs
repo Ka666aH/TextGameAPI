@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items
             IsCarryable = isCarryable;
         }
         public virtual void AddStoreMargin() => Cost = (int)(Cost! * GameBalance.StoreMargin);
+        protected Item() { }
     }
 }

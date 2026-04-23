@@ -35,5 +35,6 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
             if (damage > DamageBlock) Health -= damage - DamageBlock;
             return Health;
         }
+        protected Enemy() { }
     }
 }

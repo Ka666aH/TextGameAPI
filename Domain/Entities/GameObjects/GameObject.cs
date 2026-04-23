@@ -11,5 +11,6 @@ namespace TextGame.Domain.Entities.GameObjects
             Name = name;
             Description = description;
         }
+        protected GameObject() { }
     }
 }

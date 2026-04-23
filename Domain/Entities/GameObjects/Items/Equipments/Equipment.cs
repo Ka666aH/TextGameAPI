@@ -15,5 +15,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments
 
             Durability = durability;
         }
+        protected Equipment() { }
     }
 }

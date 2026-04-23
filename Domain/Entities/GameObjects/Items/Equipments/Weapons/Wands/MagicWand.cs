@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
                   fromShop,
                   GameBalance.MagicWandBaseDamage)
         { }
+        private MagicWand() { }
     }
 }

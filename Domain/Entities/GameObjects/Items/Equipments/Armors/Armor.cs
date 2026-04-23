@@ -34,5 +34,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors
         {
             Cost = GameBalance.CalculateArmorCost((int)Durability!, DamageBlock);
         }
+        protected Armor() { }
     }
 }

@@ -6,5 +6,6 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
     {
         public BigRoom(int number)
             : base(RoomsLabeles.BigRoomName, RoomsLabeles.BigRoomDescription, number) { }
+        private BigRoom() { }
     }
 }

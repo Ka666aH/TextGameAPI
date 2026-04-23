@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons
             Damage = damage;
         }
         public abstract WeaponAttackResult Attack(int roomId);
+        protected Weapon() { }
     }
 }

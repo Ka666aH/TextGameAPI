@@ -10,5 +10,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
         {
             Cost = (int)(GameBalance.KeyBaseCost * GameBalance.CalculateGain(roomId));
         }
+        private Key() { }
     }
 }

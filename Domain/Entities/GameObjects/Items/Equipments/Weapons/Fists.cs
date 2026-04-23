@@ -27,5 +27,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons
 
             return new WeaponAttackResult(damage, selfDamage);
         }
+        //private Fists() { }
     }
 }

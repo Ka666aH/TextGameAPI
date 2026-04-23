@@ -32,5 +32,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
         {
             Cost = GameBalance.CalculateSwordCost((int)Durability!, Damage);
         }
+        protected Sword() { }
     }
 }

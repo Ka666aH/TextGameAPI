@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
                   GameBalance.RegenPotionBaseMaxHealthBoost,
                   GameBalance.RegenPotionBaseCurrentHealthBoost)
         { }
+        private RegenPotion() { }
     }
 }

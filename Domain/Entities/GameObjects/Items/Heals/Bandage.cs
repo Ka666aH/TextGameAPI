@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
                   GameBalance.BandageBaseMaxHealthBoost,
                   GameBalance.BandageBaseCurrentHealthBoost)
         { }
+        private Bandage() { }
     }
 }

@@ -13,5 +13,6 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
                   GameBalance.DeadmanBaseDamage,
                   GameBalance.DeadmanBaseDamageBlock)
         { }
+        private Deadman() { }
     }
 }

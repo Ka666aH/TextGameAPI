@@ -8,5 +8,6 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
         {
             IsDiscovered = true;
         }
+        //private StartRoom() { }
     }
 }

@@ -6,5 +6,6 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
     {
         public Shop(int number)
             : base(RoomsLabeles.ShopName, RoomsLabeles.ShopDescription, number) { }
+        private Shop() { }
     }
 }

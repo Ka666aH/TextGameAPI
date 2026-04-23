@@ -14,5 +14,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms
                   GameBalance.WoodenBucketBaseDurability,
                   GameBalance.WoodenBucketBaseDamageBlock)
         { }
+        private WoodenBucket() { }
     }
 }

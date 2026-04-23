@@ -14,5 +14,6 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
                   GameBalance.SkeletorBaseDamage,
                   GameBalance.SkeletorBaseDamageBlock)
         { }
+        private Skeletor() { }
     }
 }

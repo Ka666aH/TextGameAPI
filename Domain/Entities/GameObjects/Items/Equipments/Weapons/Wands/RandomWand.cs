@@ -17,5 +17,6 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
             int damage = (int)(Damage * GameBalance.CalculateGain(_roomId));
             return new WeaponAttackResult(Random.Shared.Next(damage + 1));
         }
+        private RandomWand() { }
     }
 }
