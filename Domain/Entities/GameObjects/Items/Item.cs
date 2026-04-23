@@ -2,7 +2,7 @@
 
 namespace TextGame.Domain.Entities.GameObjects.Items
 {
-    public class Item : GameObject
+    public abstract class Item : GameObject
     {
         public int? Id { get; init; }
         public int? Cost { get; protected set; }
