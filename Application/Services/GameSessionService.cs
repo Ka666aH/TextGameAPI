@@ -14,85 +14,86 @@ namespace TextGame.Application.Services
 {
     public class GameSessionService : IGameSessionService
     {
-        private GameSession _session;
+        private readonly IGameSessionProvider _gameSessionProvider;
         private readonly IMapGenerator _mapGenerator;
-        public GameSessionService(GameSession session, IMapGenerator mapGenerator)
+        public GameSessionService(IMapGenerator mapGenerator, IGameSessionProvider gameSessionProvider)
         {
-            _session = session;
             _mapGenerator = mapGenerator;
+            _gameSessionProvider = gameSessionProvider;
         }
-        public bool IsGameStarted => _session.IsGameStarted;
-        public bool IsInBattle { get => _session.IsInBattle; }
-        public Room CurrentRoom { get => _session.CurrentRoom!; }
-        public IReadOnlyList<Room> Rooms => _session.Rooms.AsReadOnly();
-        public IReadOnlyList<Item> Inventory => _session.Inventory.AsReadOnly();
-        public int Coins { get => _session.Coins; }
-        public int Keys { get => _session.Keys; }
-        public Weapon Weapon { get => _session.Weapon; }
-        public Helm? Helm { get => _session.Helm; }
-        public Chestplate? Chestplate { get => _session.Chestplate; }
-        public int MaxHealth { get => _session.MaxHealth; }
-        public int CurrentHealth { get => _session.CurrentHealth; }
-        public Chest? CurrentMimicChest { get => _session.CurrentMimicChest; }
+        private GameSession GameSession => _gameSessionProvider.GetGameSession();
+        public bool IsGameStarted => GameSession.IsGameStarted;
+        public bool IsInBattle { get => GameSession.IsInBattle; }
+        public Room CurrentRoom { get => GameSession.CurrentRoom!; }
+        public IReadOnlyList<Room> Rooms => GameSession.Rooms.AsReadOnly();
+        public IReadOnlyList<Item> Inventory => GameSession.Inventory.AsReadOnly();
+        public int Coins { get => GameSession.Coins; }
+        public int Keys { get => GameSession.Keys; }
+        public Weapon Weapon { get => GameSession.Weapon; }
+        public Helm? Helm { get => GameSession.Helm; }
+        public Chestplate? Chestplate { get => GameSession.Chestplate; }
+        public int MaxHealth { get => GameSession.MaxHealth; }
+        public int CurrentHealth { get => GameSession.CurrentHealth; }
+        public Chest? CurrentMimicChest { get => GameSession.CurrentMimicChest; }
 
-        public void RemoveWeapon() => _session.Weapon = Fists.DefaultFists;
-        public void EquipWeapon(Weapon weapon) => _session.Weapon = weapon;
-        public void RemoveChestplate() => _session.Chestplate = null;
-        public void EquipChestplate(Chestplate chestplate) => _session.Chestplate = chestplate;
-        public void RemoveHelm() => _session.Helm = null;
-        public void EquipHelm(Helm helm) => _session.Helm = helm;
+        public void RemoveWeapon() => GameSession.Weapon = Fists.DefaultFists;
+        public void EquipWeapon(Weapon weapon) => GameSession.Weapon = weapon;
+        public void RemoveChestplate() => GameSession.Chestplate = null;
+        public void EquipChestplate(Chestplate chestplate) => GameSession.Chestplate = chestplate;
+        public void RemoveHelm() => GameSession.Helm = null;
+        public void EquipHelm(Helm helm) => GameSession.Helm = helm;
 
         public void AddMaxHealth(int value)
         {
             if (value == 0) return;
 
-            _session.MaxHealth += value;
-            _session.CurrentHealth += value;
+            GameSession.MaxHealth += value;
+            GameSession.CurrentHealth += value;
         }
         public void AddCurrentHealth(int value)
         {
             if (value == 0) return;
 
-            if ((CurrentHealth + value) >= MaxHealth) _session.CurrentHealth = MaxHealth;
-            else _session.CurrentHealth += value;
+            if ((CurrentHealth + value) >= MaxHealth) GameSession.CurrentHealth = MaxHealth;
+            else GameSession.CurrentHealth += value;
         }
-        public void RemoveCurrentMimicChest() => _session.CurrentMimicChest = null;
-        public void SetCurrentMimicChest(Chest chest) => _session.CurrentMimicChest = chest;
+        public void RemoveCurrentMimicChest() => GameSession.CurrentMimicChest = null;
+        public void SetCurrentMimicChest(Chest chest) => GameSession.CurrentMimicChest = chest;
 
         public void StartGame()
         {
-            _session.Coins = 0;
-            _session.Keys = 0;
+            GameSession.Coins = 0;
+            GameSession.Keys = 0;
 
             RemoveWeapon();
             RemoveHelm();
             RemoveChestplate();
 
-            _session.Inventory = [];
-            _session.Rooms = [];
+            GameSession.Inventory = [];
+            GameSession.Rooms = [];
 
-            _session.MaxHealth = GameBalance.DefaultMaxHealth;
-            _session.CurrentHealth = GameBalance.DefaultMaxHealth;
+            GameSession.MaxHealth = GameBalance.DefaultMaxHealth;
+            GameSession.CurrentHealth = GameBalance.DefaultMaxHealth;
 
-            _session.Rooms = _mapGenerator.Generate();
+            GameSession.Rooms = _mapGenerator.Generate();
             SetCurrentRoom(Rooms[0]);
 
             EndBattle();
-            _session.IsGameStarted = true;
+            GameSession.IsGameStarted = true;
         }
-        public void EndGame() => _session.IsGameStarted = false;
-        public void StartBattle() => _session.IsInBattle = true;
-        public void EndBattle() => _session.IsInBattle = false;
-        public void AddCoins(int value) => _session.Coins += value;
-        public void AddKeys(int value) => _session.Keys += value;
-        public void AddItemToInventory(Item item) => _session.Inventory.Add(item);
-        public void RemoveItemFromInventory(Item item) => _session.Inventory.Remove(item);
+        public void EndGame() => GameSession.IsGameStarted = false;
+        public void StartBattle() => GameSession.IsInBattle = true;
+        public void EndBattle() => GameSession.IsInBattle = false;
+        public void AddCoins(int value) => GameSession.Coins += value;
+        public void AddKeys(int value) => GameSession.Keys += value;
+        public void AddItemToInventory(Item item) => GameSession.Inventory.Add(item);
+        public void RemoveItemFromInventory(Item item) => GameSession.Inventory.Remove(item);
 
-        public void SetCurrentRoom(Room room) => _session.CurrentRoom = room;
-        public void AddEnemyToCurrentRoom(Enemy enemy) => _session.CurrentRoom!.AddEnemy(enemy);
-        public void RemoveEnemyFromCurrentRoom(Enemy enemy) => _session.CurrentRoom!.RemoveEnemy(enemy);
-        public void AddItemToCurrentRoom(Item item) => _session.CurrentRoom!.AddItem(item);
-        public void RemoveItemFromCurrentRoom(Item item) => _session.CurrentRoom!.RemoveItem(item);
+        public void SetCurrentRoom(Room room) => GameSession.CurrentRoom = room;
+        public void AddEnemyToCurrentRoom(Enemy enemy) => GameSession.CurrentRoom!.AddEnemy(enemy);
+        public void RemoveEnemyFromCurrentRoom(Enemy enemy) => GameSession.CurrentRoom!.RemoveEnemy(enemy);
+        public void AddItemToCurrentRoom(Item item) => GameSession.CurrentRoom!.AddItem(item);
+        public void RemoveItemFromCurrentRoom(Item item) => GameSession.CurrentRoom!.RemoveItem(item);
 
         public List<Item> SearchCurrentRoom() => CurrentRoom!.Search();
     }
