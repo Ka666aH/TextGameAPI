@@ -1,5 +1,4 @@
-﻿using TextGame.Domain.Entities.GameObjects;
-using TextGame.Domain.Entities.GameObjects.Enemies;
+﻿using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.GameExceptions;
 
@@ -7,18 +6,15 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
 {
     public abstract class Room : GameObject
     {
-        public int Number { get; init; }
-        private readonly List<Item> _items = new();
+        private readonly List<Item> _items = [];
         public IReadOnlyList<Item> Items => _items;
-        private readonly List<Enemy> _enemies = new();
+        private readonly List<Enemy> _enemies = [];
         public IReadOnlyList<Enemy> Enemies => _enemies;
         public bool IsDiscovered { get; protected set; } = false;
         public bool IsSearched { get; protected set; } = false;
 
-        public Room(string name, string description, int number) : base(name, description)
-        {
-            Number = number;
-        }
+        public Room(int id, string name, string description) : base(id, name, description) { }
+
         public void AddItem(Item item) => _items.Add(item);
         public void RemoveItem(Item item)
         {

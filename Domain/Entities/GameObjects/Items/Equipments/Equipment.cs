@@ -8,7 +8,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments
         protected readonly bool _fromShop;
 
         public int? Durability { get; protected set; }
-        public Equipment(string name, string description, int? id, int? durability, int roomId, bool fromShop) : base(name, description, id, true)
+        public Equipment(int id, string name, string description, int? durability, int roomId, bool fromShop)
+            : base(id, name, description, true)
         {
             _roomId = roomId;
             _fromShop = fromShop;

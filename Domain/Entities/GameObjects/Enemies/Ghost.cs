@@ -4,11 +4,11 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
 {
     public class Ghost : Enemy
     {
-        public Ghost(int roomId, int enemyId)
-            : base(EnemiesLabeles.GhostName,
+        public Ghost(int id, int roomId)
+            : base(id,
+                  EnemiesLabeles.GhostName,
                   EnemiesLabeles.GhostDescription,
                   roomId,
-                  enemyId,
                   GameBalance.GhostBaseHealth,
                   GameBalance.GlassSwordBaseDamage,
                   GameBalance.GhostBaseDamageBlock)

@@ -5,10 +5,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
     public class MagicWand : Wand
     {
 
-        public MagicWand(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.MagicWandName,
+        public MagicWand(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.MagicWandName,
                   ItemsLabeles.MagicWandDescription,
-                  itemId,
                   roomId,
                   fromShop,
                   GameBalance.MagicWandBaseDamage)

@@ -6,7 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors
     public abstract class Armor : Equipment
     {
         public int DamageBlock { get; protected set; }
-        public Armor(string name, string description, int id, int roomId, bool fromShop, int durability, int damageBlock) : base(name, description, id, durability, roomId, fromShop)
+        public Armor(int id, string name, string description, int roomId, bool fromShop, int durability, int damageBlock) 
+            : base(id, name, description, durability, roomId, fromShop)
         {
             Initialize(durability, damageBlock);
         }

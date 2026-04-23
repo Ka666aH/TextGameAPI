@@ -1,20 +1,16 @@
-﻿using TextGame.Domain.Entities.GameObjects;
-
-namespace TextGame.Domain.Entities.GameObjects.Enemies
+﻿namespace TextGame.Domain.Entities.GameObjects.Enemies
 {
     public abstract class Enemy : GameObject
     {
-        public int Id { get; protected set; }
         public int Health { get; protected set; } = 0;
         public int Damage { get; protected set; } = 0;
         public int DamageBlock { get; protected set; } = 0;
 
         private readonly int _roomId;
 
-        public Enemy(string name, string description, int roomId, int id, int health, int damage, int damageBlock)
-            : base(name, description)
+        public Enemy(int id, string name, string description, int roomId, int health, int damage, int damageBlock)
+            : base(id, name, description)
         {
-            Id = id;
             _roomId = roomId;
             Initialize(health, damage, damageBlock);
         }

@@ -4,10 +4,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
 {
     public class GlassSword : Sword
     {
-        public GlassSword(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.GlassSwordName,
+        public GlassSword(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.GlassSwordName,
                   ItemsLabeles.GlassSwordDescription,
-                  itemId,
                   roomId,
                   fromShop,
                   GameBalance.GlassSwordBaseDurability,

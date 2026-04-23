@@ -4,8 +4,8 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
 {
     public class EmptyRoom : Room
     {
-        public EmptyRoom(int number) 
-            : base(RoomsLabeles.EmptyRoomName, RoomsLabeles.EmptyRoomDescription, number) { }
+        public EmptyRoom(int id) 
+            : base(id, RoomsLabeles.EmptyRoomName, RoomsLabeles.EmptyRoomDescription) { }
         private EmptyRoom() { }
     }
 }

@@ -57,7 +57,7 @@ namespace TextGame.Application.Services
             RequireGameStartedAndNotStartRoom();
 
             if (!_gameSessionService.Inventory.OfType<Map>().Any()) throw new NoMapException();
-            return _gameSessionService.Rooms.Select(r => new MapRoomDTO(r.Number, r.Name ?? GeneralLabeles.GameObjectDefaultName)).ToList();
+            return _gameSessionService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabeles.GameObjectDefaultName)).ToList();
         }
         public void UseInventoryItem(int itemId)
         {

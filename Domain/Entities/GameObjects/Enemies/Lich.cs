@@ -4,11 +4,11 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
 {
     public class Lich : Enemy
     {
-        public Lich(int roomId, int enemyId)
-            : base(EnemiesLabeles.LichName,
+        public Lich(int id,int roomId)
+            : base(id,
+                  EnemiesLabeles.LichName,
                   EnemiesLabeles.LichDescription,
                   roomId,
-                  enemyId,
                   GameBalance.LichBaseHealth,
                   GameBalance.LichBaseDamage,
                   GameBalance.LichBaseDamageBlock)

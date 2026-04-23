@@ -7,8 +7,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons
     {
         public int Damage { get; protected set; }
 
-        public Weapon(string name, string description, int? id, int? durability, int damage, int roomId, bool fromShop)
-            : base(name, description, id, durability, roomId, fromShop)
+        public Weapon(int id, string name, string description, int? durability, int damage, int roomId, bool fromShop)
+            : base(id, name, description, durability, roomId, fromShop)
         {
             Damage = damage;
         }

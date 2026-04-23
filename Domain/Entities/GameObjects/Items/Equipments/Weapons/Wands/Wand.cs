@@ -5,7 +5,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
 {
     public abstract class Wand : Weapon
     {
-        public Wand(string name, string description, int itemId, int roomId, bool fromShop, int damage) : base(name, description, itemId, null, 0, roomId, fromShop)
+        public Wand(int id, string name, string description, int roomId, bool fromShop, int damage) 
+            : base(id, name, description, null, 0, roomId, fromShop)
         {
             Initialize(damage);
         }

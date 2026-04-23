@@ -4,10 +4,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
     public class RegenPotion : Heal
     {
-        public RegenPotion(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.RegenPotionName,
+        public RegenPotion(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.RegenPotionName,
                   ItemsLabeles.RegenPotionDescription,
-                  itemId,
                   roomId,
                   fromShop,
                   GameBalance.RegenPotionBaseMaxHealthBoost,

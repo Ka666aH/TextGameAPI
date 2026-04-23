@@ -8,9 +8,9 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons
         public static readonly Fists DefaultFists = new Fists();
 
         public Fists()
-            : base(ItemsLabeles.FistsName,
+            : base(0,
+                  ItemsLabeles.FistsName,
                   ItemsLabeles.FistsDescription,
-                  null,
                   null,
                   GameBalance.FistsBaseDamage,
                   0,

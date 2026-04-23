@@ -4,10 +4,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
 {
     public class RustSword : Sword
     {
-        public RustSword(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.RustSwordName,
+        public RustSword(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.RustSwordName,
                   ItemsLabeles.RustSwordDescription,
-                  itemId,
                   roomId,
                   fromShop,
                   GameBalance.RustSwordBaseDurability,

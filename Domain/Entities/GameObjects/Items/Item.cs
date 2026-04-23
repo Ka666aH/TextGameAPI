@@ -1,15 +1,11 @@
-﻿using TextGame.Domain.Entities.GameObjects;
-
-namespace TextGame.Domain.Entities.GameObjects.Items
+﻿namespace TextGame.Domain.Entities.GameObjects.Items
 {
     public abstract class Item : GameObject
     {
-        public int? Id { get; init; }
         public int? Cost { get; protected set; }
         public bool IsCarryable { get; init; }
-        public Item(string name, string description, int? id, bool isCarryable = true) : base(name, description)
+        public Item(int id, string name, string description, bool isCarryable = true) : base(id, name, description)
         {
-            Id = id;
             IsCarryable = isCarryable;
         }
         public virtual void AddStoreMargin() => Cost = (int)(Cost! * GameBalance.StoreMargin);

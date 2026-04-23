@@ -21,8 +21,8 @@ namespace TextGame.Presentation.Mappers
                 Room room =>
                 room switch
                 {
-                    StartRoom or EndRoom or Shop => new RoomWithoutEnemiesDTO(room.Number, room.Name!, room.Description!),
-                    _ => new RoomWithEnemiesDTO(room.Number, room.Name!, room.Description!, ToDTO(room.Enemies).Cast<EnemyDTO>()),
+                    StartRoom or EndRoom or Shop => new RoomWithoutEnemiesDTO(room.Id, room.Name!, room.Description!),
+                    _ => new RoomWithEnemiesDTO(room.Id, room.Name!, room.Description!, ToDTO(room.Enemies).Cast<EnemyDTO>()),
                 },
                 Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name!, enemy.Description!, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>

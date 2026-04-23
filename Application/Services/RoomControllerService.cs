@@ -50,7 +50,7 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            _gameSessionService.SetCurrentRoom(_gameSessionService.Rooms[_gameSessionService.CurrentRoom!.Number + 1]);
+            _gameSessionService.SetCurrentRoom(_gameSessionService.Rooms[_gameSessionService.CurrentRoom!.Id + 1]);
             _gameSessionService.CurrentRoom.Discover();
 
             RequireNotEndRoom();
@@ -160,7 +160,7 @@ namespace TextGame.Application.Services
             {
                 int playerHealthBeforeAttack = _gameSessionService.CurrentHealth;
                 //attack
-                var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Number);
+                var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Id);
                 if (attackResult.SelfDamage != 0) _gameSessionService.AddCurrentHealth(-attackResult.SelfDamage);
                 if (attackResult.IsWeaponBrokenDown) _gameSessionService.RemoveWeapon();
 

@@ -1,4 +1,5 @@
-﻿using TextGame.Domain.Entities.GameObjects.Items;
+﻿using System.Xml.Linq;
+using TextGame.Domain.Entities.GameObjects.Items;
 
 namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
@@ -10,7 +11,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
         protected readonly int _roomId;
         protected readonly bool _fromShop;
 
-        public Heal(string name, string description, int id, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost) : base(name, description, id)
+        public Heal(int id, string name, string description, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost)
+            : base(id, name, description)
         {
             _roomId = roomId;
             _fromShop = fromShop;
@@ -38,7 +40,7 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
                 Cost += (int)(CurrentHealthBoost * GameBalance.CurrentHealthCostMultiplier);
             }
         }
-        public virtual (int,int) Use() => ((int)MaxHealthBoost!, (int)CurrentHealthBoost!);
+        public virtual (int, int) Use() => ((int)MaxHealthBoost!, (int)CurrentHealthBoost!);
         protected Heal() { }
     }
 }

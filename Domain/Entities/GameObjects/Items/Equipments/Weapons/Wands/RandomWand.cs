@@ -5,10 +5,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
 {
     public class RandomWand : Wand
     {
-        public RandomWand(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.RandomWandName,
+        public RandomWand(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.RandomWandName,
                   ItemsLabeles.RandomWandDescription, 
-                  itemId, 
                   roomId, 
                   fromShop, 
                   GameBalance.RandomWandBaseDamage) { }

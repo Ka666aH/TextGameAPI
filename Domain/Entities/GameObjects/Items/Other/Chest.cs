@@ -13,8 +13,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
         public readonly List<Item> _items = new();
         public IReadOnlyList<Item> Items => _items.AsReadOnly();
 
-        public Chest(int itemId, List<Item> items, Mimic? mimic = null)
-            : base(ItemsLabeles.ChestName, ItemsLabeles.ChestDescription, itemId, false)
+        public Chest(int id, List<Item> items, Mimic? mimic = null)
+            : base(id, ItemsLabeles.ChestName, ItemsLabeles.ChestDescription, false)
         {
             Cost = null;
             IsLocked = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;

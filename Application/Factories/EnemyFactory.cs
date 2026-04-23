@@ -7,21 +7,19 @@ namespace TextGame.Application.Factories
     public class EnemyFactory : IEnemyFactory
     {
         private readonly IEnemyIdService _enemyIdService;
+        private readonly IRoomIdService _roomIdService;
 
-        private readonly int _roomId;
-
-        public EnemyFactory(IEnemyIdService enemyIdService, IRoomIdService roomIdService)
+        public EnemyFactory(IEnemyIdService enemyIdService, IRoomIdService roomIdService, IRoomIdService rooomIdService)
         {
             _enemyIdService = enemyIdService;
-
-            _roomId = roomIdService.Current();
+            _roomIdService = rooomIdService;
         }
 
-        public Skeletor CreateSkeletor() => new Skeletor(_roomId, _enemyIdService.Next());
-        public SkeletorArcher CreateSkeletorArcher() => new SkeletorArcher(_roomId, _enemyIdService.Next());
-        public Deadman CreateDeadman() => new Deadman(_roomId, _enemyIdService.Next());
-        public Ghost CreateGhost() => new Ghost(_roomId, _enemyIdService.Next());
-        public Lich CreateLich() => new Lich(_roomId, _enemyIdService.Next());
-        public Mimic CreateMimic() => new Mimic(_roomId, _enemyIdService.Next());
+        public Skeletor CreateSkeletor() => new(_enemyIdService.Next(), _roomIdService.Current());
+        public SkeletorArcher CreateSkeletorArcher() => new(_enemyIdService.Next(), _roomIdService.Current());
+        public Deadman CreateDeadman() => new(_enemyIdService.Next(), _roomIdService.Current());
+        public Ghost CreateGhost() => new(_enemyIdService.Next(), _roomIdService.Current());
+        public Lich CreateLich() => new(_enemyIdService.Next(), _roomIdService.Current());
+        public Mimic CreateMimic() => new(_enemyIdService.Next(), _roomIdService.Current());
     }
 }

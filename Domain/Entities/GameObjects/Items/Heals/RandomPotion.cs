@@ -5,10 +5,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
     public class RandomPotion : Heal
     {
-        public RandomPotion(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.RandomPotionName,
+        public RandomPotion(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.RandomPotionName,
                   ItemsLabeles.RandomPotionDescription,
-                  itemId,
                   roomId,
                   fromShop,
                   null,

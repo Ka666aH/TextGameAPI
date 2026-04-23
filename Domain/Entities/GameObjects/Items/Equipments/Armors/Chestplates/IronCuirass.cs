@@ -4,10 +4,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplat
 {
     public class IronCuirass : Chestplate
     {
-        public IronCuirass(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.IronCuirassName,
+        public IronCuirass(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.IronCuirassName,
                   ItemsLabeles.IronCuirassDescription,
-                  itemId,
                   roomId,
                   fromShop,
                   GameBalance.IronCuirassBaseDurability,

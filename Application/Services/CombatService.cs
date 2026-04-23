@@ -26,7 +26,7 @@ namespace TextGame.Application.Services
             int playerHealthBeforeAttack = _gameSessionService.CurrentHealth;
             Enemy enemy = _getEnemyService.GetEnemy();
             //attack
-            var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Number);
+            var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Id);
             if (attackResult.SelfDamage != 0) _gameSessionService.AddCurrentHealth(-attackResult.SelfDamage);
             if (attackResult.IsWeaponBrokenDown) _gameSessionService.RemoveWeapon();
 

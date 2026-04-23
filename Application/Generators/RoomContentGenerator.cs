@@ -58,12 +58,12 @@ namespace TextGame.Application.Generators
             //Формирование списка взвешенного выбора
             var options = new List<(int Weight, Func<Enemy?> Create)>
             {
-                (GameBalance.CalculateNoneWeight(room.Number),            () => null),
-                (GameBalance.CalculateSkeletorWeight(room.Number),        _enemyFactory.CreateSkeletor),
-                (GameBalance.CalculateSkeletorArcherWeight(room.Number),  _enemyFactory.CreateSkeletorArcher),
-                (GameBalance.CalculateDeadmanWeight(room.Number),         _enemyFactory.CreateDeadman),
-                (GameBalance.CalculateGhostWeight(room.Number),           _enemyFactory.CreateGhost),
-                (GameBalance.CalculateLichWeight(room.Number),            _enemyFactory.CreateLich),
+                (GameBalance.CalculateNoneWeight(room.Id),            () => null),
+                (GameBalance.CalculateSkeletorWeight(room.Id),        _enemyFactory.CreateSkeletor),
+                (GameBalance.CalculateSkeletorArcherWeight(room.Id),  _enemyFactory.CreateSkeletorArcher),
+                (GameBalance.CalculateDeadmanWeight(room.Id),         _enemyFactory.CreateDeadman),
+                (GameBalance.CalculateGhostWeight(room.Id),           _enemyFactory.CreateGhost),
+                (GameBalance.CalculateLichWeight(room.Id),            _enemyFactory.CreateLich),
             };
             //Выбор
             int weightsSum = options.Sum(x => x.Weight);

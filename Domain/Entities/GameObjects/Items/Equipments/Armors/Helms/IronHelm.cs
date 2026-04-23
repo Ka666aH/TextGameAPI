@@ -4,10 +4,10 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms
 {
     public class IronHelm : Helm
     {
-        public IronHelm(int itemId, int roomId, bool fromShop)
-            : base(ItemsLabeles.IronHelmName,
+        public IronHelm(int id, int roomId, bool fromShop)
+            : base(id,
+                  ItemsLabeles.IronHelmName,
                   ItemsLabeles.IronHelmDescription,
-                  itemId,
                   roomId,
                   fromShop,
                   GameBalance.IronHelmBaseDurability,

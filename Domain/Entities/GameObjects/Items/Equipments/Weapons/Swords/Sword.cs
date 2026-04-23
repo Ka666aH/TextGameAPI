@@ -5,7 +5,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
 {
     public abstract class Sword : Weapon
     {
-        public Sword(string name, string description, int itemId, int roomId, bool fromShop, int durability, int damage) : base(name, description, itemId, null, 0, roomId, fromShop)
+        public Sword(int id, string name, string description, int roomId, bool fromShop, int durability, int damage) 
+            : base(id, name, description, null, 0, roomId, fromShop)
         {
             Initialize(durability, damage);
         }
