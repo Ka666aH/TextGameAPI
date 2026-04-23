@@ -10,6 +10,7 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
         public IReadOnlyList<Item> Items => _items;
         private readonly List<Enemy> _enemies = [];
         public IReadOnlyList<Enemy> Enemies => _enemies;
+        public Enemy? Enemy => _enemies.FirstOrDefault();
         public bool IsDiscovered { get; protected set; } = false;
         public bool IsSearched { get; protected set; } = false;
 
@@ -24,9 +25,7 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
         public void AddEnemy(Enemy enemy) => _enemies.Add(enemy);
         public void RemoveEnemy(Enemy enemy)
         {
-
-            if (_enemies.Contains(enemy)) _enemies.Remove(enemy);
-            else throw new NullEnemyIdException();
+            if (!_enemies.Remove(enemy)) throw new NullEnemyIdException();
         }
         public List<Item> Search()
         {

@@ -54,7 +54,7 @@ namespace TextGame.Application.Services
             _gameSessionService.CurrentRoom.Discover();
 
             RequireNotEndRoom();
-            if (_gameSessionService.CurrentRoom.Enemies.Any()) _gameSessionService.StartBattle();
+            if (_gameSessionService.CurrentRoom.Enemy != null) _gameSessionService.StartBattle();
             return _gameSessionService.CurrentRoom;
         }
         public List<Item> Search()

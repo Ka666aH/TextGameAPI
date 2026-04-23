@@ -3,6 +3,7 @@ using TextGame.Application.Interfaces.Generators;
 using TextGame.Domain;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Application.Generators
@@ -32,6 +33,7 @@ namespace TextGame.Application.Generators
             {
                 Item? item = _itemFactory.CreateRoomItem();
                 if (item != null) room.AddItem(item);
+                //if (item is Chest chest && chest.Mimic != null) room.AddEnemy(chest.Mimic);
             }
         }
         private void GenerateBigRoomContent(BigRoom room)
@@ -40,6 +42,7 @@ namespace TextGame.Application.Generators
             {
                 Item? item = _itemFactory.CreateRoomItem();
                 if (item != null) room.AddItem(item);
+                //if (item is Chest chest && chest.Mimic != null) room.AddEnemy(chest.Mimic);
             }
         }
         private void GenerateShopContent(Shop room)

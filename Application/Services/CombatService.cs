@@ -45,7 +45,7 @@ namespace TextGame.Application.Services
                     _gameSessionService.RemoveCurrentMimicChest();
                 }
                 CheckPlayerHealthAfterAttack();
-                if (!_gameSessionService.CurrentRoom.Enemies.Any()) _gameSessionService.EndBattle();
+                if (_gameSessionService.CurrentRoom.Enemy == null) _gameSessionService.EndBattle();
                 throw new BattleWinException(string.Format(ExceptionLabels.EnemyDefeated, enemy.Name), battleLog);
             }
             CheckPlayerHealthAfterAttack();

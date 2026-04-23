@@ -15,7 +15,7 @@ namespace TextGame.Application.Services
         public Enemy GetEnemy()
         {
             Room room = _gameSessionService.CurrentRoom!;
-            Enemy? enemy = room.Enemies.FirstOrDefault();
+            Enemy? enemy = room.Enemy;
             return enemy ?? throw new NullEnemyIdException();
         }
     }

@@ -22,7 +22,7 @@ namespace TextGame.Presentation.Mappers
                 room switch
                 {
                     StartRoom or EndRoom or Shop => new RoomWithoutEnemiesDTO(room.Id, room.Name!, room.Description!),
-                    _ => new RoomWithEnemiesDTO(room.Id, room.Name!, room.Description!, ToDTO(room.Enemies).Cast<EnemyDTO>()),
+                    _ => new RoomWithEnemyDTO(room.Id, room.Name!, room.Description!, (EnemyDTO)ToDTO(room.Enemy!)),
                 },
                 Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name!, enemy.Description!, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>
@@ -44,7 +44,7 @@ namespace TextGame.Presentation.Mappers
                 _ => new GameObjectDTO(gameObject.Name ?? GeneralLabeles.GameObjectDefaultName, gameObject.Description ?? GeneralLabeles.GameObjectDefaultDescription)
             };
         }
-        public static List<GameObjectDTO> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject 
+        public static List<GameObjectDTO> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject
             => [.. gameObjects.Select(ToDTO)];
         //{
         //    //List<GameObjectDTO> gameObjectsDTO = [];
