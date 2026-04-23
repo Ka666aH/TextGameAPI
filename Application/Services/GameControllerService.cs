@@ -107,7 +107,11 @@ namespace TextGame.Application.Services
             Item item = GetInventoryItem(itemId);
             _inventoryRepository.SellInventoryItem(item);
         }
-        public GameInfoDTO GetGameInfo() => _gameInfoService.GetGameInfo();
+        public GameInfoDTO GetGameInfo()
+        {
+            RequireGameStartedAndNotStartRoom();
+            return _gameInfoService.GetGameInfo();
+        }
         private void RequireGameStarted()
         {
             if (!_gameSessionService.IsGameStarted) throw new UnstartedGameException();
