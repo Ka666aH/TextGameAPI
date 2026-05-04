@@ -25,6 +25,8 @@ namespace TextGame.Infrastructure.Database.Configurations
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(x => x.Login).IsUnique();
         }
     }
 }
