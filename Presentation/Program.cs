@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using TextGame.Application.Factories;
 using TextGame.Application.Generators;
@@ -8,6 +9,9 @@ using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Services;
 using TextGame.Infrastructure.Database;
 using TextGame.Infrastructure.Database.Repositories;
+using TextGame.Infrastructure.Token;
+using TextGame.Infrastructure.Token.JWT;
+using TextGame.Presentation.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,21 +53,30 @@ builder.Services.AddSingleton<IChestService, ChestService>();
 //База данных
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+
 //Репозитории
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-
-// Add services to the container.
+builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Исключения
 builder.Services.AddProblemDetails();
+
+//Аутентификация и авторизация
+var jwtSecret = builder.Configuration["JwtSettings:Secret"]
+    ?? throw new InvalidOperationException("JWT secret is not configured.");
+JwtKeyProvider.Initialize(jwtSecret);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(JWTOptions.Configure);
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.RequireGameSession, policy => policy.RequireClaim(AccessClaims.GameSessionId));
 
 var app = builder.Build();
 
@@ -76,10 +89,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
-
 app.UseExceptionHandler("/exception");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

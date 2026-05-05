@@ -2,9 +2,13 @@
 	- REST API
 2. БД (пользователи, сейвы, токены)
 3. JWT (Access(user и game), Refresh)
+	- AuthService
+	- Middleware для обновления токенов
 4. Redis (текущая игровая сессия)
 5. Тестирование
 6. Docker
+	- ConnectionStrings__DefaultConnection
+	- JwtSettings__Secret
 
 (Возможно) 
 Воспроизводимость Random через seed.

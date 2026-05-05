@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TextGame.Application.Interfaces.Repositories;
-using TextGame.Domain;
 using TextGame.Domain.Entities;
+using TextGame.Infrastructure.Token;
 
 namespace TextGame.Infrastructure.Database.Repositories
 {
@@ -13,7 +13,7 @@ namespace TextGame.Infrastructure.Database.Repositories
             await _db.RefreshTokens.AddAsync(refreshToken, ct);
         public async Task<int> DeleteExpiredAsync(CancellationToken ct = default) =>
             await _db.RefreshTokens
-            .Where(x => x.ExpiresUTC < TokenPolicy.GetExpiredThreshold())
+            .Where(x => x.ExpiresUTC < Parameters.GetExpiredThreshold())
             .ExecuteDeleteAsync(ct);
 
         public async Task<RefreshToken?> GetAsync(string token, CancellationToken ct = default) =>
