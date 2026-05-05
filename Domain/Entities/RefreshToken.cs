@@ -17,5 +17,6 @@
             ExpiresUTC = expiresUTC;
             DeviceName = deviceName;
         }
+        public void Revoke() => IsRevoked = true;
     }
 }

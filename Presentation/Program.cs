@@ -3,9 +3,11 @@ using TextGame.Application.Factories;
 using TextGame.Application.Generators;
 using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Generators;
+using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Services;
 using TextGame.Infrastructure.Database;
+using TextGame.Infrastructure.Database.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,9 +46,15 @@ builder.Services.AddScoped<IRoomContentGenerator, RoomContentGenerator>();
 builder.Services.AddSingleton<IGetItemService, GetItemService>();
 builder.Services.AddSingleton<IChestService, ChestService>();
 
-//DB
+//База данных
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+//Репозитории
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
 
 // Add services to the container.
 
