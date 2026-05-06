@@ -9,6 +9,7 @@ using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Services;
 using TextGame.Infrastructure.Database;
 using TextGame.Infrastructure.Database.Repositories;
+using TextGame.Infrastructure.PasswordHasher;
 using TextGame.Infrastructure.Token;
 using TextGame.Infrastructure.Token.JWT;
 using TextGame.Presentation.Options;
@@ -61,6 +62,8 @@ builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
+
+builder.Services.AddSingleton<IPasswordHasher, BCryptRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
