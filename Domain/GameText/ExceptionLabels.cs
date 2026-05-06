@@ -72,6 +72,9 @@
         public const string PlayerPoisoned = "{healName} приводит Вас к гибели!";
         public const string PlayerEaten = "НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!";
 
+        public const string ValidationErrorCode = "VALIDATION_ERROR";
+        public const string ValidationErrorMessage = "Одна или несколько ошибок валидации.";
+
         public const string InternalServerErrorCode = "INTERNAL_SERVER_ERROR";
         public const string InternalServerErrorMessage = "Непредвиденная ошибка сервера.";
     }

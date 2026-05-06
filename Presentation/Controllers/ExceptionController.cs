@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
@@ -20,6 +21,27 @@ namespace TextGame.Presentation.Controllers
         private IActionResult MapException(Exception? exception)
         {
             var originalPath = HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Path ?? HttpContext.Request.Path;
+
+            if (exception is ValidationException validationEx)
+            {
+                var errors = validationEx.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                var problem = new ValidationProblemDetails(errors)
+                {
+                    Title = "Validation Error",
+                    Detail = "One or more validation errors occurred.",
+                    Status = StatusCodes.Status400BadRequest,
+                    Instance = originalPath
+                };
+
+                return new ObjectResult(problem) { StatusCode = problem.Status };
+            }
+
             if (exception is not GameException gameEx)
                 return InternalServerError(originalPath, exception?.Message);
 

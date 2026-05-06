@@ -1,5 +1,7 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using TextGame.Application.DTO;
 using TextGame.Application.Factories;
 using TextGame.Application.Generators;
 using TextGame.Application.Interfaces.Factories;
@@ -7,6 +9,7 @@ using TextGame.Application.Interfaces.Generators;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Services;
+using TextGame.Application.Validators;
 using TextGame.Infrastructure.Database;
 using TextGame.Infrastructure.Database.Repositories;
 using TextGame.Infrastructure.PasswordHasher;
@@ -64,6 +67,8 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
 
 builder.Services.AddSingleton<IPasswordHasher, BCryptRepository>();
+
+builder.Services.AddSingleton<IValidator<RegisterCommand>, RegisterCommandValidator>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
