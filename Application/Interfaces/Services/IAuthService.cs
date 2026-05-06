@@ -6,7 +6,7 @@ namespace TextGame.Application.Interfaces.Services
     {
         Task<AuthResult> RegisterAsync(string login, string password, string deviceName, CancellationToken ct = default);
         Task<AuthResult> LogInAsync(string login, string password, string deviceName, CancellationToken ct = default);
-        Task<AuthResult> RefreshAsync(CancellationToken ct = default);
-        Task LogOutAsync(CancellationToken ct = default);
+        Task<AuthResult> RefreshAsync(string refreshToken, string deviceName, Guid? gameSessionId, CancellationToken ct = default);
+        Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
     }
 }

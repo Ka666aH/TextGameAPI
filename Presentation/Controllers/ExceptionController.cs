@@ -47,20 +47,40 @@ namespace TextGame.Presentation.Controllers
 
             return gameEx switch
             {
+                IncorrectPasswordException or
+                RefreshTokenNotFoundException or 
+                RefreshTokenExpiredException or 
+                RefreshTokenCompromisedException => 
+                    Problem(401, originalPath, gameEx),
+
                 DefeatException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
                 WinException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
 
                 BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog)),
 
-                NullRoomIdException or NullItemIdException or EmptyException or NullEnemyIdException =>
+                NullRoomIdException or
+                NullItemIdException or
+                EmptyException or
+                NullEnemyIdException or
+                UserNotFoundException =>
                     Problem(404, originalPath, gameEx),
 
-                InvalidIdException or UncarryableException or ImpossibleStealException or UnsellableItemException =>
+                InvalidIdException or
+                UncarryableException or
+                ImpossibleStealException or
+                UnsellableItemException =>
                     Problem(422, originalPath, gameEx),
 
-                UnstartedGameException or LockedException or NoKeyException or NoMapException or
-                ClosedException or UndiscoveredRoomException or InBattleException or UnsearchedRoomException or
-                NotShopException or NoMoneyException =>
+                UnstartedGameException or
+                LockedException or
+                NoKeyException or
+                NoMapException or
+                ClosedException or
+                UndiscoveredRoomException or
+                InBattleException or
+                UnsearchedRoomException or
+                NotShopException or
+                NoMoneyException =>
                     Problem(403, originalPath, gameEx),
 
                 _ => InternalServerError(originalPath, gameEx?.Message)

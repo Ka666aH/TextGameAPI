@@ -12,9 +12,9 @@ namespace TextGame.Presentation.Options
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = Parameters.Issuer,
+                ValidIssuer = TokenParameters.Issuer,
                 ValidateAudience = true,
-                ValidAudience = Parameters.Audience,
+                ValidAudience = TokenParameters.Audience,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = JwtKeyProvider.Instance
@@ -23,7 +23,7 @@ namespace TextGame.Presentation.Options
             {
                 OnMessageReceived = context =>
                 {
-                    if (context.Request.Cookies.TryGetValue(Parameters.AccessToken, out var accessToken)) 
+                    if (context.Request.Cookies.TryGetValue(TokenParameters.AccessToken, out var accessToken)) 
                         context.Token = accessToken;
                     return Task.CompletedTask;
                 }

@@ -2,6 +2,21 @@
 {
     public static class ExceptionsLabels
     {
+        public const string UserNotFoundCode = "USER_NOT_FOUND";
+        public const string UserNotFoundMessage = "Пользователь не найден.";
+
+        public const string IncorrectPasswordCode = "INCORRECT_PASSWORD";
+        public const string IncorrectPasswordMessage = "Неверный пароль.";
+
+        public const string RefreshTokenNotFoundCode = "REFRESH_TOKEN_NOT_FOUND";
+        public const string RefreshTokenNotFoundMessage = "Токен обновления не найден.";
+
+        public const string RefreshTokenExpiredCode = "REFRESH_TOKEN_EXPIRED";
+        public const string RefreshTokenExpiredMessage = "Токен обновления просрочен.";
+
+        public const string RefreshTokenCompromisedCode = "REFRESH_TOKEN_COMPROMISED";
+        public const string RefreshTokenCompromisedMessage = "Токен обновления скомпроментирован.";
+
         public const string BattleWinCode = "YOU_WIN_IN_BATTLE";
         public const string DefeatCode = "DEFEAT";
 

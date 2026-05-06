@@ -1,4 +1,5 @@
-﻿using TextGame.Domain.Entities;
+﻿using System.Security.Claims;
+using TextGame.Domain.Entities;
 
 namespace TextGame.Application.Interfaces.Repositories
 {
@@ -6,5 +7,6 @@ namespace TextGame.Application.Interfaces.Repositories
     {
         string GenerateAccessToken(Guid userId, Guid? gameSessionId = null);
         RefreshToken GenerateRefreshToken(Guid userId, string deviceName);
+        ClaimsPrincipal ReadTokenWithoutLifetime(string token);
     }
 }
