@@ -3,6 +3,7 @@
     public static class Parameters
     {
         public const string AccessToken = "AccessToken";
+        public const string RefreshToken = "RefreshToken";
 
         public const string Issuer = "TextGameAPI";
         public const string Audience = "TextGameClient";
