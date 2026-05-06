@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class UncarryableException : GameException
     {
-        public UncarryableException() : base(ExceptionLabels.UncarryableCode, ExceptionLabels.UncarryableText) { }
+        public UncarryableException() : base(ExceptionsLabels.UncarryableCode, ExceptionsLabels.UncarryableText) { }
     }
 }

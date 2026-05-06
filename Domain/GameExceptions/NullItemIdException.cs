@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class NullItemIdException : GameException
     {
-        public NullItemIdException() : base(ExceptionLabels.NullItemIdCode, ExceptionLabels.NullItemIdText) { }
+        public NullItemIdException() : base(ExceptionsLabels.NullItemIdCode, ExceptionsLabels.NullItemIdText) { }
     }
 }

@@ -65,13 +65,13 @@ namespace TextGame.Application.Services
 
             Item item = GetInventoryItem(itemId);
 
-            if (item is not Heal heal) throw new InvalidIdException(ExceptionLabels.NotHealCode, ExceptionLabels.NotHealText);
+            if (item is not Heal heal) throw new InvalidIdException(ExceptionsLabels.NotHealCode, ExceptionsLabels.NotHealText);
 
             _gameSessionService.RemoveItemFromInventory(heal);
             var (maxHealthBoost, currentHealthBoost) = heal.Use();
             _gameSessionService.AddMaxHealth(maxHealthBoost);
             _gameSessionService.AddCurrentHealth(currentHealthBoost);
-            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerPoisoned, heal.Name), GetGameInfo());
+            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionsLabels.PlayerPoisoned, heal.Name), GetGameInfo());
         }
 
         public Item GetInventoryItem(int itemId) => _getItemService.GetItem(itemId, _gameSessionService.Inventory);
@@ -80,7 +80,7 @@ namespace TextGame.Application.Services
         {
             RequireGameStarted();
             Item item = GetInventoryItem(itemId);
-            if (item is not Equipment equip) throw new InvalidIdException(ExceptionLabels.NotEqiipmentCode, ExceptionLabels.NotEqiipmentText);
+            if (item is not Equipment equip) throw new InvalidIdException(ExceptionsLabels.NotEqiipmentCode, ExceptionsLabels.NotEqiipmentText);
             _inventoryRepository.EquipInventoryItem(equip);
         }
         public void UnequipWeapon()

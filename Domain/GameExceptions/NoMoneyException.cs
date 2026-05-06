@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class NoMoneyException : GameException
     {
-        public NoMoneyException() : base(ExceptionLabels.NoMoneyCode, ExceptionLabels.NoMoneyText) { }
+        public NoMoneyException() : base(ExceptionsLabels.NoMoneyCode, ExceptionsLabels.NoMoneyText) { }
     }
 }

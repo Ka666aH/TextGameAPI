@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class UnstartedGameException : GameException
     {
-        public UnstartedGameException() : base(ExceptionLabels.UnstartedGameCode, ExceptionLabels.UnstartedGameText) { }
+        public UnstartedGameException() : base(ExceptionsLabels.UnstartedGameCode, ExceptionsLabels.UnstartedGameText) { }
     }
 }

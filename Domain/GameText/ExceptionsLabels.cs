@@ -1,6 +1,6 @@
 ﻿namespace TextGame.Domain.GameText
 {
-    public static class ExceptionLabels
+    public static class ExceptionsLabels
     {
         public const string BattleWinCode = "YOU_WIN_IN_BATTLE";
         public const string DefeatCode = "DEFEAT";

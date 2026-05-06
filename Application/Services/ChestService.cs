@@ -16,7 +16,7 @@ namespace TextGame.Application.Services
         public Chest GetChest(int chestId, IEnumerable<Item> items)
         {
             Item item = _getItemService.GetItem(chestId, items);
-            if (item is not Chest) throw new InvalidIdException(ExceptionLabels.NotChestCode, ExceptionLabels.NotChestText);
+            if (item is not Chest) throw new InvalidIdException(ExceptionsLabels.NotChestCode, ExceptionsLabels.NotChestText);
             return (Chest)item;
         }
         public bool OpenChest(Chest chest)

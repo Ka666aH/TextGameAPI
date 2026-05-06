@@ -5,6 +5,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class WinException : EndExeption
     {
-        public WinException(GameInfoDTO gameInfo) : base(ExceptionLabels.WinCode, ExceptionLabels.WinText, gameInfo) { }
+        public WinException(GameInfoDTO gameInfo) : base(ExceptionsLabels.WinCode, ExceptionsLabels.WinText, gameInfo) { }
     }
 }

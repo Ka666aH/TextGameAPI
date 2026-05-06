@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class UnsearchedRoomException : GameException
     {
-        public UnsearchedRoomException() : base(ExceptionLabels.UnsearchedRoomCode, ExceptionLabels.UnsearchedRoomText) { }
+        public UnsearchedRoomException() : base(ExceptionsLabels.UnsearchedRoomCode, ExceptionsLabels.UnsearchedRoomText) { }
     }
 }

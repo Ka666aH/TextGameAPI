@@ -190,7 +190,7 @@ namespace TextGame.Application.Services
             if (_chestService.OpenChest(chest))
             {
                 _gameSessionService.EndGame();
-                throw new DefeatException(ExceptionLabels.PlayerEaten, _gameInfoService.GetGameInfo());
+                throw new DefeatException(ExceptionsLabels.PlayerEaten, _gameInfoService.GetGameInfo());
             }
         }
         public List<Item> SearchChest(int chestId)

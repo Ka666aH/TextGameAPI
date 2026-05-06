@@ -33,8 +33,8 @@ namespace TextGame.Presentation.Controllers
 
                 var problem = new ValidationProblemDetails(errors)
                 {
-                    Title = "Validation Error",
-                    Detail = "One or more validation errors occurred.",
+                    Title = ExceptionsLabels.ValidationErrorCode,
+                    Detail = ExceptionsLabels.ValidationErrorMessage,
                     Status = StatusCodes.Status400BadRequest,
                     Instance = originalPath
                 };
@@ -73,8 +73,8 @@ namespace TextGame.Presentation.Controllers
         private IActionResult InternalServerError(string instance, string? detail = null) =>
             Problem(
                 statusCode: StatusCodes.Status500InternalServerError,
-                title: ExceptionLabels.InternalServerErrorCode,
-                detail: detail ?? ExceptionLabels.InternalServerErrorMessage,
+                title: ExceptionsLabels.InternalServerErrorCode,
+                detail: detail ?? ExceptionsLabels.InternalServerErrorMessage,
                 instance: HttpContext.Request.Path
             );
     }

@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class NotShopException : GameException
     {
-        public NotShopException() : base(ExceptionLabels.NotShopCode, ExceptionLabels.NotShopText) { }
+        public NotShopException() : base(ExceptionsLabels.NotShopCode, ExceptionsLabels.NotShopText) { }
     }
 }

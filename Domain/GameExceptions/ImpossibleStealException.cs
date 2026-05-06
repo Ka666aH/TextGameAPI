@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class ImpossibleStealException : GameException
     {
-        public ImpossibleStealException() : base(ExceptionLabels.ImpossibleStealCode, ExceptionLabels.ImpossibleStealText) { }
+        public ImpossibleStealException() : base(ExceptionsLabels.ImpossibleStealCode, ExceptionsLabels.ImpossibleStealText) { }
     }
 }

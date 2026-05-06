@@ -3,6 +3,8 @@ using System.Diagnostics;
 using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
+using TextGame.Domain.Entities;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Services
 {
@@ -27,11 +29,18 @@ namespace TextGame.Application.Services
 
         public async Task<AuthResult> RegisterAsync(string login, string password, string deviceName, CancellationToken ct = default)
         {
-            var validationResult = await _registerValidator.ValidateAsync(new RegisterCommand(login, password, deviceName), ct);
+            var validationResult = _registerValidator.Validate(new RegisterCommand(login, password, deviceName));
             if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
 
+            string hashedPassword = _passwordHasher.Hash(password);
+            User user = new(login, hashedPassword);
 
-            throw new NotImplementedException();
+            bool userExist = await _userRepository.GetAsync(login, ct) != null;
+            if (userExist) throw new ValidationException([new("Login", ValidatorsText.LoginAlreadyExist)]);
+
+            await _userRepository.CreateAsync(user, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+            return await LogInAsync(login, password, deviceName, ct);
         }
         public async Task<AuthResult> LogInAsync(string login, string password, string deviceName, CancellationToken ct = default)
         {

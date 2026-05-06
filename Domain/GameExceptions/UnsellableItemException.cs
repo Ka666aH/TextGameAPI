@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class UnsellableItemException : GameException
     {
-        public UnsellableItemException() : base(ExceptionLabels.UnsellableItemCode, ExceptionLabels.UnsellableItemText) { }
+        public UnsellableItemException() : base(ExceptionsLabels.UnsellableItemCode, ExceptionsLabels.UnsellableItemText) { }
     }
 }

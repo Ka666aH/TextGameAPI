@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class ClosedException : GameException
     {
-        public ClosedException() : base(ExceptionLabels.ClosedCode, ExceptionLabels.ClosedText) { }
+        public ClosedException() : base(ExceptionsLabels.ClosedCode, ExceptionsLabels.ClosedText) { }
     }
 }

@@ -46,14 +46,14 @@ namespace TextGame.Application.Services
                 }
                 CheckPlayerHealthAfterAttack();
                 if (_gameSessionService.CurrentRoom.Enemy == null) _gameSessionService.EndBattle();
-                throw new BattleWinException(string.Format(ExceptionLabels.EnemyDefeated, enemy.Name), battleLog);
+                throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, enemy.Name), battleLog);
             }
             CheckPlayerHealthAfterAttack();
             return battleLog;
         }
         private void CheckPlayerHealthAfterAttack()
         {
-            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(ExceptionLabels.SuicideText, _gameInfoService.GetGameInfo());
+            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(ExceptionsLabels.SuicideText, _gameInfoService.GetGameInfo());
         }
         public BattleLog GetDamage()
         {
@@ -81,7 +81,7 @@ namespace TextGame.Application.Services
             int damageAfterBlock = damage - helmBlock - chestplateBlock;
             int playerHealthBeforeAttack = _gameSessionService.CurrentHealth;
             if (damageAfterBlock > 0) _gameSessionService.AddCurrentHealth(-damageAfterBlock);
-            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionLabels.PlayerDefeated, enemy.Name), _gameInfoService.GetGameInfo());
+            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(string.Format(ExceptionsLabels.PlayerDefeated, enemy.Name), _gameInfoService.GetGameInfo());
             int enemyHealthAfterAttack = enemyHealthBeforeAttack - enemy.Health;
             return new BattleLog(GeneralLabeles.PlayerName, damage, playerHealthBeforeAttack, _gameSessionService.CurrentHealth, enemy.Name!, enemyHealthAfterAttack, enemyHealthBeforeAttack, enemy.Health);
         }

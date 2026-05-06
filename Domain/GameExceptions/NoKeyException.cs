@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class NoKeyException : GameException
     {
-        public NoKeyException() : base(ExceptionLabels.NoKeyCode, ExceptionLabels.NoKeyText) { }
+        public NoKeyException() : base(ExceptionsLabels.NoKeyCode, ExceptionsLabels.NoKeyText) { }
     }
 }
