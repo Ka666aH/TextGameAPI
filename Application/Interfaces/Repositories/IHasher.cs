@@ -1,6 +1,6 @@
 ﻿namespace TextGame.Application.Interfaces.Repositories
 {
-    public interface IPasswordHasher
+    public interface IHasher
     {
         string Hash(string password);
         bool Verify(string password, string hashedPassword);

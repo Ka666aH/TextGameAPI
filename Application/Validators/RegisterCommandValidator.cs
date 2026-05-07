@@ -21,10 +21,6 @@ namespace TextGame.Application.Validators
                 //.MinimumLength(6).WithMessage("Пароль должен быть не менее 6 символов")
                 .Matches(@"[A-Z]").WithMessage("Пароль должен содержать хотя бы одну заглавную букву.")
                 .Matches(@"[0-9]").WithMessage("Пароль должен содержать хотя бы одну цифру.");
-
-            RuleFor(x => x.DeviceName)
-                .NotEmpty()
-                .MaximumLength(64);
         }
     }
 }

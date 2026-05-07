@@ -10,7 +10,7 @@ namespace TextGame.Infrastructure.Token.JWT
 {
     public class JWTRepository : ITokenRepository
     {
-        public RefreshToken GenerateRefreshToken(Guid userId, string deviceName)
+        public RefreshToken GenerateRefreshToken(Guid userId, string hashedFingerprint)
         {
             var randomBytes = new byte[64];
             using var rng = RandomNumberGenerator.Create();
@@ -21,7 +21,7 @@ namespace TextGame.Infrastructure.Token.JWT
                 userId,
                 token,
                 DateTime.UtcNow.Add(TokenParameters.RefreshTokenLifetime),
-                deviceName);
+                hashedFingerprint);
         }
 
         public string GenerateAccessToken(Guid userId, Guid? gameSessionId = null)

@@ -8,6 +8,9 @@ namespace TextGame.Infrastructure.Database.Configurations
     {
         public void Configure(EntityTypeBuilder<RefreshToken> builder)
         {
+            builder.Property(x => x.Token).HasMaxLength(512);
+            builder.Property(x => x.HashedFingerprint).HasMaxLength(64);
+
             builder.HasIndex(x => x.Token).IsUnique();
         }
     }

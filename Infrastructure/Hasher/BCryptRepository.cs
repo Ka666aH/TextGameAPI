@@ -2,7 +2,7 @@
 
 namespace TextGame.Infrastructure.PasswordHasher
 {
-    public class BCryptRepository : IPasswordHasher
+    public class BCryptRepository : IHasher
     {
         public string Hash(string password) =>
             BCrypt.Net.BCrypt.EnhancedHashPassword(password);

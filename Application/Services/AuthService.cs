@@ -14,14 +14,14 @@ namespace TextGame.Application.Services
     {
         private readonly IValidator<RegisterCommand> _registerValidator;
 
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IHasher _passwordHasher;
 
         private readonly IUserRepository _userRepository;
         private readonly ITokenRepository _tokenRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AuthService(IValidator<RegisterCommand> registerValidator, IPasswordHasher passwordHasher, IUserRepository userRepository, ITokenRepository tokenRepository, IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork)
+        public AuthService(IValidator<RegisterCommand> registerValidator, IHasher passwordHasher, IUserRepository userRepository, ITokenRepository tokenRepository, IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork)
         {
             _registerValidator = registerValidator;
             _passwordHasher = passwordHasher;
@@ -31,9 +31,9 @@ namespace TextGame.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task RegisterAsync(string login, string password, string deviceName, CancellationToken ct = default)
+        public async Task RegisterAsync(string login, string password, CancellationToken ct = default)
         {
-            var validationResult = await _registerValidator.ValidateAsync(new RegisterCommand(login, password, deviceName), ct);
+            var validationResult = await _registerValidator.ValidateAsync(new RegisterCommand(login, password), ct);
             if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
 
             string hashedPassword = _passwordHasher.Hash(password);
@@ -43,34 +43,34 @@ namespace TextGame.Application.Services
             if (userExist) throw new ValidationException([new("Login", ValidatorsText.LoginAlreadyExist)]);
             await _userRepository.CreateAsync(user, ct);
             await _unitOfWork.SaveChangesAsync(ct);
-
-            //return await GenerateTokens(user.Id, deviceName, null, ct);
         }
-        public async Task<AuthResult> LogInAsync(string login, string password, string deviceName, CancellationToken ct = default)
+        public async Task<AuthResult> LogInAsync(string login, string password, string fingerprint, CancellationToken ct = default)
         {
-            User user = await _userRepository.GetAsync(login, ct) 
+            User user = await _userRepository.GetAsync(login, ct)
                 ?? throw new UserNotFoundException();
-            bool passwordCorrect = _passwordHasher.Verify(password, user.HashedPass);
-            if (!passwordCorrect) throw new IncorrectPasswordException();
-            return await GenerateTokens(user.Id, deviceName, null, ct);
+            bool passwordIsCorrect = _passwordHasher.Verify(password, user.HashedPass);
+            if (!passwordIsCorrect) throw new IncorrectPasswordException();
+            string hashedFingerprint = _passwordHasher.Hash(fingerprint);
+            return await GenerateTokens(user.Id, hashedFingerprint, null, ct);
         }
-        public async Task<AuthResult> RefreshAsync(string refreshToken, string deviceName, Guid? gameSessionId, CancellationToken ct = default)
+        public async Task<AuthResult> RefreshAsync(string refreshToken, string fingerprint, Guid? gameSessionId, CancellationToken ct = default)
         {
-            RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct) 
+            RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct)
                 ?? throw new RefreshTokenNotFoundException();
 
-            if (token.IsRevoked || token.DeviceName != deviceName)
+            bool fingerprintIsCorrect = _passwordHasher.Verify(fingerprint, token.HashedFingerprint);
+            if (token.IsRevoked || !fingerprintIsCorrect)
             {
                 await _refreshTokenRepository.RevokeAllAsync(token.UserId, ct);
                 await _unitOfWork.SaveChangesAsync(ct);
                 throw new RefreshTokenCompromisedException();
             }
-            if (token.ExpiresUTC < TokenParameters.GetExpiredThreshold()) 
+            if (token.ExpiresUTC < TokenParameters.GetExpiredThreshold())
                 throw new RefreshTokenExpiredException();
 
             await _refreshTokenRepository.RevokeAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
-            return await GenerateTokens(token.UserId, token.DeviceName, gameSessionId, ct);
+            return await GenerateTokens(token.UserId, token.HashedFingerprint, gameSessionId, ct);
         }
         public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
         {
@@ -79,9 +79,9 @@ namespace TextGame.Application.Services
             await _refreshTokenRepository.RevokeAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
-        private async Task<AuthResult> GenerateTokens(Guid userId, string deviceName, Guid? gameSessionId, CancellationToken ct = default)
+        private async Task<AuthResult> GenerateTokens(Guid userId, string hashedFingerprint, Guid? gameSessionId, CancellationToken ct = default)
         {
-            RefreshToken refreshToken = _tokenRepository.GenerateRefreshToken(userId, deviceName);
+            RefreshToken refreshToken = _tokenRepository.GenerateRefreshToken(userId, hashedFingerprint);
             await _refreshTokenRepository.CreateAsync(refreshToken, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             string accessToken = _tokenRepository.GenerateAccessToken(userId, gameSessionId);

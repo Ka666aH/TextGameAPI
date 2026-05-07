@@ -8,14 +8,14 @@
         public string Token { get; private set; }
         public DateTime ExpiresUTC { get; private set; }
         public bool IsRevoked { get; private set; } = false;
-        public string DeviceName { get; private set; }
+        public string HashedFingerprint { get; private set; }
         private RefreshToken() { }
-        public RefreshToken(Guid userId, string token, DateTime expiresUTC, string deviceName)
+        public RefreshToken(Guid userId, string token, DateTime expiresUTC, string hashedFingerprint)
         {
             UserId = userId;
             Token = token;
             ExpiresUTC = expiresUTC;
-            DeviceName = deviceName;
+            HashedFingerprint = hashedFingerprint;
         }
         public void Revoke() => IsRevoked = true;
     }

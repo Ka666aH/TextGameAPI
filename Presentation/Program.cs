@@ -66,9 +66,12 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
 
-builder.Services.AddSingleton<IPasswordHasher, BCryptRepository>();
+builder.Services.AddSingleton<IHasher, BCryptRepository>();
 
 builder.Services.AddSingleton<IValidator<RegisterCommand>, RegisterCommandValidator>();
+
+//Сервисы
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
