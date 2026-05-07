@@ -31,7 +31,7 @@ namespace TextGame.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<AuthResult> RegisterAsync(string login, string password, string deviceName, CancellationToken ct = default)
+        public async Task RegisterAsync(string login, string password, string deviceName, CancellationToken ct = default)
         {
             var validationResult = await _registerValidator.ValidateAsync(new RegisterCommand(login, password, deviceName), ct);
             if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
@@ -44,7 +44,7 @@ namespace TextGame.Application.Services
             await _userRepository.CreateAsync(user, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            return await GenerateTokens(user.Id, deviceName, null, ct);
+            //return await GenerateTokens(user.Id, deviceName, null, ct);
         }
         public async Task<AuthResult> LogInAsync(string login, string password, string deviceName, CancellationToken ct = default)
         {
