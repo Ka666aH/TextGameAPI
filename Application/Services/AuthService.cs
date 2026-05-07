@@ -14,17 +14,17 @@ namespace TextGame.Application.Services
     {
         private readonly IValidator<RegisterCommand> _registerValidator;
 
-        private readonly IHasher _passwordHasher;
+        private readonly IHasher _hasher;
 
         private readonly IUserRepository _userRepository;
         private readonly ITokenRepository _tokenRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AuthService(IValidator<RegisterCommand> registerValidator, IHasher passwordHasher, IUserRepository userRepository, ITokenRepository tokenRepository, IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork)
+        public AuthService(IValidator<RegisterCommand> registerValidator, IHasher hasher, IUserRepository userRepository, ITokenRepository tokenRepository, IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork)
         {
             _registerValidator = registerValidator;
-            _passwordHasher = passwordHasher;
+            _hasher = hasher;
             _userRepository = userRepository;
             _tokenRepository = tokenRepository;
             _refreshTokenRepository = refreshTokenRepository;
@@ -36,7 +36,7 @@ namespace TextGame.Application.Services
             var validationResult = await _registerValidator.ValidateAsync(new RegisterCommand(login, password), ct);
             if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
 
-            string hashedPassword = _passwordHasher.Hash(password);
+            string hashedPassword = _hasher.Hash(password);
             User user = new(login, hashedPassword);
 
             bool userExist = await _userRepository.GetAsync(login, ct) != null;
@@ -48,17 +48,17 @@ namespace TextGame.Application.Services
         {
             User user = await _userRepository.GetAsync(login, ct)
                 ?? throw new UserNotFoundException();
-            bool passwordIsCorrect = _passwordHasher.Verify(password, user.HashedPass);
+            bool passwordIsCorrect = _hasher.Verify(password, user.HashedPass);
             if (!passwordIsCorrect) throw new IncorrectPasswordException();
-            string hashedFingerprint = _passwordHasher.Hash(fingerprint);
+            string hashedFingerprint = _hasher.Hash(fingerprint);
             return await GenerateTokens(user.Id, hashedFingerprint, null, ct);
         }
-        public async Task<AuthResult> RefreshAsync(string refreshToken, string fingerprint, Guid? gameSessionId, CancellationToken ct = default)
+        public async Task<AuthResult> RefreshAsync(string refreshToken, string accessToken, string fingerprint, CancellationToken ct = default)
         {
             RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct)
                 ?? throw new RefreshTokenNotFoundException();
 
-            bool fingerprintIsCorrect = _passwordHasher.Verify(fingerprint, token.HashedFingerprint);
+            bool fingerprintIsCorrect = _hasher.Verify(fingerprint, token.HashedFingerprint);
             if (token.IsRevoked || !fingerprintIsCorrect)
             {
                 await _refreshTokenRepository.RevokeAllAsync(token.UserId, ct);
@@ -70,6 +70,12 @@ namespace TextGame.Application.Services
 
             await _refreshTokenRepository.RevokeAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
+
+            var principal = _tokenRepository.ReadTokenWithoutLifetime(accessToken);
+            Guid? gameSessionId = null;
+            var claimValue = principal.FindFirst(AccessClaims.GameSessionId)?.Value;
+            if (claimValue != null && Guid.TryParse(claimValue, out var parsed)) gameSessionId = parsed;
+
             return await GenerateTokens(token.UserId, token.HashedFingerprint, gameSessionId, ct);
         }
         public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)

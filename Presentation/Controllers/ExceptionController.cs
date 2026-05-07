@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
 using TextGame.Presentation.DTO;
+using TextGame.Presentation.Helpers;
 
 namespace TextGame.Presentation.Controllers
 {
@@ -47,11 +48,14 @@ namespace TextGame.Presentation.Controllers
 
             return gameEx switch
             {
-                IncorrectPasswordException or
-                RefreshTokenNotFoundException or 
-                RefreshTokenExpiredException or 
-                RefreshTokenCompromisedException => 
+                IncorrectPasswordException =>
                     Problem(401, originalPath, gameEx),
+
+                AccessTokenNotFoundException or
+                RefreshTokenNotFoundException or
+                RefreshTokenExpiredException or
+                RefreshTokenCompromisedException =>
+                    DeleteCookieAndProblem(401, originalPath, gameEx),
 
                 DefeatException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
                 WinException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
@@ -97,5 +101,10 @@ namespace TextGame.Presentation.Controllers
                 detail: detail ?? ExceptionsLabels.InternalServerErrorMessage,
                 instance: HttpContext.Request.Path
             );
+        private IActionResult DeleteCookieAndProblem(int statusCode, string instance, GameException ex)
+        {
+            HttpContext.Response.DeleteAuthCookies();
+            return Problem(statusCode, instance, ex);
+        }
     }
 }

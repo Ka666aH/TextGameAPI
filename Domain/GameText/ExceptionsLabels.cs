@@ -8,6 +8,9 @@
         public const string IncorrectPasswordCode = "INCORRECT_PASSWORD";
         public const string IncorrectPasswordMessage = "Неверный пароль.";
 
+        public const string AccessTokenNotFoundCode = "ACCESS_TOKEN_NOT_FOUND";
+        public const string AccessTokenNotFoundMessage = "Токен доступа не найден.";
+
         public const string RefreshTokenNotFoundCode = "REFRESH_TOKEN_NOT_FOUND";
         public const string RefreshTokenNotFoundMessage = "Токен обновления не найден.";
 

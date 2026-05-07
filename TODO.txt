@@ -2,6 +2,7 @@
 	- REST API
 	- Гонка данных в сервисе аутентификации
 	- Костыль ReadTokenWithoutLifetime
+	- Лайфтаймы токенов и кук
 2. БД (пользователи, сейвы, токены)
 3. JWT (Access(user и game), Refresh)
 	- AuthService
