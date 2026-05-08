@@ -21,21 +21,24 @@ namespace TextGame.Presentation.Middleware
         {
             //Проверить нужно ли обновлять
             if (context.GetEndpoint()?.Metadata.GetMetadata<BypassRefreshAttribute>() is not null) { await _next(context); return; }
-            
+
             //Получить необходимые сервисы
             var tokenRepo = context.RequestServices.GetRequiredService<ITokenRepository>();
             var authService = context.RequestServices.GetRequiredService<IAuthService>();
             //Проверить срок жизни токена
-            string accessToken = GetAccessToken(context);
-            var principal = tokenRepo.ReadTokenWithoutLifetime(accessToken);
-            if (principal == null) { await _next(context); return; }
+            bool accessTokenExist = context.Request.TryGetAccessToken(out string accessToken);
+            if (accessTokenExist)
+            {
+                var principal = tokenRepo.ReadTokenWithoutLifetime(accessToken);
+                if (principal == null) { await _next(context); return; }
 
-            var expClaim = principal.FindFirst(JwtRegisteredClaimNames.Exp)?.Value;
-            if (expClaim == null) { await _next(context); return; }
+                var expClaim = principal.FindFirst(JwtRegisteredClaimNames.Exp)?.Value;
+                if (expClaim == null) { await _next(context); return; }
 
-            var expUnix = long.Parse(expClaim);
-            var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
-            if (expTime > DateTime.UtcNow) { await _next(context); return; }
+                var expUnix = long.Parse(expClaim);
+                var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
+                if (expTime > DateTime.UtcNow) { await _next(context); return; }
+            }
             //Получить остальные данные
             string refreshToken = GetRefreshToken(context);
             string fingerprint = GetFingerprint(context);

@@ -71,10 +71,13 @@ namespace TextGame.Application.Services
             await _refreshTokenRepository.RevokeAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            var principal = _tokenRepository.ReadTokenWithoutLifetime(accessToken);
             Guid? gameSessionId = null;
-            var claimValue = principal.FindFirst(AccessClaims.GameSessionId)?.Value;
-            if (claimValue != null && Guid.TryParse(claimValue, out var parsed)) gameSessionId = parsed;
+            if (accessToken != "")
+            {
+                var principal = _tokenRepository.ReadTokenWithoutLifetime(accessToken);
+                var claimValue = principal.FindFirst(AccessClaims.GameSessionId)?.Value;
+                if (claimValue != null && Guid.TryParse(claimValue, out var parsed)) gameSessionId = parsed;
+            }
 
             return await GenerateTokens(token.UserId, token.HashedFingerprint, gameSessionId, ct);
         }
