@@ -10,8 +10,5 @@
 
         public static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
         public static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(10);
-
-        private const int _refreshTokenGracePeriodMinutes = 10;
-        public static DateTime GetExpiredThreshold() => DateTime.UtcNow.AddMinutes(-_refreshTokenGracePeriodMinutes);
     }
 }

@@ -65,7 +65,7 @@ namespace TextGame.Application.Services
                 await _unitOfWork.SaveChangesAsync(ct);
                 throw new RefreshTokenCompromisedException();
             }
-            if (token.ExpiresUTC < TokenParameters.GetExpiredThreshold())
+            if (token.ExpiresUTC < DateTime.UtcNow)
                 throw new RefreshTokenExpiredException();
 
             await _refreshTokenRepository.RevokeAsync(token, ct);

@@ -15,6 +15,7 @@ using TextGame.Infrastructure.Database.Repositories;
 using TextGame.Infrastructure.PasswordHasher;
 using TextGame.Infrastructure.Token;
 using TextGame.Infrastructure.Token.JWT;
+using TextGame.Presentation.Middleware;
 using TextGame.Presentation.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -102,6 +103,7 @@ app.UseHttpsRedirection();
 
 app.UseExceptionHandler("/exception");
 
+app.UseRefreshAuthTokens();
 app.UseAuthentication();
 app.UseAuthorization();
 

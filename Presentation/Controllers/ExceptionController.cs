@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
+using TextGame.Presentation.Attributes;
 using TextGame.Presentation.DTO;
 using TextGame.Presentation.Helpers;
 
 namespace TextGame.Presentation.Controllers
 {
     [ApiController]
+    [BypassRefresh]
     [ApiExplorerSettings(IgnoreApi = true)]
     [Route("/exception")]
     public class ExceptionController : ControllerBase

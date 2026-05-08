@@ -2,11 +2,13 @@
 using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;
+using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Helpers;
 
 namespace TextGame.Presentation.Controllers
 {
     [ApiController]
+    [BypassRefresh]
     [Route("auth")]
     public class AuthController : ControllerBase
     {
@@ -15,7 +17,7 @@ namespace TextGame.Presentation.Controllers
         {
             _authService = authService;
         }
-        [HttpPost("regiter")]
+        [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync(string login, string password, CancellationToken ct)
         {
             await _authService.RegisterAsync(login, password, ct);
@@ -27,17 +29,6 @@ namespace TextGame.Presentation.Controllers
             string fingerprint = GetFingerprint();
 
             var authResult = await _authService.LogInAsync(login, password, fingerprint, ct);
-            SetAuthCookies(authResult);
-            return Ok();
-        }
-        [HttpPost("refresh")]
-        public async Task<IActionResult> RefreshAsync(CancellationToken ct)
-        {
-            string refreshToken = GetRefreshToken();
-            string fingerprint = GetFingerprint();
-            string accessToken = GetAccessToken();
-
-            var authResult = await _authService.RefreshAsync(refreshToken, accessToken, fingerprint, ct);
             SetAuthCookies(authResult);
             return Ok();
         }
@@ -53,7 +44,7 @@ namespace TextGame.Presentation.Controllers
         {
             string deviceName = HttpContext.Request.Headers.UserAgent.ToString();
             string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
-            return deviceName + ip;
+            return deviceName + " | " + ip;
         }
         private string GetRefreshToken()
         {
@@ -61,13 +52,6 @@ namespace TextGame.Presentation.Controllers
             bool refreshTokenExist = request.TryGetRefreshToken(out string refreshToken);
             if (!refreshTokenExist) throw new RefreshTokenNotFoundException();
             return refreshToken;
-        }
-        private string GetAccessToken()
-        {
-            var request = HttpContext.Request;
-            bool accessTokenExist = request.TryGetAccessToken(out string accessToken);
-            if (!accessTokenExist) throw new AccessTokenNotFoundException();
-            return accessToken;
         }
         private void SetAuthCookies(AuthResult authResult)
         {
