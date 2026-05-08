@@ -84,10 +84,10 @@
         public const string NotEqiipmentCode = "NOT_EQUIPMENT";
         public const string NotEqiipmentText = "Это не снаряжение.";
 
-        public const string EnemyDefeated = "{enemyName} повержен.";
+        public const string EnemyDefeated = "{0} повержен.";
         public const string SuicideText = "Вы погибли от своей же атаки. Как отчаянно.";
-        public const string PlayerDefeated = "Вы были повержены {enemyName}ОМ.";
-        public const string PlayerPoisoned = "{healName} приводит Вас к гибели!";
+        public const string PlayerDefeated = "Вы были повержены {0}ОМ.";
+        public const string PlayerPoisoned = "{0} приводит Вас к гибели!";
         public const string PlayerEaten = "НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!";
 
         public const string ValidationErrorCode = "VALIDATION_ERROR";

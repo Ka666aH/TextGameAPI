@@ -3,8 +3,8 @@
     public static class ValidatorsText
     {
         public const string LoginIsRequired = "Логин обязателен.";
-        public const string LoginMinLength = "Логин должен быть не менее {min} символов.";
-        public const string LoginMaxLength = "Логин должен быть не более {max} символов.";
+        public const string LoginMinLength = "Логин должен быть не менее {0} символов.";
+        public const string LoginMaxLength = "Логин должен быть не более {0} символов.";
 
         public const string LoginAlreadyExist = "Пользователь с таким логином уже существует.";
 
