@@ -74,6 +74,9 @@ builder.Services.AddSingleton<IValidator<RegisterCommand>, RegisterCommandValida
 //Сервисы
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+//Фоновые сервисы
+builder.Services.AddHostedService<TokenCleaningService>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
