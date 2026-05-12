@@ -66,13 +66,6 @@ namespace TextGame.Presentation.Middleware
             if (!refreshTokenExist) throw new RefreshTokenNotFoundException();
             return refreshToken;
         }
-        private static string GetAccessToken(HttpContext context)
-        {
-            var request = context.Request;
-            bool accessTokenExist = request.TryGetAccessToken(out string accessToken);
-            if (!accessTokenExist) throw new AccessTokenNotFoundException();
-            return accessToken;
-        }
         private static void SetAuthCookies(AuthResult authResult, HttpContext context)
         {
             var response = context.Response;
