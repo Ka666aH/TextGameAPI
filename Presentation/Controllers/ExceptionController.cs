@@ -68,7 +68,8 @@ namespace TextGame.Presentation.Controllers
                 NullItemIdException or
                 EmptyException or
                 NullEnemyIdException or
-                UserNotFoundException =>
+                UserNotFoundException or
+                GameSessionNotFoundException =>
                     Problem(404, originalPath, gameEx),
 
                 InvalidIdException or
@@ -77,6 +78,7 @@ namespace TextGame.Presentation.Controllers
                 UnsellableItemException =>
                     Problem(422, originalPath, gameEx),
 
+                NotGameSessionOwnerException or
                 UnstartedGameException or
                 LockedException or
                 NoKeyException or

@@ -5,6 +5,12 @@
         public const string UserNotFoundCode = "USER_NOT_FOUND";
         public const string UserNotFoundMessage = "Пользователь не найден.";
 
+        public const string GameSessionNotFoundCode = "GAME_SESSION_NOT_FOUND";
+        public const string GameSessionNotFoundMessage = "Игровая сессия не найдена.";
+
+        public const string NotGameSessionOwnerCode = "GAME_SESSION_BELONGS_TO_ANOTHER_USER";
+        public const string NotGameSessionOwnerMessage = "Игровая сессия принадлежит другому пользователю.";
+
         public const string IncorrectPasswordCode = "INCORRECT_PASSWORD";
         public const string IncorrectPasswordMessage = "Неверный пароль.";
 
