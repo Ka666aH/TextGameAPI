@@ -20,7 +20,7 @@ namespace TextGame.Presentation.Controllers
         {
             _gameControllerService.Start();
             var room = _gameControllerService.GetCurrentRoom();
-            return Ok(GameObjectMapper.ToDTO(room));
+            return Ok(room.ToDTO());
         }
         [HttpGet("info")]
         public IActionResult GetInfo()

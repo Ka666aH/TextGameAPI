@@ -14,7 +14,7 @@ namespace TextGame.Presentation.Mappers
 {
     public static class GameObjectMapper
     {
-        public static GameObjectDTO ToDTO(GameObject gameObject)
+        public static GameObjectDTO ToDTO(this GameObject gameObject)
         {
             return gameObject switch
             {
@@ -44,7 +44,7 @@ namespace TextGame.Presentation.Mappers
                 _ => new GameObjectDTO(gameObject.Name ?? GeneralLabeles.GameObjectDefaultName, gameObject.Description ?? GeneralLabeles.GameObjectDefaultDescription)
             };
         }
-        public static List<GameObjectDTO> ToDTO<T>(IEnumerable<T> gameObjects) where T : GameObject
+        public static List<GameObjectDTO> ToDTO<T>(this IEnumerable<T> gameObjects) where T : GameObject
             => [.. gameObjects.Select(ToDTO)];
         //{
         //    //List<GameObjectDTO> gameObjectsDTO = [];

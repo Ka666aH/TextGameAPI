@@ -21,25 +21,25 @@ namespace TextGame.Presentation.Controllers
         public IActionResult GoNextRoom()
         {
             var room = _roomControllerService.GoNextRoom();
-            return Ok(GameObjectMapper.ToDTO(room));
+            return Ok(room.ToDTO());
         }
         [HttpPost("{roomId}")]
         public IActionResult GoRoom(int roomId)
         {
             var room = _roomControllerService.GoToRoom(roomId);
-            return Ok(GameObjectMapper.ToDTO(room));
+            return Ok(room.ToDTO());
         }
         [HttpGet("current")]
         public IActionResult GetCurrentRoom()
         {
             var room = _roomControllerService.GetCurrentRoom();
-            return Ok(GameObjectMapper.ToDTO(room));
+            return Ok(room.ToDTO());
         }
         [HttpPost("current/items")]
         public IActionResult Search()
         {
             var items = _roomControllerService.Search();
-            var itemsDTOs = items.Select(item => GameObjectMapper.ToDTO(item)).ToList();
+            var itemsDTOs = items.Select(item => item.ToDTO()).ToList();
             return Ok(itemsDTOs);
         }
         [HttpPost("current/items/{itemId}/take")]
@@ -77,14 +77,13 @@ namespace TextGame.Presentation.Controllers
         public IActionResult UnlockChest(int chestId)
         {
             var chest = _roomControllerService.UnlockChest(chestId);
-            return Ok(GameObjectMapper.ToDTO(chest));
+            return Ok(chest.ToDTO());
         }
         [HttpPost("current/items/{chestId}/chest/items")]
         public IActionResult SearchChest(int chestId)
         {
             var items = _roomControllerService.SearchChest(chestId);
-            var itemsDTOs = items.Select(GameObjectMapper.ToDTO).ToList();
-            return Ok(itemsDTOs);
+            return Ok(items.ToDTO());
         }
         [HttpPost("current/items/{chestId}/chest/items/{itemId}/take")]
         public IActionResult TakeItemFromChest(int chestId, int itemId)
@@ -116,7 +115,7 @@ namespace TextGame.Presentation.Controllers
         public IActionResult GetEnemy()
         {
             Enemy enemy = _roomControllerService.GetEnemy();
-            return Ok(GameObjectMapper.ToDTO(enemy));
+            return Ok(enemy.ToDTO());
         }
         //[HttpPost("current/enemy/{enemyId}/attack")]
         [HttpPost("current/enemy/attack")]
