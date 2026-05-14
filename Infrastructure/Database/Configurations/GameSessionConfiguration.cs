@@ -8,6 +8,8 @@ namespace TextGame.Infrastructure.Database.Configurations
     {
         public void Configure(EntityTypeBuilder<GameSession> builder)
         {
+            builder.Property(x => x.Name).HasMaxLength(100);
+
             builder.HasMany(x => x.Rooms)
                 .WithOne()
                 .HasForeignKey("GameSessionId")
