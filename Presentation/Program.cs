@@ -10,6 +10,7 @@ using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Services;
 using TextGame.Application.Validators;
+using TextGame.Infrastructure.Cache;
 using TextGame.Infrastructure.Database;
 using TextGame.Infrastructure.Database.Repositories;
 using TextGame.Infrastructure.PasswordHasher;
@@ -56,14 +57,23 @@ builder.Services.AddSingleton<IGetItemService, GetItemService>();
 builder.Services.AddSingleton<IChestService, ChestService>();
 
 //База данных
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+
+//Кэширование
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+builder.Services.AddScoped<ICacheRepository, RedisRepository>();
 
 //Репозитории
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+builder.Services.AddScoped<IGameSessionCacheService, GameSessionCacheService>();
 
 builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
 
