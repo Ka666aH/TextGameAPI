@@ -26,7 +26,7 @@ namespace TextGame.Infrastructure.Database.Configurations
             builder.HasOne(x => x.Weapon)
                .WithOne()
                .HasForeignKey<GameSession>(x => x.WeaponId)
-               .OnDelete(DeleteBehavior.Restrict);
+               .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne(x => x.Helm)
                .WithOne()

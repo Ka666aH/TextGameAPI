@@ -17,7 +17,7 @@ namespace TextGame.Infrastructure.Database.Configurations
             builder.HasMany(x => x.Items)
                 .WithOne(x => x.Room)
                 .HasForeignKey(x => x.RoomId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
             builder.HasMany(x => x.Enemies)
                 .WithOne(x => x.Room)
                 .HasForeignKey(x => x.RoomId)

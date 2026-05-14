@@ -16,7 +16,7 @@ namespace TextGame.Infrastructure.Database.Configurations
             builder.HasMany(c => c.Items)
                 .WithOne()
                 .HasForeignKey("ChestId")
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

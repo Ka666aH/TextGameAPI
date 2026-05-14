@@ -606,7 +606,7 @@ namespace TextGame.Infrastructure.Database.Migrations
                     b.HasOne("TextGame.Domain.Entities.GameObjects.Items.Other.Chest", null)
                         .WithMany("Items")
                         .HasForeignKey("ChestId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("TextGame.Domain.Entities.GameSession", null)
                         .WithMany("Inventory")
@@ -616,7 +616,7 @@ namespace TextGame.Infrastructure.Database.Migrations
                     b.HasOne("TextGame.Domain.Entities.GameObjects.Rooms.Room", "Room")
                         .WithMany("Items")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Room");
                 });
@@ -660,7 +660,7 @@ namespace TextGame.Infrastructure.Database.Migrations
                     b.HasOne("TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Weapon", "Weapon")
                         .WithOne()
                         .HasForeignKey("TextGame.Domain.Entities.GameSession", "WeaponId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Chestplate");
