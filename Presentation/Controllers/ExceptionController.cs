@@ -54,6 +54,8 @@ namespace TextGame.Presentation.Controllers
                     Problem(401, originalPath, gameEx),
 
                 AccessTokenNotFoundException or
+                MissingUserIdClaimException or
+                MissingGameSessionIdClaimException or
                 RefreshTokenNotFoundException or
                 RefreshTokenExpiredException or
                 RefreshTokenCompromisedException =>

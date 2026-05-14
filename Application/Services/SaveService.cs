@@ -20,13 +20,13 @@ namespace TextGame.Application.Services
             _cache = cache;
         }
 
-        public async Task<string> NewGameSessionAsync(Guid userId, CancellationToken ct = default)
+        public async Task<Guid> CreateGameSessionAsync(Guid userId, CancellationToken ct = default)
         {
             GameSession gameSession = new(userId);
             await _gameSessionRepository.CreateAsync(gameSession, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             await _cache.SetAsync(gameSession, ct);
-            return _tokenRepository.GenerateAccessToken(userId, gameSession.Id);
+            return gameSession.Id;
         }
         public async Task<string> LoadGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
         {
@@ -60,7 +60,7 @@ namespace TextGame.Application.Services
             await _unitOfWork.SaveChangesAsync(ct);
             await _cache.DeleteAsync(gameSessionId, ct);
         }
-        public async Task<List<GameSession>> GetGameSessions(Guid userId, CancellationToken ct = default)
+        public async Task<List<GameSession>> GetGameSessionsAsync(Guid userId, CancellationToken ct = default)
         {
             return await _gameSessionRepository.GetByUserAsync(userId, ct);
         }

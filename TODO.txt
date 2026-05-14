@@ -10,11 +10,8 @@
 2. БД (пользователи, сейвы, токены)
 	- SaveGameSession(Update не атомарен, нарушает uow. Возможно context.Update())
 3. JWT (Access(user и game), Refresh)
-	- Создание сервиса сохранений и загрузок
-	- Создание контроллера
 	- Настройка политик авторизации в контроллере
 4. Redis (текущая игровая сессия)
-	- Работа с кэшем в SaveService
 5. Тестирование
 6. Docker
 	- ConnectionStrings__PostgreSQL

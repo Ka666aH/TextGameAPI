@@ -1,4 +1,6 @@
-﻿namespace TextGame.Domain.GameText
+﻿using TextGame.Infrastructure.Token;
+
+namespace TextGame.Domain.GameText
 {
     public static class ExceptionsLabels
     {
@@ -16,6 +18,12 @@
 
         public const string AccessTokenNotFoundCode = "ACCESS_TOKEN_NOT_FOUND";
         public const string AccessTokenNotFoundMessage = "Токен доступа не найден.";
+
+        public const string MissingUserIdClaimCode = "MISSING_USER_ID_CLAIM";
+        public const string MissingUserIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.UserId}.";
+
+        public const string MissingGameSessionIdClaimCode = "MISSING_GAME_SESSION_ID_CLAIM";
+        public const string MissingGameSessionIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.GameSessionId}.";
 
         public const string RefreshTokenNotFoundCode = "REFRESH_TOKEN_NOT_FOUND";
         public const string RefreshTokenNotFoundMessage = "Токен обновления не найден.";
