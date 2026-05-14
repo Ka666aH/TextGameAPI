@@ -10,22 +10,22 @@ namespace TextGame.Application.Services
         private readonly IGameSessionRepository _gameSessionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenRepository _tokenRepository;
-        //private readonly ICacheSerivce _cache;
-        //here
+        private readonly IGameSessionCacheService _cache;
 
-        public SaveService(IGameSessionRepository gameSessionRepository, IUnitOfWork unitOfWork, ITokenRepository tokenRepository)
+        public SaveService(IGameSessionRepository gameSessionRepository, IUnitOfWork unitOfWork, ITokenRepository tokenRepository, IGameSessionCacheService cache)
         {
             _gameSessionRepository = gameSessionRepository;
             _unitOfWork = unitOfWork;
             _tokenRepository = tokenRepository;
+            _cache = cache;
         }
 
         public async Task<string> NewGameSessionAsync(Guid userId, CancellationToken ct = default)
         {
             GameSession gameSession = new(userId);
             await _gameSessionRepository.CreateAsync(gameSession, ct);
-            //добавить сессию в кэш
             await _unitOfWork.SaveChangesAsync(ct);
+            await _cache.SetAsync(gameSession, ct);
             return _tokenRepository.GenerateAccessToken(userId, gameSession.Id);
         }
         public async Task<string> LoadGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
@@ -34,19 +34,21 @@ namespace TextGame.Application.Services
                 ?? throw new GameSessionNotFoundException();
             if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
 
-            //добавить сессию в кэш
+            await _cache.SetAsync(gameSession, ct);
             return _tokenRepository.GenerateAccessToken(userId, gameSession.Id);
         }
         public async Task SaveGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
         {
-            //GameSession gameSession = await _gameSessionRepository.GetWithTrackingAsync(gameSessionId, ct)
-            //    ?? throw new GameSessionNotFoundException();
-            //if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
-            //достать сессию из кэша?
-            //обновить в БД
-            //gameSession = сессия из кэша;
-            //await _unitOfWork.SaveChangesAsync(ct);
-            throw new NotImplementedException();
+            GameSession gameSession = await _gameSessionRepository.GetWithTrackingAsync(gameSessionId, ct) ?? throw new GameSessionNotFoundException();
+            if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
+            GameSession cachedGameSession = await _cache.GetAsync(gameSessionId, ct) ?? throw new GameSessionNotFoundException();
+            if (cachedGameSession.UserId != userId) throw new NotGameSessionOwnerException();
+
+            await _gameSessionRepository.DeleteAsync(gameSession, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+            _unitOfWork.ClearChangeTracker();
+            await _gameSessionRepository.CreateAsync(cachedGameSession, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
         }
         public async Task DeleteGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
         {
@@ -55,8 +57,8 @@ namespace TextGame.Application.Services
             if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
 
             await _gameSessionRepository.DeleteAsync(gameSession, ct);
-            //удалить сессию из кэша
             await _unitOfWork.SaveChangesAsync(ct);
+            await _cache.DeleteAsync(gameSessionId, ct);
         }
         public async Task<List<GameSession>> GetGameSessions(Guid userId, CancellationToken ct = default)
         {

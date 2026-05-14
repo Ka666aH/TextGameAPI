@@ -8,6 +8,7 @@
 	- IReadOnlyList для неизменяемых списков
 	- Унифицировать исключения (NullId и NotFound)
 2. БД (пользователи, сейвы, токены)
+	- SaveGameSession(Update не атомарен, нарушает uow. Возможно context.Update())
 3. JWT (Access(user и game), Refresh)
 	- Создание сервиса сохранений и загрузок
 	- Создание контроллера
@@ -16,12 +17,16 @@
 	- Работа с кэшем в SaveService
 5. Тестирование
 6. Docker
-	- ConnectionStrings__DefaultConnection
+	- ConnectionStrings__PostgreSQL
+	- ConnectionStrings__Redis
 	- JwtSettings__Secret
 
 (Возможно) 
 	- Не хранить отозванные токены.
 	- Убрать хардкод интервал из сервиса очистки просроченных токенов.
+	- MessagePack.
+	- Автосейв.
+
 	- Воспроизводимость Random через seed.
 	- Исправить вывод в консоль предвиденных ошибок.
 	- На карте отображаются предметы из исследованных комнат.

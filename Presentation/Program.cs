@@ -83,6 +83,7 @@ builder.Services.AddSingleton<IValidator<RegisterCommand>, RegisterCommandValida
 
 //Сервисы
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ISaveService, SaveService>();
 
 //Фоновые сервисы
 builder.Services.AddHostedService<TokenCleaningService>();
