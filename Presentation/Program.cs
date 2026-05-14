@@ -65,7 +65,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
-builder.Services.AddScoped<ICacheRepository, RedisRepository>();
+builder.Services.AddSingleton<ICacheRepository, RedisRepository>();
 
 //Репозитории
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -73,7 +73,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-builder.Services.AddScoped<IGameSessionCacheService, GameSessionCacheService>();
+builder.Services.AddSingleton<IGameSessionCacheService, GameSessionCacheService>();
 
 builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
 
