@@ -15,12 +15,10 @@ namespace TextGame.Application.Services
 {
     public class GameSessionService : IGameSessionService
     {
-        private readonly IMapGenerator _mapGenerator;
         private readonly IGameSessionProvider _gameSessionProvider;
         private GameSession? _gameSession = null;
-        public GameSessionService(IMapGenerator mapGenerator, IGameSessionProvider gameSessionProvider)
+        public GameSessionService(IGameSessionProvider gameSessionProvider)
         {
-            _mapGenerator = mapGenerator;
             _gameSessionProvider = gameSessionProvider;
         }
         public async Task EnsureGameSessionLoadedAsync(Guid gameSessionId, CancellationToken ct = default)
