@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
-using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
@@ -12,19 +11,21 @@ namespace TextGame.Presentation.Controllers
     public class GameController : ControllerBase
     {
         private readonly IGameControllerService _gameControllerService;
+        private readonly IGameSessionCacheService _gameSessionCacheService;
+        //private readonly IGame
 
         public GameController(IGameControllerService gameControllerRepository)
         {
             _gameControllerService = gameControllerRepository;
         }
 
-        [HttpPost("start")]
-        public IActionResult Start()
-        {
-            //_gameControllerService.Start();
-            var room = _gameControllerService.GetCurrentRoom();
-            return Ok(room.ToDTO());
-        }
+        //[HttpPost("start")]
+        //public IActionResult Start()
+        //{
+        //    //_gameControllerService.Start();
+        //    var room = _gameControllerService.GetCurrentRoom();
+        //    return Ok(room.ToDTO());
+        //}
         [HttpGet("info")]
         public IActionResult GetInfo()
         {

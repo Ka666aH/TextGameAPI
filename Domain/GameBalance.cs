@@ -1,4 +1,8 @@
-﻿namespace TextGame.Domain
+﻿using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplates;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
+
+namespace TextGame.Domain
 {
     public static class GameBalance
     {
@@ -20,6 +24,14 @@
 
         //Игрок
         public const int DefaultMaxHealth = 100;
+
+        //Начальные предметы
+        public const int StartCoins = 0;
+        public const int StartKeys = 0;
+        public static readonly Weapon StartWeapon = Fists.DefaultFists;
+        public static readonly Helm? StartHelm = null;
+        public static readonly Chestplate? StartChestplate = null;
+
 
         //Распределение комнат
         public const int EmptyRoomWeight = 3000;

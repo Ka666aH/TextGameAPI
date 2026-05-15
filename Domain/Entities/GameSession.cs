@@ -21,17 +21,17 @@ namespace TextGame.Domain.Entities
         public int? CurrentRoomId { get; set; }
         public Room? CurrentRoom { get; set; }
         public int WeaponId { get; set; }
-        public Weapon Weapon { get; set; } = Fists.DefaultFists;
+        public Weapon Weapon { get; set; } = GameBalance.StartWeapon;
         public int? HelmId { get; set; }
-        public Helm? Helm { get; set; }
+        public Helm? Helm { get; set; } = GameBalance.StartHelm;
         public int? ChestplateId { get; set; }
-        public Chestplate? Chestplate { get; set; }
+        public Chestplate? Chestplate { get; set; } = GameBalance.StartChestplate;
         public int MaxHealth { get; set; } = GameBalance.DefaultMaxHealth;
         public int CurrentHealth { get; set; } = GameBalance.DefaultMaxHealth;
-        public int Coins { get; set; }
-        public int Keys { get; set; }
+        public int Coins { get; set; } = GameBalance.StartCoins;
+        public int Keys { get; set; } = GameBalance.StartKeys;
         public List<Item> Inventory { get; set; } = [];
-        public bool IsGameStarted { get; set; }
+        public bool IsGameStarted { get; set; } = true;
         public bool IsInBattle { get; set; } = false;
         public int? CurrentMimicChestId { get; set; }
         public Chest? CurrentMimicChest { get; set; } = null;

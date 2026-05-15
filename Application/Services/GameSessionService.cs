@@ -69,24 +69,24 @@ namespace TextGame.Application.Services
 
         //public void StartGame()
         //{
-        //    GameSession.Coins = 0;
-        //    GameSession.Keys = 0;
+        //    //GameSession.Coins = 0;
+        //    //GameSession.Keys = 0;
 
-        //    RemoveWeapon();
-        //    RemoveHelm();
-        //    RemoveChestplate();
+        //    //RemoveWeapon();
+        //    //RemoveHelm();
+        //    //RemoveChestplate();
 
-        //    GameSession.Inventory = [];
-        //    GameSession.Rooms = [];
+        //    //GameSession.Inventory = [];
+        //    //GameSession.Rooms = [];
 
-        //    GameSession.MaxHealth = GameBalance.DefaultMaxHealth;
-        //    GameSession.CurrentHealth = GameBalance.DefaultMaxHealth;
+        //    //GameSession.MaxHealth = GameBalance.DefaultMaxHealth;
+        //    //GameSession.CurrentHealth = GameBalance.DefaultMaxHealth;
 
-        //    GameSession.Rooms = _mapGenerator.Generate();
-        //    SetCurrentRoom(Rooms[0]);
+        //    //GameSession.Rooms = _mapGenerator.Generate();
+        //    //SetCurrentRoom(Rooms[0]);
 
-        //    EndBattle();
-        //    GameSession.IsGameStarted = true;
+        //        //EndBattle();
+        //        //GameSession.IsGameStarted = true;
         //}
         public void EndGame() => GameSession.IsGameStarted = false;
         public void StartBattle() => GameSession.IsInBattle = true;
