@@ -1,4 +1,5 @@
-﻿using TextGame.Application.Interfaces.Repositories;
+﻿using TextGame.Application.Interfaces.Factories;
+using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
 using TextGame.Domain.GameExceptions;
@@ -11,18 +12,20 @@ namespace TextGame.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenRepository _tokenRepository;
         private readonly IGameSessionCacheService _cache;
+        private readonly IGameSessionFactory _gameSessionFactory;
 
-        public SaveService(IGameSessionRepository gameSessionRepository, IUnitOfWork unitOfWork, ITokenRepository tokenRepository, IGameSessionCacheService cache)
+        public SaveService(IGameSessionRepository gameSessionRepository, IUnitOfWork unitOfWork, ITokenRepository tokenRepository, IGameSessionCacheService cache, IGameSessionFactory gameSessionFactory)
         {
             _gameSessionRepository = gameSessionRepository;
             _unitOfWork = unitOfWork;
             _tokenRepository = tokenRepository;
             _cache = cache;
+            _gameSessionFactory = gameSessionFactory;
         }
 
-        public async Task<Guid> CreateGameSessionAsync(Guid userId, CancellationToken ct = default)
+        public async Task<Guid> CreateGameSessionAsync(Guid userId, string? gameSessionName, CancellationToken ct = default)
         {
-            GameSession gameSession = new(userId);
+            GameSession gameSession = _gameSessionFactory.CreateGameSession(userId, gameSessionName);
             await _gameSessionRepository.CreateAsync(gameSession, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             await _cache.SetAsync(gameSession, ct);

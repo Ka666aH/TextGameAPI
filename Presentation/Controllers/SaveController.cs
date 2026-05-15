@@ -20,10 +20,10 @@ namespace TextGame.Presentation.Controllers
             _saveService = saveService;
         }
         [HttpPost]
-        public async Task<IActionResult> StartNewGameSessionAsync(CancellationToken ct)
+        public async Task<IActionResult> StartNewGameSessionAsync(string? gameSessionName,CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            Guid gameSessionId = await _saveService.CreateGameSessionAsync(userId, ct);
+            Guid gameSessionId = await _saveService.CreateGameSessionAsync(userId, gameSessionName, ct);
             string newAccessToken = await _saveService.LoadGameSessionAsync(userId, gameSessionId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
             return Ok();
