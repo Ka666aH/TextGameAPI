@@ -26,7 +26,7 @@ namespace TextGame.Application.Services
         public async Task EnsureGameSessionLoadedAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             if (_gameSession != null) return;
-            _gameSession = await _gameSessionProvider.GetGameSessionAsync(gameSessionId, ct);
+            _gameSession = await _gameSessionProvider.GetAsync(gameSessionId, ct);
         }
         private GameSession GameSession => _gameSession ?? throw new GameSessionNotFoundException();
         public bool IsGameStarted => GameSession.IsGameStarted;
