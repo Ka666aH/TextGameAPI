@@ -23,7 +23,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Ядро состояния
 builder.Services.AddScoped<IGameSessionProvider, GameSessionProvider>();
-//builder.Services.AddSingleton<IGameSessionProvider, GameSessionProvider>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 
 //Оркестраторные
@@ -44,6 +43,7 @@ builder.Services.AddScoped<IItemIdService, ItemIdService>();
 builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
 
 //Фабрики
+builder.Services.AddScoped<IGameSessionFactory,GameSessionFactory>();
 builder.Services.AddScoped<IRoomFactory, RoomFactory>();
 builder.Services.AddScoped<IItemFactory, ItemFactory>();
 builder.Services.AddScoped<IEnemyFactory, EnemyFactory>();
