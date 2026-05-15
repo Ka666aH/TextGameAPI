@@ -8,6 +8,7 @@ namespace TextGame.Application.Interfaces.Services
     public interface IGameControllerService : IGameInfoService
     {
         //void Start();
+        Task EnsureGameSessionLoadedAsync(Guid gameSessionId, CancellationToken ct = default);
         IEnumerable<Item> GetInventory();
         int GetCoins();
         int GetKeys();

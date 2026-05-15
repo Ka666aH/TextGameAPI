@@ -27,6 +27,8 @@ namespace TextGame.Application.Services
             _gameInfoService = gameInfoService;
             _getItemService = getItemService;
         }
+        public async Task EnsureGameSessionLoadedAsync(Guid gameSessionId, CancellationToken ct = default) =>
+            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
         public Room GetCurrentRoom()
         {
             RequireGameStartedAndNotStartRoom();
