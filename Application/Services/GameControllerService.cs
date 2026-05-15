@@ -33,7 +33,7 @@ namespace TextGame.Application.Services
 
             return _gameSessionService.CurrentRoom;
         }
-        public void Start() => _gameSessionService.StartGame();
+        //public void Start() => _gameSessionService.StartGame();
         public IEnumerable<Item> GetInventory()
         {
             RequireGameStartedAndNotStartRoom();

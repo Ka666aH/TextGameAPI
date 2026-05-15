@@ -40,7 +40,7 @@ namespace TextGame.Application.Interfaces.Services
         public void RemoveCurrentMimicChest();
         public void SetCurrentMimicChest(Chest chest);
 
-        public void StartGame();
+        //public void StartGame();
         public void EndGame();
         public void StartBattle();
         public void EndBattle();

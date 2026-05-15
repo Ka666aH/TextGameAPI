@@ -1,27 +1,34 @@
-﻿using TextGame.Application.Interfaces.Services;
+﻿using TextGame.Application.Interfaces.Generators;
+using TextGame.Application.Interfaces.Services;
 using TextGame.Domain;
-using TextGame.Application.Interfaces.Generators;
+using TextGame.Domain.Entities;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
-using TextGame.Domain.Entities.GameObjects.Rooms;
-using TextGame.Domain.Entities.GameObjects.Items.Other;
-using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplates;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
-using TextGame.Domain.Entities;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
+using TextGame.Domain.Entities.GameObjects.Rooms;
+using TextGame.Domain.GameExceptions;
 
 namespace TextGame.Application.Services
 {
     public class GameSessionService : IGameSessionService
     {
-        private readonly IGameSessionProvider _gameSessionProvider;
         private readonly IMapGenerator _mapGenerator;
+        private readonly IGameSessionProvider _gameSessionProvider;
+        private GameSession? _gameSession = null;
         public GameSessionService(IMapGenerator mapGenerator, IGameSessionProvider gameSessionProvider)
         {
             _mapGenerator = mapGenerator;
             _gameSessionProvider = gameSessionProvider;
         }
-        private GameSession GameSession => _gameSessionProvider.GetGameSession();
+        public async Task EnsureGameSessionLoadedAsync(Guid gameSessionId, CancellationToken ct = default)
+        {
+            if (_gameSession != null) return;
+            _gameSession = await _gameSessionProvider.GetGameSessionAsync(gameSessionId, ct);
+        }
+        private GameSession GameSession => _gameSession ?? throw new GameSessionNotFoundException();
         public bool IsGameStarted => GameSession.IsGameStarted;
         public bool IsInBattle { get => GameSession.IsInBattle; }
         public Room CurrentRoom { get => GameSession.CurrentRoom!; }
@@ -60,27 +67,27 @@ namespace TextGame.Application.Services
         public void RemoveCurrentMimicChest() => GameSession.CurrentMimicChest = null;
         public void SetCurrentMimicChest(Chest chest) => GameSession.CurrentMimicChest = chest;
 
-        public void StartGame()
-        {
-            GameSession.Coins = 0;
-            GameSession.Keys = 0;
+        //public void StartGame()
+        //{
+        //    GameSession.Coins = 0;
+        //    GameSession.Keys = 0;
 
-            RemoveWeapon();
-            RemoveHelm();
-            RemoveChestplate();
+        //    RemoveWeapon();
+        //    RemoveHelm();
+        //    RemoveChestplate();
 
-            GameSession.Inventory = [];
-            GameSession.Rooms = [];
+        //    GameSession.Inventory = [];
+        //    GameSession.Rooms = [];
 
-            GameSession.MaxHealth = GameBalance.DefaultMaxHealth;
-            GameSession.CurrentHealth = GameBalance.DefaultMaxHealth;
+        //    GameSession.MaxHealth = GameBalance.DefaultMaxHealth;
+        //    GameSession.CurrentHealth = GameBalance.DefaultMaxHealth;
 
-            GameSession.Rooms = _mapGenerator.Generate();
-            SetCurrentRoom(Rooms[0]);
+        //    GameSession.Rooms = _mapGenerator.Generate();
+        //    SetCurrentRoom(Rooms[0]);
 
-            EndBattle();
-            GameSession.IsGameStarted = true;
-        }
+        //    EndBattle();
+        //    GameSession.IsGameStarted = true;
+        //}
         public void EndGame() => GameSession.IsGameStarted = false;
         public void StartBattle() => GameSession.IsInBattle = true;
         public void EndBattle() => GameSession.IsInBattle = false;

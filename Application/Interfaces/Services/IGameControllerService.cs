@@ -7,7 +7,7 @@ namespace TextGame.Application.Interfaces.Services
 {
     public interface IGameControllerService : IGameInfoService
     {
-        void Start();
+        //void Start();
         IEnumerable<Item> GetInventory();
         int GetCoins();
         int GetKeys();
