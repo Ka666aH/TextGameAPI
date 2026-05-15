@@ -11,6 +11,7 @@
 	- SaveGameSession(Update не атомарен, нарушает uow. Возможно context.Update())
 3. JWT (Access(user и game), Refresh)
 4. Redis (текущая игровая сессия)
+	- Настроить получение сессии провайдером
 5. Тестирование
 6. Docker
 	- ConnectionStrings__PostgreSQL
