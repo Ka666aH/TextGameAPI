@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.DTO;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Presentation.Mappers;
+using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
 {
 
     [ApiController]
+    [Authorize(Policy = Policies.RequireGameSession)]
     [Route("rooms")]
     public class RoomController :ControllerBase
     {

@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Presentation.Mappers;
+using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
 {
     [ApiController]
+    [Authorize(Policy = Policies.RequireGameSession)]
     [Route("game")]
     public class GameController : ControllerBase
     {
@@ -18,7 +21,7 @@ namespace TextGame.Presentation.Controllers
         [HttpPost("start")]
         public IActionResult Start()
         {
-            _gameControllerService.Start();
+            //_gameControllerService.Start();
             var room = _gameControllerService.GetCurrentRoom();
             return Ok(room.ToDTO());
         }
