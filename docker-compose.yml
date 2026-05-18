@@ -1,0 +1,6 @@
+services:
+  textgame:
+    image: ${DOCKER_REGISTRY-}textgame
+    build:
+      context: .
+      dockerfile: TextGameAPI/Dockerfile
