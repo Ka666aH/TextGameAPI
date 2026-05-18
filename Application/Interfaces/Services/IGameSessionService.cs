@@ -11,6 +11,7 @@ namespace TextGame.Application.Interfaces.Services
     public interface IGameSessionService
     {
         Task EnsureGameSessionLoadedAsync(Guid gameSessionId, CancellationToken ct = default);
+        Task CacheGameSessionAsync(Guid gameSessionId, CancellationToken ct = default);
         // Свойства для чтения состояния
         bool IsGameStarted { get; }
         bool IsInBattle { get; }

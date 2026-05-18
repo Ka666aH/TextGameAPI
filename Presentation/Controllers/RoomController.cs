@@ -3,16 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.DTO;
 using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Presentation.Helpers;
 using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
 {
-
     [ApiController]
     [Authorize(Policy = Policies.RequireGameSession)]
     [Route("rooms")]
-    public class RoomController :ControllerBase
+    public class RoomController : ControllerBase
     {
         private readonly IRoomControllerService _roomControllerService;
 
@@ -21,84 +21,102 @@ namespace TextGame.Presentation.Controllers
             _roomControllerService = roomControllerService;
         }
         [HttpPost("next")]
-        public IActionResult GoNextRoom()
+        public async Task<IActionResult> GoNextRoomAsync(CancellationToken ct)
         {
-            var room = _roomControllerService.GoNextRoom();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            var room = await _roomControllerService.GoNextRoomAsync(gameSessionId, ct);
             return Ok(room.ToDTO());
         }
         [HttpPost("{roomId}")]
-        public IActionResult GoRoom(int roomId)
+        public async Task<IActionResult> GoRoomAsync(int roomId, CancellationToken ct)
         {
-            var room = _roomControllerService.GoToRoom(roomId);
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            var room = await _roomControllerService.GoToRoomAsync(roomId, gameSessionId, ct);
             return Ok(room.ToDTO());
         }
         [HttpGet("current")]
-        public IActionResult GetCurrentRoom()
+        public async Task<IActionResult> GetCurrentRoomAsync(CancellationToken ct)
         {
-            var room = _roomControllerService.GetCurrentRoom();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            var room = await _roomControllerService.GetCurrentRoomAsync(gameSessionId, ct);
             return Ok(room.ToDTO());
         }
         [HttpPost("current/items")]
-        public IActionResult Search()
+        public async Task<IActionResult> SearchAsync(CancellationToken ct)
         {
-            var items = _roomControllerService.Search();
-            var itemsDTOs = items.Select(item => item.ToDTO()).ToList();
-            return Ok(itemsDTOs);
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            var items = await _roomControllerService.SearchAsync(gameSessionId, ct);
+            return Ok(items.ToDTO());
         }
         [HttpPost("current/items/{itemId}/take")]
-        public IActionResult TakeItem(int itemId)
+        public async Task<IActionResult> TakeItemAsync(int itemId, CancellationToken ct)
         {
-            _roomControllerService.TakeItem(itemId);
-            return Ok(_roomControllerService.GetGameInfo());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _roomControllerService.TakeItemAsync(itemId, gameSessionId, ct);
+            var info = await _roomControllerService.GetGameInfoAsync(gameSessionId, ct);
+            return Ok(info);
         }
         [HttpPost("current/items/takeall")]
-        public IActionResult TakeAllItems()
+        public async Task<IActionResult> TakeAllItemsAsync(CancellationToken ct)
         {
-            _roomControllerService.TakeAllItems();
-            return Ok(_roomControllerService.GetGameInfo());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _roomControllerService.TakeAllItemsAsync(gameSessionId, ct);
+            var info = await _roomControllerService.GetGameInfoAsync(gameSessionId, ct);
+            return Ok(info);
         }
         [HttpPost("current/items/{itemId}/buy")]
-        public IActionResult BuyItem(int itemId)
+        public async Task<IActionResult> BuyItemAsync(int itemId, CancellationToken ct)
         {
-            _roomControllerService.BuyItem(itemId);
-            return Ok(_roomControllerService.GetGameInfo());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _roomControllerService.BuyItemAsync(itemId, gameSessionId, ct);
+            var info = await _roomControllerService.GetGameInfoAsync(gameSessionId, ct);
+            return Ok(info);
         }
         #region CHEST
 
         [HttpPost("current/items/{chestId}/chest/hit")]
-        public IActionResult HitChest(int chestId)
+        public async Task<IActionResult> HitChestAsync(int chestId, CancellationToken ct)
         {
-            return Ok(_roomControllerService.HitChest(chestId));
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _roomControllerService.HitChestAsync(chestId, gameSessionId, ct));
         }
         [HttpPost("current/items/{chestId}/chest/open")]
-        public IActionResult OpenChest(int chestId)
+        public async Task<IActionResult> OpenChestAsync(int chestId, CancellationToken ct)
         {
-            _roomControllerService.OpenChest(chestId);
-            return SearchChest(chestId);
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _roomControllerService.OpenChestAsync(chestId, gameSessionId, ct);
+            var items = await _roomControllerService.SearchChestAsync(chestId, gameSessionId, ct);
+            return Ok(items.ToDTO());
         }
         [HttpPost("current/items/{chestId}/chest/unlock")]
-        public IActionResult UnlockChest(int chestId)
+        public async Task<IActionResult> UnlockChestAsync(int chestId, CancellationToken ct)
         {
-            var chest = _roomControllerService.UnlockChest(chestId);
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            var chest = await _roomControllerService.UnlockChestAsync(chestId, gameSessionId, ct);
             return Ok(chest.ToDTO());
         }
         [HttpPost("current/items/{chestId}/chest/items")]
-        public IActionResult SearchChest(int chestId)
+        public async Task<IActionResult> SearchChestAsync(int chestId, CancellationToken ct)
         {
-            var items = _roomControllerService.SearchChest(chestId);
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            var items = await _roomControllerService.SearchChestAsync(chestId, gameSessionId, ct);
             return Ok(items.ToDTO());
         }
         [HttpPost("current/items/{chestId}/chest/items/{itemId}/take")]
-        public IActionResult TakeItemFromChest(int chestId, int itemId)
+        public async Task<IActionResult> TakeItemFromChestAsync(int chestId, int itemId, CancellationToken ct)
         {
-            _roomControllerService.TakeItemFromChest(chestId, itemId);
-            return Ok(_roomControllerService.GetGameInfo());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _roomControllerService.TakeItemFromChestAsync(chestId, itemId, gameSessionId, ct);
+            var info = await _roomControllerService.GetGameInfoAsync(gameSessionId, ct);
+            return Ok(info);
         }
         [HttpPost("current/items/{chestId}/chest/items/takeall")]
-        public IActionResult TakeAllItemsFromChest(int chestId)
+        public async Task<IActionResult> TakeAllItemsFromChestAsync(int chestId, CancellationToken ct)
         {
-            _roomControllerService.TakeAllItemsFromChest(chestId);
-            return Ok(_roomControllerService.GetGameInfo());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _roomControllerService.TakeAllItemsFromChestAsync(chestId, gameSessionId, ct);
+            var info = await _roomControllerService.GetGameInfoAsync(gameSessionId, ct);
+            return Ok(info);
         }
         #endregion
         #region ENEMIES
@@ -115,18 +133,20 @@ namespace TextGame.Presentation.Controllers
         //    return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemies)));
         //}
         [HttpGet("current/enemy")]
-        public IActionResult GetEnemy()
+        public async Task<IActionResult> GetEnemyAsync(CancellationToken ct)
         {
-            Enemy enemy = _roomControllerService.GetEnemy();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            Enemy enemy = await _roomControllerService.GetEnemyAsync(gameSessionId, ct);
             return Ok(enemy.ToDTO());
         }
         //[HttpPost("current/enemy/{enemyId}/attack")]
         [HttpPost("current/enemy/attack")]
-        public IActionResult AttackEnemy()
+        public async Task<IActionResult> AttackEnemyAsync(CancellationToken ct)
         {
+            User.TryGetGameSessionId(out Guid gameSessionId);
             List<BattleLog> battleLogs = [
-                _roomControllerService.DealDamage(),
-                _roomControllerService.GetDamage()];
+                await _roomControllerService.DealDamageAsync(gameSessionId, ct),
+                await _roomControllerService.GetDamageAsync(gameSessionId, ct)];
             return Ok(battleLogs);
         }
         #endregion

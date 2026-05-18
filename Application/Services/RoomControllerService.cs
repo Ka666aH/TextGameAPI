@@ -40,12 +40,12 @@ namespace TextGame.Application.Services
             _getEnemyService = getEnemyService;
             _checkItemService = checkItemService;
         }
-        public Room GetCurrentRoom()
+        public async Task<Room> GetCurrentRoomAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStartedAndNotStartRoom();
             return _gameSessionService.CurrentRoom;
         }
-        public Room GoNextRoom()
+        public async Task<Room> GoNextRoomAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -55,16 +55,30 @@ namespace TextGame.Application.Services
 
             RequireNotEndRoom();
             if (_gameSessionService.CurrentRoom.Enemy != null) _gameSessionService.StartBattle();
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
             return _gameSessionService.CurrentRoom;
         }
-        public List<Item> Search()
+        public async Task<Room> GoToRoomAsync(int roomId, Guid gameSessionId, CancellationToken ct = default)
+        {
+            RequireGameStarted();
+            RequireNotInBattle();
+            var room = _getRoomService.GetRoom(roomId);
+            _gameSessionService.SetCurrentRoom(room);
+            RequireNotEndRoom();
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            return room;
+        }
+        public async Task<List<Item>> SearchAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
 
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
             return _gameSessionService.SearchCurrentRoom();
         }
-        public void TakeItem(int itemId)
+        public async Task TakeItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -74,8 +88,10 @@ namespace TextGame.Application.Services
             Item item = _getItemService.GetItem(itemId, _gameSessionService.CurrentRoom!.Items);
             _checkItemService.CheckItem(item);
             _gameSessionService.RemoveItemFromCurrentRoom(item);
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
         }
-        public void TakeAllItems()
+        public async Task TakeAllItemsAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -89,8 +105,10 @@ namespace TextGame.Application.Services
                 _checkItemService.CheckItem(item);
                 _gameSessionService.RemoveItemFromCurrentRoom(item);
             }
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
         }
-        public void BuyItem(int itemId)
+        public async Task BuyItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -103,44 +121,36 @@ namespace TextGame.Application.Services
             _gameSessionService.AddCoins(-(int)item.Cost!);
             _gameSessionService.RemoveItemFromCurrentRoom(item);
             _gameSessionService.AddItemToInventory(item);
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
         }
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
-        public Enemy GetEnemy()
+        public async Task<Enemy> GetEnemyAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             return _getEnemyService.GetEnemy();
         }
 
-        public BattleLog DealDamage()
+        public async Task<BattleLog> DealDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
-            return _combatService.DealDamage();
 
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            return _combatService.DealDamage();
         }
-        public BattleLog GetDamage()
+        public async Task<BattleLog> GetDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
             return _combatService.GetDamage();
         }
-        public Room GoToRoom(int roomId)
-        {
-            RequireGameStarted();
-            RequireNotInBattle();
-            var room = _getRoomService.GetRoom(roomId);
-            _gameSessionService.SetCurrentRoom(room);
-            RequireNotEndRoom();
-            return room;
-        }
-        //public Item GetItemById(int itemId, List<Item> items) => GetItemByIdRepository.GetItemById(itemId, items);
-        //public Item GetInventoryItem(int itemId) => InventoryRepository.GetInventoryItem(itemId);
-        //public List<Item> GetInventoryItems(List<int> itemIds) => InventoryRepository.GetInventoryItems(itemIds);
-        public GameInfoDTO GetGameInfo()
+        public async Task<GameInfoDTO> GetGameInfoAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStartedAndNotStartRoom();
             return _gameInfoService.GetGameInfo();
         }
-
-        public BattleLog HitChest(int chestId)
+        public async Task<BattleLog> HitChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -167,9 +177,11 @@ namespace TextGame.Application.Services
                 int playerHealthAfterAttack = playerHealthBeforeAttack - _gameSessionService.CurrentHealth;
                 battleLog = new BattleLog(ItemsLabeles.ChestName, attackResult.Damage, null, null, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _gameSessionService.CurrentHealth);
             }
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
             return battleLog;
         }
-        public Chest UnlockChest(int chestId)
+        public async Task<Chest> UnlockChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -179,9 +191,11 @@ namespace TextGame.Application.Services
 
             var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
             _chestService.UnlockChest(chest);
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
             return chest;
         }
-        public void OpenChest(int chestId)
+        public async Task OpenChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -192,8 +206,10 @@ namespace TextGame.Application.Services
                 _gameSessionService.EndGame();
                 throw new DefeatException(ExceptionsLabels.PlayerEaten, _gameInfoService.GetGameInfo());
             }
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
         }
-        public List<Item> SearchChest(int chestId)
+        public async Task<List<Item>> SearchChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -201,7 +217,7 @@ namespace TextGame.Application.Services
             var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
             return _chestService.SearchChest(chest);
         }
-        public void TakeItemFromChest(int chestId, int itemId)
+        public async Task TakeItemFromChestAsync(int chestId, int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -210,8 +226,10 @@ namespace TextGame.Application.Services
             var item = _getItemService.GetItem(itemId, chest.Items);
             _chestService.TakeItemFromChest(chest, item);
             _checkItemService.CheckItem(item);
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
         }
-        public void TakeAllItemsFromChest(int chestId)
+        public async Task TakeAllItemsFromChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
             RequireGameStarted();
             RequireNotInBattle();
@@ -219,6 +237,8 @@ namespace TextGame.Application.Services
             var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
             var items = _chestService.TakeAllItemsFromChest(chest);
             items.ForEach(_checkItemService.CheckItem);
+
+            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
         }
         private void RequireGameStarted()
         {

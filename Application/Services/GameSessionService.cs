@@ -16,6 +16,7 @@ namespace TextGame.Application.Services
     public class GameSessionService : IGameSessionService
     {
         private readonly IGameSessionProvider _gameSessionProvider;
+        private readonly IGameSessionCacheService _gameSessionCacheService;
         private GameSession? _gameSession = null;
         public GameSessionService(IGameSessionProvider gameSessionProvider)
         {
@@ -25,6 +26,11 @@ namespace TextGame.Application.Services
         {
             if (_gameSession != null) return;
             _gameSession = await _gameSessionProvider.GetAsync(gameSessionId, ct);
+        }
+        public async Task CacheGameSessionAsync(Guid gameSessionId, CancellationToken ct = default)
+        {
+            await EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionCacheService.SetAsync(GameSession, ct);
         }
         private GameSession GameSession => _gameSession ?? throw new GameSessionNotFoundException();
         public bool IsGameStarted => GameSession.IsGameStarted;

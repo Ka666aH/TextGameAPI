@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
+using TextGame.Presentation.Helpers;
 using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
@@ -11,9 +12,6 @@ namespace TextGame.Presentation.Controllers
     public class GameController : ControllerBase
     {
         private readonly IGameControllerService _gameControllerService;
-        private readonly IGameSessionCacheService _gameSessionCacheService;
-        //private readonly IGame
-
         public GameController(IGameControllerService gameControllerRepository)
         {
             _gameControllerService = gameControllerRepository;
@@ -27,75 +25,88 @@ namespace TextGame.Presentation.Controllers
         //    return Ok(room.ToDTO());
         //}
         [HttpGet("info")]
-        public IActionResult GetInfo()
+        public async Task<IActionResult> GetInfoAsync(CancellationToken ct)
         {
-            return Ok(_gameControllerService.GetGameInfo());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _gameControllerService.GetGameInfoAsync(gameSessionId, ct));
         }
         [HttpGet("map")]
-        public IActionResult GetMap()
+        public async Task<IActionResult> GetMapAsync(CancellationToken ct)
         {
-            return Ok(_gameControllerService.GetMap());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _gameControllerService.GetMapAsync(gameSessionId, ct));
         }
         [HttpGet("coins")]
-        public IActionResult GetCoins()
+        public async Task<IActionResult> GetCoinsAsync(CancellationToken ct)
         {
-            return Ok(_gameControllerService.GetCoins());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _gameControllerService.GetCoinsAsync(gameSessionId, ct));
         }
         [HttpGet("keys")]
-        public IActionResult GetKeys()
+        public async Task<IActionResult> GetKeysAsync(CancellationToken ct)
         {
-            return Ok(_gameControllerService.GetKeys());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _gameControllerService.GetKeysAsync(gameSessionId, ct));
         }
         [HttpGet("inventory")]
-        public IActionResult GetInventory()
+        public async Task<IActionResult> GetInventoryAsync(CancellationToken ct)
         {
-            return Ok(_gameControllerService.GetInventory());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _gameControllerService.GetInventoryAsync(gameSessionId, ct));
         }
         [HttpGet("inventory/{itemId}")]
-        public IActionResult GetInventoryItem(int itemId)
+        public async Task<IActionResult> GetInventoryItemAsync(int itemId, CancellationToken ct)
         {
-            return Ok(_gameControllerService.GetInventoryItem(itemId));
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _gameControllerService.GetInventoryItemAsync(itemId, gameSessionId, ct));
         }
         [HttpPost("inventory/{itemId}/sell")]
-        public IActionResult SellInventoryItem(int itemId)
+        public async Task<IActionResult> SellInventoryItemAsync(int itemId, CancellationToken ct)
         {
-            _gameControllerService.SellInventoryItem(itemId);
-            return GetInfo();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _gameControllerService.SellInventoryItemAsync(itemId, gameSessionId, ct);
+            return await GetInfoAsync(ct);
         }
         [HttpPost("inventory/{itemId}/use")]
-        public IActionResult UseInventoryItem(int itemId)
+        public async Task<IActionResult> UseInventoryItemAsync(int itemId, CancellationToken ct)
         {
-            _gameControllerService.UseInventoryItem(itemId);
-            return GetInfo();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _gameControllerService.UseInventoryItemAsync(itemId, gameSessionId, ct);
+            return await GetInfoAsync(ct);
         }
         [HttpGet("equipment")]
-        public IActionResult GetEquipment()
+        public async Task<IActionResult> GetEquipmentAsync(CancellationToken ct)
         {
-            return Ok(_gameControllerService.GetEquipment());
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            return Ok(await _gameControllerService.GetEquipmentAsync(gameSessionId, ct));
         }
         [HttpPost("inventory/{itemId}/equip")]
-        public IActionResult EquipInventoryItem(int itemId)
+        public async Task<IActionResult> EquipInventoryItemAsync(int itemId, CancellationToken ct)
         {
-            _gameControllerService.EquipInventoryItem(itemId);
-            return GetEquipment();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _gameControllerService.EquipInventoryItemAsync(itemId, gameSessionId, ct);
+            return await GetEquipmentAsync(ct);
         }
         [HttpPost("equipment/weapon/unequip")]
-        public IActionResult UnequipWeapon()
+        public async Task<IActionResult> UnequipWeaponAsync(CancellationToken ct)
         {
-            _gameControllerService.UnequipWeapon();
-            return GetEquipment();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _gameControllerService.UnequipWeaponAsync(gameSessionId, ct);
+            return await GetEquipmentAsync(ct);
         }
         [HttpPost("equipment/helm/unequip")]
-        public IActionResult UnequipHelm()
+        public async Task<IActionResult> UnequipHelmAsync(CancellationToken ct)
         {
-            _gameControllerService.UnequipHelm();
-            return GetEquipment();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _gameControllerService.UnequipHelmAsync(gameSessionId, ct);
+            return await GetEquipmentAsync(ct);
         }
         [HttpPost("equipment/chestplate/unequip")]
-        public IActionResult UnequipChestplate()
+        public async Task<IActionResult> UnequipChestplateAsync(CancellationToken ct)
         {
-            _gameControllerService.UnequipChestplate();
-            return GetEquipment();
+            User.TryGetGameSessionId(out Guid gameSessionId);
+            await _gameControllerService.UnequipChestplateAsync(gameSessionId, ct);
+            return await GetEquipmentAsync(ct);
         }
     }
 }
