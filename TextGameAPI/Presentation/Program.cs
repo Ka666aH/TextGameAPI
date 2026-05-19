@@ -44,7 +44,7 @@ builder.Services.AddScoped<IItemIdService, ItemIdService>();
 builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
 
 //Фабрики
-builder.Services.AddScoped<IGameSessionFactory,GameSessionFactory>();
+builder.Services.AddScoped<IGameSessionFactory, GameSessionFactory>();
 builder.Services.AddScoped<IRoomFactory, RoomFactory>();
 builder.Services.AddScoped<IItemFactory, ItemFactory>();
 builder.Services.AddScoped<IEnemyFactory, EnemyFactory>();
@@ -130,4 +130,12 @@ app.MapControllers();
 
 app.MapHealthChecks("/health").WithMetadata(new BypassRefreshAttribute());
 
+ApplyMigrations();
+
 app.Run();
+
+void ApplyMigrations()
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+}

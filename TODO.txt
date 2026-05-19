@@ -3,19 +3,16 @@
 	- Гонка данных в сервисе аутентификации
 	- Костыль ReadTokenWithoutLifetime
 	- Лайфтаймы токенов и кук
-	- HTTP HTTPS порты
 	- IReadOnlyList для неизменяемых списков
 	- Унифицировать исключения (NullId и NotFound)
 	- Вынести require из controllerServices в GameSessionService
+	- Параметры авторизации FromBody
 2. БД (пользователи, сейвы, токены)
 	- SaveGameSession(Update не атомарен, нарушает uow. Возможно context.Update())
 3. JWT (Access(user и game), Refresh)
 4. Redis (текущая игровая сессия)
 5. Тестирование
 6. Docker
-	- ConnectionStrings__PostgreSQL
-	- ConnectionStrings__Redis
-	- JwtSettings__Secret
 
 (Возможно) 
 	- Не хранить отозванные токены.
