@@ -16,6 +16,7 @@ using TextGame.Infrastructure.Database.Repositories;
 using TextGame.Infrastructure.PasswordHasher;
 using TextGame.Infrastructure.Token;
 using TextGame.Infrastructure.Token.JWT;
+using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Middleware;
 using TextGame.Presentation.Options;
 
@@ -104,14 +105,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.RequireGameSession, policy => policy.RequireClaim(AccessClaims.GameSessionId));
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
@@ -122,5 +127,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health").WithMetadata(new BypassRefreshAttribute());
 
 app.Run();
