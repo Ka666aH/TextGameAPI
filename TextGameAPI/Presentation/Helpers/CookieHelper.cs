@@ -7,8 +7,8 @@ namespace TextGame.Presentation.Helpers
         private static readonly CookieOptions DefaultOptions = new()
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
             Path = "/"
         };
         private static CookieOptions SetExpiringOptions(TimeSpan tokenLifetime) =>
