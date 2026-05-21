@@ -12,13 +12,13 @@ namespace TextGame.Application.Services
 {
     public class GameControllerService : IGameControllerService
     {
-        private readonly IGameSessionService _gameSessionService;
+        private readonly IGameSessionStateService _gameSessionService;
         private readonly IInventoryService _inventoryRepository;
         private readonly IGameInfoService _gameInfoService;
         private readonly IGetItemService _getItemService;
 
         public GameControllerService(
-            IGameSessionService gameSessionService,
+            IGameSessionStateService gameSessionService,
             IInventoryService inventoryRepository,
             IGameInfoService gameInfoService,
             IGetItemService getItemService)
@@ -30,7 +30,7 @@ namespace TextGame.Application.Services
         }
         public async Task<Room> GetCurrentRoomAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStartedAndNotStartRoom();
 
@@ -39,7 +39,7 @@ namespace TextGame.Application.Services
         //public void Start() => _gameSessionService.StartGame();
         public async Task<IEnumerable<Item>> GetInventoryAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStartedAndNotStartRoom();
 
@@ -47,7 +47,7 @@ namespace TextGame.Application.Services
         }
         public async Task<int> GetCoinsAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStartedAndNotStartRoom();
 
@@ -55,7 +55,7 @@ namespace TextGame.Application.Services
         }
         public async Task<int> GetKeysAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStartedAndNotStartRoom();
 
@@ -63,7 +63,7 @@ namespace TextGame.Application.Services
         }
         public async Task<List<MapRoomDTO>> GetMapAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStartedAndNotStartRoom();
 
@@ -72,7 +72,7 @@ namespace TextGame.Application.Services
         }
         public async Task UseInventoryItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStarted();
 
@@ -89,62 +89,62 @@ namespace TextGame.Application.Services
                     string.Format(ExceptionsLabels.PlayerPoisoned, heal.Name),
                     _gameInfoService.GetGameInfo());
 
-            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            await _gameSessionService.CacheAsync(gameSessionId, ct);
         }
 
         public async Task<Item> GetInventoryItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             return _getItemService.GetItem(itemId, _gameSessionService.Inventory);
         }
         public async Task<List<Equipment>> GetEquipmentAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             return _inventoryRepository.GetEquipment();
         }
         public async Task EquipInventoryItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStarted();
             Item item = _getItemService.GetItem(itemId, _gameSessionService.Inventory);
             if (item is not Equipment equip) throw new InvalidIdException(ExceptionsLabels.NotEqiipmentCode, ExceptionsLabels.NotEqiipmentText);
             _inventoryRepository.EquipInventoryItem(equip);
 
-            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            await _gameSessionService.CacheAsync(gameSessionId, ct);
         }
         public async Task UnequipWeaponAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStarted();
             _inventoryRepository.UnequipWeapon();
 
-            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            await _gameSessionService.CacheAsync(gameSessionId, ct);
         }
         public async Task UnequipHelmAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStarted();
             _inventoryRepository.UnequipHelm();
 
-            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            await _gameSessionService.CacheAsync(gameSessionId, ct);
         }
         public async Task UnequipChestplateAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStarted();
             _inventoryRepository.UnequipChestplate();
 
-            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            await _gameSessionService.CacheAsync(gameSessionId, ct);
         }
         public async Task SellInventoryItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStarted();
             //RequireNotInBattle();
@@ -153,11 +153,11 @@ namespace TextGame.Application.Services
             Item item = _getItemService.GetItem(itemId, _gameSessionService.Inventory);
             _inventoryRepository.SellInventoryItem(item);
 
-            await _gameSessionService.CacheGameSessionAsync(gameSessionId, ct);
+            await _gameSessionService.CacheAsync(gameSessionId, ct);
         }
         public async Task<GameInfoDTO> GetGameInfoAsync(Guid gameSessionId, CancellationToken ct = default)
         {
-            await _gameSessionService.EnsureGameSessionLoadedAsync(gameSessionId, ct);
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStartedAndNotStartRoom();
             return _gameInfoService.GetGameInfo();

@@ -20,8 +20,8 @@ namespace TextGame.Application.Factories
                 new(userId, name) : 
                 new(userId);
             var rooms = _mapGenerator.Generate();
-            gameSession.Rooms = rooms;
-            gameSession.CurrentRoom = rooms[0];
+            gameSession.State.Rooms = rooms;
+            gameSession.State.CurrentRoom = rooms[0];
             return gameSession;
         }
     }

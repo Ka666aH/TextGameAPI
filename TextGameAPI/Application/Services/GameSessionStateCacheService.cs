@@ -1,39 +1,35 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
+using System.Text.Json;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
 using TextGame.Infrastructure.Cache;
+using TextGame.Infrastructure.JSON;
 
 namespace TextGame.Application.Services
 {
-    public class GameSessionCacheService : IGameSessionCacheService
+    public class GameSessionStateCacheService : IGameSessionStateCacheService
     {
         private readonly ICacheRepository _cacheRepository;
 
-        private const string KeyTemplate = "gameSession:{0}";
-        private readonly JsonSerializerOptions _jsonOptions = new()
-        {
-            ReferenceHandler = ReferenceHandler.IgnoreCycles
-        };
+        private const string KeyTemplate = "GameSessionState:{0}";
 
-        public GameSessionCacheService(ICacheRepository cacheRepository)
+        public GameSessionStateCacheService(ICacheRepository cacheRepository)
         {
             _cacheRepository = cacheRepository;
         }
-
-        public async Task SetAsync(GameSession gameSession, CancellationToken ct = default)
+        public async Task SetAsync(Guid gameSessionId, GameSessionState gameSessionState, CancellationToken ct)
         {
-            var key = string.Format(KeyTemplate, gameSession.Id);
-            var value = JsonSerializer.SerializeToUtf8Bytes<GameSession>(gameSession, _jsonOptions);
+            var key = string.Format(KeyTemplate, gameSessionId);
+            var value = JsonConvert.SerializeObject(gameSessionState, Options.GameObjectsSerializeSettings);
             await _cacheRepository.SetAsync(key, value, CacheParameters.GameSessionLifetime, ct);
         }
-        public async Task<GameSession?> GetAsync(Guid gameSessionId, CancellationToken ct = default)
+        public async Task<GameSessionState?> GetAsync(Guid gameSessionId, CancellationToken ct)
         {
             var key = string.Format(KeyTemplate, gameSessionId);
             var value = await _cacheRepository.GetAsync(key, ct);
             if (value == null) return null;
-            return JsonSerializer.Deserialize<GameSession>(value, _jsonOptions);
+            return JsonConvert.DeserializeObject<GameSessionState>(value, Options.GameObjectsSerializeSettings);
         }
         public async Task DeleteAsync(Guid gameSessionId, CancellationToken ct = default)
         {

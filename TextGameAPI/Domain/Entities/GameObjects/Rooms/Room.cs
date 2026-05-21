@@ -1,4 +1,5 @@
-﻿using TextGame.Domain.Entities.GameObjects.Enemies;
+﻿using System.Text.Json.Serialization;
+using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.GameExceptions;
 
@@ -33,6 +34,8 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
             return _items;
         }
         public void Discover() => IsDiscovered = true;
+
+        [JsonConstructor]
         protected Room() { }
     }
 }

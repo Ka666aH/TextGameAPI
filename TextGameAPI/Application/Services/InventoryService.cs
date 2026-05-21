@@ -11,8 +11,8 @@ namespace TextGame.Application.Services
 {
     public class InventoryService : IInventoryService
     {
-        private readonly IGameSessionService _gameSessionService;
-        public InventoryService(IGameSessionService gameSessionService)
+        private readonly IGameSessionStateService _gameSessionService;
+        public InventoryService(IGameSessionStateService gameSessionService)
         {
             _gameSessionService = gameSessionService;
         }

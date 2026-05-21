@@ -4,10 +4,10 @@ namespace TextGame.Application.Interfaces.Services
 {
     public interface ISaveService
     {
-        Task<Guid> CreateGameSessionAsync(Guid userId, string? gameSessionName, CancellationToken ct = default);
-        Task<string> LoadGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default);
-        Task SaveGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default);
-        Task DeleteGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default);
-        Task<List<GameSession>> GetGameSessionsAsync(Guid userId, CancellationToken ct = default);
+        Task<Guid> CreateAsync(Guid userId, string? gameSessionName, CancellationToken ct = default);
+        Task<string> LoadAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default);
+        Task SaveAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default);
+        Task DeleteAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default);
+        Task<List<GameSession>> GetListAsync(Guid userId, CancellationToken ct = default);
     }
 }

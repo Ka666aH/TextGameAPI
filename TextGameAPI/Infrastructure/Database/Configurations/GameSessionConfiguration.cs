@@ -1,6 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Newtonsoft.Json;
+using System.Text.Json;
 using TextGame.Domain.Entities;
+using TextGame.Infrastructure.JSON;
 
 namespace TextGame.Infrastructure.Database.Configurations
 {
@@ -8,42 +12,19 @@ namespace TextGame.Infrastructure.Database.Configurations
     {
         public void Configure(EntityTypeBuilder<GameSession> builder)
         {
-            builder.Property(x => x.Name).HasMaxLength(100);
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.UserId).IsRequired();
+            builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
+            builder.Property(x => x.CreatedAt).IsRequired();
+            builder.Property(x => x.LastSavedAt).IsRequired();
 
-            builder.HasMany(x => x.Rooms)
-                .WithOne()
-                .HasForeignKey("GameSessionId")
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(x => x.State)
+                .HasColumnType("jsonb")
+                .HasConversion(new GameSessionStateConverter());
+            //.HasConversion(
+            //v => JsonSerializer.SerializeToUtf8Bytes<GameSessionState>(v, JSON.Options.GameObjectsSerializeOptions),
+            //v => JsonSerializer.Deserialize<GameSessionState>(v, JSON.Options.GameObjectsSerializeOptions) ?? new GameSessionState());
 
-            builder.HasMany(x => x.Inventory)
-                .WithOne()
-                .HasForeignKey("GameSessionId")
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(x => x.CurrentRoom)
-               .WithOne()
-               .HasForeignKey<GameSession>(x => x.CurrentRoomId)
-               .OnDelete(DeleteBehavior.SetNull);
-
-            builder.HasOne(x => x.Weapon)
-               .WithOne()
-               .HasForeignKey<GameSession>(x => x.WeaponId)
-               .OnDelete(DeleteBehavior.SetNull);
-
-            builder.HasOne(x => x.Helm)
-               .WithOne()
-               .HasForeignKey<GameSession>(x => x.HelmId)
-               .OnDelete(DeleteBehavior.SetNull);
-
-            builder.HasOne(x => x.Chestplate)
-               .WithOne()
-               .HasForeignKey<GameSession>(x => x.ChestplateId)
-               .OnDelete(DeleteBehavior.SetNull);
-
-            builder.HasOne(x => x.CurrentMimicChest)
-               .WithOne()
-               .HasForeignKey<GameSession>(x => x.CurrentMimicChestId)
-               .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

@@ -24,7 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Ядро состояния
 builder.Services.AddScoped<IGameSessionProvider, GameSessionProvider>();
-builder.Services.AddScoped<IGameSessionService, GameSessionService>();
+builder.Services.AddScoped<IGameSessionStateService, GameSessionStateService>();
 
 //Оркестраторные
 builder.Services.AddScoped<IRoomControllerService, RoomControllerService>();
@@ -74,7 +74,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-builder.Services.AddSingleton<IGameSessionCacheService, GameSessionCacheService>();
+builder.Services.AddSingleton<IGameSessionStateCacheService, GameSessionStateCacheService>();
 
 builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
 

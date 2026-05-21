@@ -7,10 +7,17 @@
 	- Унифицировать исключения (NullId и NotFound)
 	- Вынести require из controllerServices в GameSessionService
 	- Параметры авторизации FromBody
+	- Загрузка сейва - удаление текущей сессии из кэша
+	- Room контроллер не находит сессию
 2. БД (пользователи, сейвы, токены)
+	- Веселейший рефакторинг БД. Отказ от TPH в пользу хранения сессии в JSON.
+		- Хранение GameSessionState, а не GameSession REDIS
+		- Инклуды в репозиториях
 	- SaveGameSession(Update не атомарен, нарушает uow. Возможно context.Update())
 3. JWT (Access(user и game), Refresh)
+	- Ложная компроментация
 4. Redis (текущая игровая сессия)
+	- Кэширование гет запросов
 5. Тестирование
 6. Docker
 

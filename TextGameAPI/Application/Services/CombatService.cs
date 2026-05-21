@@ -8,11 +8,11 @@ namespace TextGame.Application.Services
 {
     public class CombatService : ICombatService
     {
-        private readonly IGameSessionService _gameSessionService;
+        private readonly IGameSessionStateService _gameSessionService;
         private readonly IGetEnemyService _getEnemyService;
         private readonly IGameInfoService _gameInfoService;
         public CombatService(
-            IGameSessionService gameSessionService,
+            IGameSessionStateService gameSessionService,
             IGetEnemyService getEnemyService,
             IGameInfoService gameInfoService
             )

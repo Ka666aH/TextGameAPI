@@ -6,8 +6,8 @@ namespace TextGame.Application.Services
 {
     public class GetRoomService : IGetRoomService
     {
-        private readonly IGameSessionService _gameSessionService;
-        public GetRoomService(IGameSessionService gameSessionService)
+        private readonly IGameSessionStateService _gameSessionService;
+        public GetRoomService(IGameSessionStateService gameSessionService)
         {
             _gameSessionService = gameSessionService;
         }

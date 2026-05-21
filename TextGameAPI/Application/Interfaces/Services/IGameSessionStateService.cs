@@ -8,10 +8,10 @@ using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
 
 namespace TextGame.Application.Interfaces.Services
 {
-    public interface IGameSessionService
+    public interface IGameSessionStateService
     {
-        Task EnsureGameSessionLoadedAsync(Guid gameSessionId, CancellationToken ct = default);
-        Task CacheGameSessionAsync(Guid gameSessionId, CancellationToken ct = default);
+        Task EnsureLoadedAsync(Guid gameSessionId, CancellationToken ct = default);
+        Task CacheAsync(Guid gameSessionId, CancellationToken ct = default);
         // Свойства для чтения состояния
         bool IsGameStarted { get; }
         bool IsInBattle { get; }

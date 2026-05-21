@@ -8,13 +8,9 @@ namespace TextGame.Infrastructure.Database.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.Property(x => x.Login)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            builder.Property(x => x.HashedPass)
-                .IsRequired()
-                .HasMaxLength(60);
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Login).IsRequired().HasMaxLength(100);
+            builder.Property(x => x.HashedPass).IsRequired().HasMaxLength(60);
 
             builder.HasMany<GameSession>()
                 .WithOne(x => x.User)

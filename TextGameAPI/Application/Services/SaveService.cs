@@ -11,10 +11,10 @@ namespace TextGame.Application.Services
         private readonly IGameSessionRepository _gameSessionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenRepository _tokenRepository;
-        private readonly IGameSessionCacheService _cache;
+        private readonly IGameSessionStateCacheService _cache;
         private readonly IGameSessionFactory _gameSessionFactory;
 
-        public SaveService(IGameSessionRepository gameSessionRepository, IUnitOfWork unitOfWork, ITokenRepository tokenRepository, IGameSessionCacheService cache, IGameSessionFactory gameSessionFactory)
+        public SaveService(IGameSessionRepository gameSessionRepository, IUnitOfWork unitOfWork, ITokenRepository tokenRepository, IGameSessionStateCacheService cache, IGameSessionFactory gameSessionFactory)
         {
             _gameSessionRepository = gameSessionRepository;
             _unitOfWork = unitOfWork;
@@ -23,39 +23,39 @@ namespace TextGame.Application.Services
             _gameSessionFactory = gameSessionFactory;
         }
 
-        public async Task<Guid> CreateGameSessionAsync(Guid userId, string? gameSessionName, CancellationToken ct = default)
+        public async Task<Guid> CreateAsync(Guid userId, string? gameSessionName, CancellationToken ct = default)
         {
             GameSession gameSession = _gameSessionFactory.CreateGameSession(userId, gameSessionName);
             await _gameSessionRepository.CreateAsync(gameSession, ct);
             await _unitOfWork.SaveChangesAsync(ct);
-            await _cache.SetAsync(gameSession, ct);
+            await _cache.SetAsync(gameSession.Id, gameSession.State, ct);
             return gameSession.Id;
         }
-        public async Task<string> LoadGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
+        public async Task<string> LoadAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
+        {
+            GameSessionState gameSessionState = await _gameSessionRepository.GetStateAsync(gameSessionId, ct)
+                ?? throw new GameSessionNotFoundException();
+            //if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
+            //here
+            await _cache.SetAsync(gameSessionId, gameSessionState, ct);
+            return _tokenRepository.GenerateAccessToken(userId, gameSessionId);
+        }
+        public async Task SaveAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
         {
             GameSession gameSession = await _gameSessionRepository.GetAsync(gameSessionId, ct)
                 ?? throw new GameSessionNotFoundException();
             if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
-
-            await _cache.SetAsync(gameSession, ct);
-            return _tokenRepository.GenerateAccessToken(userId, gameSession.Id);
-        }
-        public async Task SaveGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
-        {
-            GameSession gameSession = await _gameSessionRepository.GetWithTrackingAsync(gameSessionId, ct) ?? throw new GameSessionNotFoundException();
-            if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
-            GameSession cachedGameSession = await _cache.GetAsync(gameSessionId, ct) ?? throw new GameSessionNotFoundException();
-            if (cachedGameSession.UserId != userId) throw new NotGameSessionOwnerException();
-
-            await _gameSessionRepository.DeleteAsync(gameSession, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-            _unitOfWork.ClearChangeTracker();
-            await _gameSessionRepository.CreateAsync(cachedGameSession, ct);
+            GameSessionState cachedGameSessionState = await _cache.GetAsync(gameSessionId, ct)
+                ?? throw new GameSessionNotFoundException();
+            //if (cachedGameSessionState.UserId != userId) throw new NotGameSessionOwnerException();
+            //here
+            gameSession.SetState(cachedGameSessionState);
+            gameSession.UpdateLastSavedAt();
             await _unitOfWork.SaveChangesAsync(ct);
         }
-        public async Task DeleteGameSessionAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
+        public async Task DeleteAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
         {
-            GameSession gameSession = await _gameSessionRepository.GetWithTrackingAsync(gameSessionId, ct)
+            GameSession gameSession = await _gameSessionRepository.GetAsync(gameSessionId, ct)
                 ?? throw new GameSessionNotFoundException();
             if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
 
@@ -63,9 +63,9 @@ namespace TextGame.Application.Services
             await _unitOfWork.SaveChangesAsync(ct);
             await _cache.DeleteAsync(gameSessionId, ct);
         }
-        public async Task<List<GameSession>> GetGameSessionsAsync(Guid userId, CancellationToken ct = default)
+        public async Task<List<GameSession>> GetListAsync(Guid userId, CancellationToken ct = default)
         {
-            return await _gameSessionRepository.GetByUserAsync(userId, ct);
+            return await _gameSessionRepository.GetListAsync(userId, ct);
         }
     }
 }

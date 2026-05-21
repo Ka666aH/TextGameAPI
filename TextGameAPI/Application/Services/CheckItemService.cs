@@ -7,9 +7,9 @@ namespace TextGame.Application.Services
 {
     public class CheckItemService : ICheckItemService
     {
-        private readonly IGameSessionService _gameSessionService;
+        private readonly IGameSessionStateService _gameSessionService;
 
-        public CheckItemService(IGameSessionService gameSessionService)
+        public CheckItemService(IGameSessionStateService gameSessionService)
         {
             _gameSessionService = gameSessionService;
         }

@@ -9,7 +9,7 @@ namespace TextGame.Presentation.Mappers
             => new(
             gameSession.Id,
             gameSession.Name,
-            gameSession.CurrentRoomId,
+            gameSession.State.CurrentRoom?.Id,
             gameSession.LastSavedAt,
             gameSession.CreatedAt);
         public static List<GameSessionDTO> ToDTO(this List<GameSession> gameSessions) =>

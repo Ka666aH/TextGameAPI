@@ -7,8 +7,8 @@ namespace TextGame.Application.Services
 {
     public class GameInfoService : IGameInfoService
     {
-        private readonly IGameSessionService _gameSessionService;
-        public GameInfoService(IGameSessionService gameSessionService)
+        private readonly IGameSessionStateService _gameSessionService;
+        public GameInfoService(IGameSessionStateService gameSessionService)
         {
             _gameSessionService = gameSessionService;
         }

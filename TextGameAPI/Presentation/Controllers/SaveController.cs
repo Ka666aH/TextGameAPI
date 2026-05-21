@@ -23,8 +23,8 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> StartNewGameSessionAsync(string? gameSessionName,CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            Guid gameSessionId = await _saveService.CreateGameSessionAsync(userId, gameSessionName, ct);
-            string newAccessToken = await _saveService.LoadGameSessionAsync(userId, gameSessionId, ct);
+            Guid gameSessionId = await _saveService.CreateAsync(userId, gameSessionName, ct);
+            string newAccessToken = await _saveService.LoadAsync(userId, gameSessionId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
             return Ok();
         }
@@ -32,7 +32,7 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> LoadGameSessionAsync(Guid gameSessionId, CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            string newAccessToken = await _saveService.LoadGameSessionAsync(userId, gameSessionId, ct);
+            string newAccessToken = await _saveService.LoadAsync(userId, gameSessionId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
             return Ok();
         }
@@ -42,21 +42,21 @@ namespace TextGame.Presentation.Controllers
         {
             User.TryGetUserId(out Guid userId);
             User.TryGetGameSessionId(out Guid gameSessionId);
-            await _saveService.SaveGameSessionAsync(userId, gameSessionId, ct);
+            await _saveService.SaveAsync(userId, gameSessionId, ct);
             return Ok();
         }
         [HttpDelete("{gameSessionId}")]
         public async Task<IActionResult> DeleteGameSessionAsync(Guid gameSessionId, CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            await _saveService.DeleteGameSessionAsync(userId, gameSessionId, ct);
+            await _saveService.DeleteAsync(userId, gameSessionId, ct);
             return Ok();
         }
         [HttpGet]
         public async Task<IActionResult> GetGameSessionsAsync(CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            List<GameSession> gameSessions = await _saveService.GetGameSessionsAsync(userId, ct);
+            List<GameSession> gameSessions = await _saveService.GetListAsync(userId, ct);
             return Ok(gameSessions.ToDTO());
         }
     }

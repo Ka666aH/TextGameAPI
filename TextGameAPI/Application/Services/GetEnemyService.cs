@@ -1,22 +1,17 @@
 ﻿using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.Entities.GameObjects.Enemies;
-using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Application.Services
 {
     public class GetEnemyService : IGetEnemyService
     {
-        private readonly IGameSessionService _gameSessionService;
-        public GetEnemyService(IGameSessionService gameSessionService)
+        private readonly IGameSessionStateService _gameSessionService;
+        public GetEnemyService(IGameSessionStateService gameSessionService)
         {
             _gameSessionService = gameSessionService;
         }
-        public Enemy GetEnemy()
-        {
-            Room room = _gameSessionService.CurrentRoom!;
-            Enemy? enemy = room.Enemy;
-            return enemy ?? throw new NullEnemyIdException();
-        }
+        public Enemy GetEnemy() =>
+            _gameSessionService.CurrentRoom.Enemy ?? throw new NullEnemyIdException();
     }
 }
