@@ -6,19 +6,11 @@ namespace TextGame.Infrastructure.JSON
         public static readonly JsonSerializerSettings GameObjectsSerializeSettings = new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All,           
-            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full,
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
             MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead,
-            SerializationBinder = new GameTypeBinder(),
-            ContractResolver = new GameObjectStateContractResolver(),   
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.None,
-            //Converters = 
-            //[
-            //    new RoomConverter(),
-            //    new ItemConverter(),
-            //    new EnemyConverter()
-            //]
+            ContractResolver = new GameObjectStateContractResolver(),   
         };
     }
 }

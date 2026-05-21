@@ -4,14 +4,13 @@ using System.Reflection;
 
 public class GameObjectStateContractResolver : DefaultContractResolver
 {
-    // Доступ к защищённым сеттерам (из PrivateSetterContractResolver)
+    // Доступ к защищённым сеттерам
     protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
     {
         var property = base.CreateProperty(member, memberSerialization);
         if (!property.Writable)
         {
-            var propInfo = member as PropertyInfo;
-            if (propInfo != null)
+            if (member is PropertyInfo propInfo)
             {
                 var setter = propInfo.GetSetMethod(true);
                 if (setter != null)
@@ -22,15 +21,5 @@ public class GameObjectStateContractResolver : DefaultContractResolver
             }
         }
         return property;
-    }
-
-    // Сортировка: "$type" первым
-    protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-    {
-        var properties = base.CreateProperties(type, memberSerialization);
-        return properties
-            .OrderBy(p => p.PropertyName != "$type")
-            .ThenBy(p => p.Order ?? 0)
-            .ToList();
     }
 }
