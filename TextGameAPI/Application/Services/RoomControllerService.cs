@@ -42,11 +42,13 @@ namespace TextGame.Application.Services
         }
         public async Task<Room> GetCurrentRoomAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStartedAndNotStartRoom();
             return _gameSessionService.CurrentRoom;
         }
         public async Task<Room> GoNextRoomAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 
@@ -61,6 +63,7 @@ namespace TextGame.Application.Services
         }
         public async Task<Room> GoToRoomAsync(int roomId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
             var room = _getRoomService.GetRoom(roomId);
@@ -72,6 +75,7 @@ namespace TextGame.Application.Services
         }
         public async Task<List<Item>> SearchAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 
@@ -80,6 +84,7 @@ namespace TextGame.Application.Services
         }
         public async Task TakeItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
             RequireCurrentRoomIsSearched();
@@ -93,6 +98,7 @@ namespace TextGame.Application.Services
         }
         public async Task TakeAllItemsAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
             RequireCurrentRoomIsSearched();
@@ -110,6 +116,7 @@ namespace TextGame.Application.Services
         }
         public async Task BuyItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
             RequireCurrentRoomIsSearched();
@@ -127,31 +134,38 @@ namespace TextGame.Application.Services
         //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
         public async Task<Enemy> GetEnemyAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             return _getEnemyService.GetEnemy();
         }
 
         public async Task<BattleLog> DealDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
 
+            var battleLog = _combatService.DealDamage();
             await _gameSessionService.CacheAsync(gameSessionId, ct);
-            return _combatService.DealDamage();
+            return battleLog;
         }
         public async Task<BattleLog> GetDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
 
+            var battleLog = _combatService.GetDamage();
             await _gameSessionService.CacheAsync(gameSessionId, ct);
-            return _combatService.GetDamage();
+            return battleLog;
         }
         public async Task<GameInfoDTO> GetGameInfoAsync(Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStartedAndNotStartRoom();
             return _gameInfoService.GetGameInfo();
         }
         public async Task<BattleLog> HitChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 
@@ -183,6 +197,7 @@ namespace TextGame.Application.Services
         }
         public async Task<Chest> UnlockChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 
@@ -197,6 +212,7 @@ namespace TextGame.Application.Services
         }
         public async Task OpenChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 
@@ -211,6 +227,7 @@ namespace TextGame.Application.Services
         }
         public async Task<List<Item>> SearchChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 
@@ -219,6 +236,7 @@ namespace TextGame.Application.Services
         }
         public async Task TakeItemFromChestAsync(int chestId, int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 
@@ -231,6 +249,7 @@ namespace TextGame.Application.Services
         }
         public async Task TakeAllItemsFromChestAsync(int chestId, Guid gameSessionId, CancellationToken ct = default)
         {
+            await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
 

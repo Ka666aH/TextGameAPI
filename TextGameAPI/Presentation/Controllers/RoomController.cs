@@ -120,18 +120,6 @@ namespace TextGame.Presentation.Controllers
         }
         #endregion
         #region ENEMIES
-        //[HttpGet("current/enemy/{enemyId}")]
-        //public IResult GetEnemy(int enemyId)
-        //{
-        //    Enemy enemy = RoomControllerRepository.GetEnemy(enemyId);
-        //    return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemy)));
-        //}
-        //[HttpGet("current/enemies")]
-        //public IResult GetEnemies()
-        //{
-        //    List<Enemy> enemies = RoomControllerRepository.GetEnemies();
-        //    return Results.Ok(new SuccessfulResponse(GameObjectMapper.ToDTO(enemies)));
-        //}
         [HttpGet("current/enemy")]
         public async Task<IActionResult> GetEnemyAsync(CancellationToken ct)
         {
@@ -139,7 +127,6 @@ namespace TextGame.Presentation.Controllers
             Enemy enemy = await _roomControllerService.GetEnemyAsync(gameSessionId, ct);
             return Ok(enemy.ToDTO());
         }
-        //[HttpPost("current/enemy/{enemyId}/attack")]
         [HttpPost("current/enemy/attack")]
         public async Task<IActionResult> AttackEnemyAsync(CancellationToken ct)
         {
