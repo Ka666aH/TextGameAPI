@@ -1,6 +1,4 @@
-﻿using TextGame.Presentation.DTO.GameObjectsDTO;
-
-namespace TextGame.Presentation.DTO
+﻿namespace TextGame.Presentation.DTO.GameObjectsDTO
 {
     public record RoomWithEnemyDTO(int Number, string Name, string Description, EnemyDTO? Enemy) 
         : RoomDTOBase(Number, Name, Description);

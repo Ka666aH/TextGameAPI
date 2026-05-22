@@ -1,4 +1,4 @@
-﻿namespace TextGame.Presentation.DTO
+﻿namespace TextGame.Presentation.DTO.GameObjectsDTO
 {
     public record GameObjectDTO(string Name, string Description);
 }

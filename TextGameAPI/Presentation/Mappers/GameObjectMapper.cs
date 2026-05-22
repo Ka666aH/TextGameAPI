@@ -9,6 +9,7 @@ using TextGame.Domain.Entities.GameObjects.Items.Heals;
 using TextGame.Domain.Entities.GameObjects.Items.Other;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
+using TextGame.Presentation.DTO.GameObjectsDTO;
 
 namespace TextGame.Presentation.Mappers
 {
@@ -47,16 +48,7 @@ namespace TextGame.Presentation.Mappers
                 _ => new GameObjectDTO(gameObject.Name ?? GeneralLabeles.GameObjectDefaultName, gameObject.Description ?? GeneralLabeles.GameObjectDefaultDescription)
             };
         }
-        public static List<GameObjectDTO> ToDTO<T>(this IEnumerable<T> gameObjects) where T : GameObject
-            => [.. gameObjects.Select(ToDTO)];
-        //{
-        //    //List<GameObjectDTO> gameObjectsDTO = [];
-        //    //foreach (T gameObject in gameObjects)
-        //    //{
-        //    //    gameObjectsDTO.Add(ToDTO(gameObject));
-        //    //}
-        //    //return gameObjectsDTO;
-        //    return [.. gameObjects.Select(ToDTO)];
-        //}
+        public static List<object> ToDTO(this IEnumerable<GameObject> gameObjects) =>
+            [.. gameObjects.Select(go => (object)ToDTO(go))];
     }
 }

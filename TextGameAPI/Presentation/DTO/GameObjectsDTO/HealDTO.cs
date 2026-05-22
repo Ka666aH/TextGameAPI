@@ -1,4 +1,4 @@
-﻿namespace TextGame.Presentation.DTO
+﻿namespace TextGame.Presentation.DTO.GameObjectsDTO
 {
     public record HealDTO(int? Id, string Name, string Description, int? Cost, int? MaxHealthBoost, int? CurrentHealthBoost)
         : ItemDTO(Id, Name, Description, Cost);
