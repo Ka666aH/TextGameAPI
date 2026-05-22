@@ -78,8 +78,9 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
+            var items = _gameSessionService.SearchCurrentRoom();
             await _gameSessionService.CacheAsync(gameSessionId, ct);
-            return _gameSessionService.SearchCurrentRoom();
+            return items;
         }
         public async Task TakeItemAsync(int itemId, Guid gameSessionId, CancellationToken ct = default)
         {
