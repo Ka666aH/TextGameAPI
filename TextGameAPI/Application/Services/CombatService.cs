@@ -28,12 +28,13 @@ namespace TextGame.Application.Services
             //attack
             var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Id);
             if (attackResult.SelfDamage != 0) _gameSessionService.AddCurrentHealth(-attackResult.SelfDamage);
+            CheckPlayerHealthAfterAttack();
             if (attackResult.IsWeaponBrokenDown) _gameSessionService.RemoveWeapon();
 
             int enemyHealthBeforeAttack = enemy.Health;
             int enemyHealthAfterAttack = enemy.GetDamage(attackResult.Damage);
             int playerHealthAfterAttack = playerHealthBeforeAttack - _gameSessionService.CurrentHealth;
-            BattleLog battleLog = new BattleLog(enemy.Name!, attackResult.Damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _gameSessionService.CurrentHealth);
+            BattleLog battleLog = new(enemy.Name!, attackResult.Damage, enemyHealthBeforeAttack, enemyHealthAfterAttack, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _gameSessionService.CurrentHealth);
 
             if (enemyHealthAfterAttack <= 0)
             {
@@ -44,16 +45,18 @@ namespace TextGame.Application.Services
                     _gameSessionService.AddItemToCurrentRoom(_gameSessionService.CurrentMimicChest);
                     _gameSessionService.RemoveCurrentMimicChest();
                 }
-                CheckPlayerHealthAfterAttack();
                 if (_gameSessionService.CurrentRoom.Enemy == null) _gameSessionService.EndBattle();
                 throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, enemy.Name), battleLog);
             }
-            CheckPlayerHealthAfterAttack();
             return battleLog;
         }
         private void CheckPlayerHealthAfterAttack()
         {
-            if (_gameSessionService.CurrentHealth <= 0) throw new DefeatException(ExceptionsLabels.SuicideText, _gameInfoService.GetGameInfo());
+            if (_gameSessionService.CurrentHealth <= 0)
+            {
+                _gameSessionService.EndGame();
+                throw new DefeatException(ExceptionsLabels.SuicideText, _gameInfoService.GetGameInfo());
+            }
         }
         public BattleLog GetDamage()
         {

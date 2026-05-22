@@ -31,7 +31,7 @@ namespace TextGame.Domain.Entities
         public bool IsGameStarted { get; set; } = true;
         public bool IsInBattle { get; set; } = false;
         public List<Room> Rooms { get; set; } = [];
-        public Room? CurrentRoom { get; set; } = null;
+        public int CurrentRoomId { get; set; } = 0;
         public Weapon Weapon { get; set; } = GameBalance.StartWeapon;
         public Helm? Helm { get; set; } = GameBalance.StartHelm;
         public Chestplate? Chestplate { get; set; } = GameBalance.StartChestplate;

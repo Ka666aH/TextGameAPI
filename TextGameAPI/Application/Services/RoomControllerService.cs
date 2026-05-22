@@ -52,7 +52,7 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            _gameSessionService.SetCurrentRoom(_gameSessionService.Rooms[_gameSessionService.CurrentRoom!.Id + 1]);
+            _gameSessionService.SetCurrentRoom(_gameSessionService.CurrentRoomId + 1);
             _gameSessionService.CurrentRoom.Discover();
 
             RequireNotEndRoom();
@@ -66,12 +66,11 @@ namespace TextGame.Application.Services
             await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
             RequireNotInBattle();
-            var room = _getRoomService.GetRoom(roomId);
-            _gameSessionService.SetCurrentRoom(room);
+            _gameSessionService.SetCurrentRoom(roomId);
             RequireNotEndRoom();
 
             await _gameSessionService.CacheAsync(gameSessionId, ct);
-            return room;
+            return _gameSessionService.CurrentRoom;
         }
         public async Task<List<Item>> SearchAsync(Guid gameSessionId, CancellationToken ct = default)
         {
@@ -150,7 +149,7 @@ namespace TextGame.Application.Services
             }
             finally
             {
-                await _gameSessionService.CacheAsync(gameSessionId, ct);
+                await _gameSessionService.CacheAsync(gameSessionId, ct);   
             }
         }
         public async Task<BattleLog> GetDamageAsync(Guid gameSessionId, CancellationToken ct = default)

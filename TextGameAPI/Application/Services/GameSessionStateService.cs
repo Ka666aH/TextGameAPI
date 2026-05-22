@@ -34,7 +34,8 @@ namespace TextGame.Application.Services
         private GameSessionState GameSessionState => _gameSessionState ?? throw new GameSessionNotFoundException();
         public bool IsGameStarted => GameSessionState.IsGameStarted;
         public bool IsInBattle { get => GameSessionState.IsInBattle; }
-        public Room CurrentRoom { get => GameSessionState.CurrentRoom!; }
+        public int CurrentRoomId { get => GameSessionState.CurrentRoomId; }
+        public Room CurrentRoom { get => GameSessionState.Rooms[CurrentRoomId]; }
         public IReadOnlyList<Room> Rooms => GameSessionState.Rooms.AsReadOnly();
         public IReadOnlyList<Item> Inventory => GameSessionState.Inventory.AsReadOnly();
         public int Coins { get => GameSessionState.Coins; }
@@ -78,11 +79,11 @@ namespace TextGame.Application.Services
         public void AddItemToInventory(Item item) => GameSessionState.Inventory.Add(item);
         public void RemoveItemFromInventory(Item item) => GameSessionState.Inventory.Remove(item);
 
-        public void SetCurrentRoom(Room room) => GameSessionState.CurrentRoom = room;
-        public void AddEnemyToCurrentRoom(Enemy enemy) => GameSessionState.CurrentRoom!.AddEnemy(enemy);
-        public void RemoveEnemyFromCurrentRoom(Enemy enemy) => GameSessionState.CurrentRoom!.RemoveEnemy(enemy);
-        public void AddItemToCurrentRoom(Item item) => GameSessionState.CurrentRoom!.AddItem(item);
-        public void RemoveItemFromCurrentRoom(Item item) => GameSessionState.CurrentRoom!.RemoveItem(item);
+        public void SetCurrentRoom(int roomId) => GameSessionState.CurrentRoomId = roomId;
+        public void AddEnemyToCurrentRoom(Enemy enemy) => CurrentRoom.AddEnemy(enemy);
+        public void RemoveEnemyFromCurrentRoom(Enemy enemy) => CurrentRoom.RemoveEnemy(enemy);
+        public void AddItemToCurrentRoom(Item item) => CurrentRoom.AddItem(item);
+        public void RemoveItemFromCurrentRoom(Item item) => CurrentRoom.RemoveItem(item);
 
         public List<Item> SearchCurrentRoom() => CurrentRoom.Search();
     }

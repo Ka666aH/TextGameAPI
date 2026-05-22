@@ -15,6 +15,7 @@ namespace TextGame.Application.Interfaces.Services
         // Свойства для чтения состояния
         bool IsGameStarted { get; }
         bool IsInBattle { get; }
+        int CurrentRoomId { get; }
         Room CurrentRoom { get; }
         IReadOnlyList<Room> Rooms { get; }
         IReadOnlyList<Item> Inventory { get; }
@@ -51,7 +52,7 @@ namespace TextGame.Application.Interfaces.Services
         public void AddKeys(int value);
         public void AddItemToInventory(Item item);
         public void RemoveItemFromInventory(Item item);
-        public void SetCurrentRoom(Room room);
+        public void SetCurrentRoom(int roomId);
 
         public void AddEnemyToCurrentRoom(Enemy enemy);
         public void RemoveEnemyFromCurrentRoom(Enemy enemy);

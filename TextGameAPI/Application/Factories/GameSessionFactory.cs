@@ -21,7 +21,7 @@ namespace TextGame.Application.Factories
                 new(userId);
             var rooms = _mapGenerator.Generate();
             gameSession.State.Rooms = rooms;
-            gameSession.State.CurrentRoom = rooms[0];
+            gameSession.State.CurrentRoomId = 0;
             return gameSession;
         }
     }
