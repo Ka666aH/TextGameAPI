@@ -138,15 +138,20 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             return _getEnemyService.GetEnemy();
         }
-
+        //here
         public async Task<BattleLog> DealDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
-
-            var battleLog = _combatService.DealDamage();
-            await _gameSessionService.CacheAsync(gameSessionId, ct);
-            return battleLog;
+            try
+            {
+                var battleLog = _combatService.DealDamage();
+                return battleLog;
+            }
+            finally
+            {
+                await _gameSessionService.CacheAsync(gameSessionId, ct);
+            }
         }
         public async Task<BattleLog> GetDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
