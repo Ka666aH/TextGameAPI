@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Presentation.Helpers;
+using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
@@ -78,7 +79,8 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> GetEquipmentAsync(CancellationToken ct)
         {
             User.TryGetGameSessionId(out Guid gameSessionId);
-            return Ok(await _gameControllerService.GetEquipmentAsync(gameSessionId, ct));
+            var equip = await _gameControllerService.GetEquipmentAsync(gameSessionId, ct);
+            return Ok(equip.ToDTO());
         }
         [HttpPost("inventory/{itemId}/equip")]
         public async Task<IActionResult> EquipInventoryItemAsync(int itemId, CancellationToken ct)
