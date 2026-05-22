@@ -22,7 +22,10 @@ namespace TextGame.Presentation.Mappers
                 room switch
                 {
                     StartRoom or EndRoom or Shop => new RoomWithoutEnemiesDTO(room.Id, room.Name!, room.Description!),
-                    _ => new RoomWithEnemyDTO(room.Id, room.Name!, room.Description!, (EnemyDTO)ToDTO(room.Enemy!)),
+                    _ => new RoomWithEnemyDTO(room.Id, room.Name!, room.Description!, 
+                    room.Enemy != null ? 
+                    (EnemyDTO)ToDTO(room.Enemy) :
+                    null),
                 },
                 Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name!, enemy.Description!, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>
