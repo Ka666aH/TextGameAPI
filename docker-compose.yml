@@ -3,6 +3,7 @@ services:
     restart: unless-stopped
     build:
       context: ./TextGameAPI
+      dockerfile: Dockerfile.debug
     environment:
       ConnectionStrings__PostgreSQL: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       ConnectionStrings__Redis: redis:6379

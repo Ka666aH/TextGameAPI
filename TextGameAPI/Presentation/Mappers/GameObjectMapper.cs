@@ -16,7 +16,7 @@ namespace TextGame.Presentation.Mappers
 {
     public static class GameObjectMapper
     {
-        public static GameObjectDTO ToDTO(this GameObject gameObject)
+        public static object ToDTO(this GameObject gameObject)
         {
             return gameObject switch
             {
