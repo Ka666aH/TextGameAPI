@@ -16,9 +16,9 @@ namespace TextGame.Application.Services
         {
             var roomDTO = (RoomDTOBase)_gameSessionService.CurrentRoom.ToDTO();
             var weaponDTO = _gameSessionService.Weapon.ToDTO();
-            ArmorDTO? helmDTO = _gameSessionService.Helm != null ? (ArmorDTO)_gameSessionService.Helm.ToDTO() : null;
-            ArmorDTO? chestplateDTO = _gameSessionService.Chestplate != null ? (ArmorDTO)_gameSessionService.Chestplate.ToDTO() : null;
-            List<object> inventoryItems = _gameSessionService.Inventory.ToDTO();
+            var helmDTO = _gameSessionService.Helm != null ? (ArmorDTO)_gameSessionService.Helm.ToDTO() : null;
+            var chestplateDTO = _gameSessionService.Chestplate != null ? (ArmorDTO)_gameSessionService.Chestplate.ToDTO() : null;
+            var inventoryItems = _gameSessionService.Inventory.ToDTO();
             return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, _gameSessionService.MaxHealth, _gameSessionService.CurrentHealth, _gameSessionService.Coins, _gameSessionService.Keys, inventoryItems);
         }
     }
