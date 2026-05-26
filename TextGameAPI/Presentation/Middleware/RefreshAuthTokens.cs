@@ -6,13 +6,14 @@ using TextGame.Domain.GameExceptions;
 using TextGame.Infrastructure.Token;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Helpers;
+using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Middleware
 {
     public class RefreshAuthTokens
     {
         private readonly RequestDelegate _next;
-
+        
         public RefreshAuthTokens(RequestDelegate next)
         {
             _next = next;
@@ -49,8 +50,8 @@ namespace TextGame.Presentation.Middleware
                                      $"{TokenParameters.RefreshToken}={refreshResult.RefreshToken}";
             context.Request.Headers.Cookie = newCookieHeader;
 
-            SetAuthCookies(refreshResult, context);
-
+            CookieHelper.SetAuthCookies(refreshResult, context);
+            context.Items[ItemKeys.RefreshResultKey] = refreshResult;
             await _next(context);
         }
         private static string GetFingerprint(HttpContext context)
@@ -65,12 +66,6 @@ namespace TextGame.Presentation.Middleware
             bool refreshTokenExist = request.TryGetRefreshToken(out string refreshToken);
             if (!refreshTokenExist) throw new RefreshTokenNotFoundException();
             return refreshToken;
-        }
-        private static void SetAuthCookies(AuthResult authResult, HttpContext context)
-        {
-            var response = context.Response;
-            response.SetRefreshCookie(authResult.RefreshToken);
-            response.SetAccessCookie(authResult.AccessToken);
         }
     }
     public static class RefreshAuthTokensExtensions

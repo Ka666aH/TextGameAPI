@@ -1,5 +1,4 @@
 ﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Presentation.DTO;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.DTO;
 using TextGame.Domain.GameText;
@@ -7,6 +6,7 @@ using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 using TextGame.Domain.Entities.GameObjects.Items.Other;
+using TextGame.Application.DTO;
 
 namespace TextGame.Application.Services
 {

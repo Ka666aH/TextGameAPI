@@ -1,5 +1,5 @@
-﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Presentation.DTO;
+﻿using TextGame.Application.DTO;
+using TextGame.Application.Interfaces.Services;
 using TextGame.Presentation.DTO.GameObjectsDTO;
 using TextGame.Presentation.Mappers;
 
@@ -20,7 +20,7 @@ namespace TextGame.Application.Services
             WeaponDTO weaponDTO = (WeaponDTO)_gameSessionService.Weapon.ToDTO();
             ArmorDTO? helmDTO = _gameSessionService.Helm != null ? (ArmorDTO)_gameSessionService.Helm.ToDTO() : null;
             ArmorDTO? chestplateDTO = _gameSessionService.Chestplate != null ? (ArmorDTO)_gameSessionService.Chestplate.ToDTO() : null;
-            var inventoryItems = _gameSessionService.Inventory.ToDTO().Cast<ItemDTO>();
+            List<object> inventoryItems = _gameSessionService.Inventory.ToDTO();
             return new GameInfoDTO(roomDTO, weaponDTO, helmDTO, chestplateDTO, _gameSessionService.MaxHealth, _gameSessionService.CurrentHealth, _gameSessionService.Coins, _gameSessionService.Keys, inventoryItems);
         }
     }

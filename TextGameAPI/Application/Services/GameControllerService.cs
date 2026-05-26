@@ -1,4 +1,5 @@
-﻿using TextGame.Application.Interfaces.Services;
+﻿using TextGame.Application.DTO;
+using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments;
 using TextGame.Domain.Entities.GameObjects.Items.Heals;
@@ -6,7 +7,6 @@ using TextGame.Domain.Entities.GameObjects.Items.Other;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
-using TextGame.Presentation.DTO;
 
 namespace TextGame.Application.Services
 {

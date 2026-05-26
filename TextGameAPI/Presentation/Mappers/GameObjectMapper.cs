@@ -10,6 +10,7 @@ using TextGame.Domain.Entities.GameObjects.Items.Other;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
 using TextGame.Presentation.DTO.GameObjectsDTO;
+using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands;
 
 namespace TextGame.Presentation.Mappers
 {
@@ -23,8 +24,8 @@ namespace TextGame.Presentation.Mappers
                 room switch
                 {
                     StartRoom or EndRoom or Shop => new RoomWithoutEnemiesDTO(room.Id, room.Name!, room.Description!),
-                    _ => new RoomWithEnemyDTO(room.Id, room.Name!, room.Description!, 
-                    room.Enemy != null ? 
+                    _ => new RoomWithEnemyDTO(room.Id, room.Name!, room.Description!,
+                    room.Enemy != null ?
                     (EnemyDTO)ToDTO(room.Enemy) :
                     null),
                 },
@@ -33,11 +34,22 @@ namespace TextGame.Presentation.Mappers
                 item switch
                 {
                     Chest chest => new ChestDTO(chest.Id, chest.Name!, chest.Description!, chest.IsClosed),
-                    Heal heal => new HealDTO(heal.Id, heal.Name!, heal.Description!, heal.Cost, heal.MaxHealthBoost, heal.CurrentHealthBoost),
+                    Heal heal => 
+                    heal switch
+                    {
+                        RandomPotion randomPotion => new ItemDTO(randomPotion.Id, randomPotion.Name, randomPotion.Description, randomPotion.Cost),
+                        _ => new HealDTO(heal.Id, heal.Name!, heal.Description!, heal.Cost, heal.MaxHealthBoost, heal.CurrentHealthBoost)
+                    },
                     Equipment equipment =>
                     equipment switch
                     {
-                        Weapon weapon => new WeaponDTO(weapon.Id, weapon.Name!, weapon.Description!, weapon.Cost, weapon.Durability, weapon.Damage),
+                        Weapon weapon =>
+                        weapon switch
+                        {
+                            Fists fists => new FistsDTO(fists.Name, fists.Description, fists.Damage),
+                            Wand wand => new WandDTO(wand.Id, wand.Name, wand.Description, wand.Cost, wand.Damage),
+                            _ => new WeaponDTO(weapon.Id, weapon.Name!, weapon.Description!, weapon.Cost, weapon.Durability, weapon.Damage),
+                        },
                         Armor armor => new ArmorDTO(armor.Id, armor.Name!, armor.Description!, armor.Cost, armor.Durability, armor.DamageBlock),
 
                         _ => new EquipmentDTO(equipment.Id, equipment.Name!, equipment.Description!, equipment.Cost, equipment.Durability),

@@ -1,11 +1,14 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TextGame.Application.DTO;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.DTO;
 using TextGame.Presentation.Helpers;
+using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
 {
@@ -97,20 +100,33 @@ namespace TextGame.Presentation.Controllers
             };
         }
 
-        private IActionResult Problem(int statusCode, string instance, GameException ex) =>
-            Problem(statusCode: statusCode, title: ex.Code, detail: ex.Message, instance: instance);
+        private IActionResult Problem(int statusCode, string instance, GameException ex)
+        {
+            TryRefreshAuthCookies(HttpContext);
+            return Problem(statusCode: statusCode, title: ex.Code, detail: ex.Message, instance: instance);
+        }
 
-        private IActionResult InternalServerError(string instance, string? detail = null) =>
-            Problem(
+        private IActionResult InternalServerError(string instance, string? detail = null)
+        {
+            TryRefreshAuthCookies(HttpContext);
+            return Problem(
                 statusCode: StatusCodes.Status500InternalServerError,
                 title: ExceptionsLabels.InternalServerErrorCode,
                 detail: detail ?? ExceptionsLabels.InternalServerErrorMessage,
                 instance: HttpContext.Request.Path
             );
+        }
         private IActionResult DeleteCookieAndProblem(int statusCode, string instance, GameException ex)
         {
             HttpContext.Response.DeleteAuthCookies();
             return Problem(statusCode, instance, ex);
+        }
+        private static void TryRefreshAuthCookies(HttpContext context)
+        {
+            if (context.Items.TryGetValue(ItemKeys.RefreshResultKey, out var value) && value is AuthResult refreshResult)
+            {
+                CookieHelper.SetAuthCookies(refreshResult, context);
+            }
         }
     }
 }

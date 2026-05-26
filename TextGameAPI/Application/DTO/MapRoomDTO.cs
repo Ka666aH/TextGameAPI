@@ -1,4 +1,4 @@
-﻿namespace TextGame.Presentation.DTO
+﻿namespace TextGame.Application.DTO
 {
     public record MapRoomDTO(int Number, string Name);
 }

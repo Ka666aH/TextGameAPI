@@ -53,13 +53,15 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> GetInventoryAsync(CancellationToken ct)
         {
             User.TryGetGameSessionId(out Guid gameSessionId);
-            return Ok(await _gameControllerService.GetInventoryAsync(gameSessionId, ct));
+            var items = await _gameControllerService.GetInventoryAsync(gameSessionId, ct);
+            return Ok(items.ToDTO());
         }
         [HttpGet("inventory/{itemId}")]
         public async Task<IActionResult> GetInventoryItemAsync(int itemId, CancellationToken ct)
         {
             User.TryGetGameSessionId(out Guid gameSessionId);
-            return Ok(await _gameControllerService.GetInventoryItemAsync(itemId, gameSessionId, ct));
+            var item = await _gameControllerService.GetInventoryItemAsync(itemId, gameSessionId, ct);
+            return Ok(item.ToDTO());
         }
         [HttpPost("inventory/{itemId}/sell")]
         public async Task<IActionResult> SellInventoryItemAsync(int itemId, CancellationToken ct)

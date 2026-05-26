@@ -1,7 +1,7 @@
-﻿using TextGame.Domain.Entities.GameObjects.Items;
+﻿using TextGame.Application.DTO;
+using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments;
 using TextGame.Domain.Entities.GameObjects.Rooms;
-using TextGame.Presentation.DTO;
 
 namespace TextGame.Application.Interfaces.Services
 {

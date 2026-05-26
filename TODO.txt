@@ -8,11 +8,8 @@
 	- Вынести require из controllerServices в GameSessionService
 	- Параметры авторизации FromBody
 	- BattleWinException заменить на bool (out BattleLog)?
-	- Сортировка свойств в ответе
-	- Проверить всё ли возвращает DTO
 2. БД (пользователи, сейвы, токены)
 3. JWT (Access(user и game), Refresh)
-	- Ложная компроментация
 4. Redis (текущая игровая сессия)
 	- Загрузка сейва - удаление текущей сессии из кэша
 	- Кэширование гет запросов

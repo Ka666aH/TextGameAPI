@@ -1,5 +1,5 @@
-﻿using TextGame.Domain.GameText;
-using TextGame.Presentation.DTO;
+﻿using TextGame.Application.DTO;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.GameExceptions
 {

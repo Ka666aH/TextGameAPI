@@ -1,4 +1,4 @@
-﻿using TextGame.Presentation.DTO;
+﻿using TextGame.Application.DTO;
 
 namespace TextGame.Domain.GameExceptions
 {
