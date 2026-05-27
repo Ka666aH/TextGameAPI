@@ -189,7 +189,7 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom.Items);
             var mimic = chest.Mimic;
             BattleLog battleLog;
             if (mimic is not null)
@@ -249,10 +249,11 @@ namespace TextGame.Application.Services
             RequireGameStarted();
             RequireNotInBattle();
 
-            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
-            if (_chestService.OpenChest(chest))
+            var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom.Items);
+            if (!_chestService.OpenChest(chest))
             {
                 _gameSessionService.EndGame();
+                await _gameSessionService.CacheAsync(gameSessionId, ct);
                 throw new DefeatException(ExceptionsLabels.PlayerEaten, _gameInfoService.GetGameInfo());
             }
 

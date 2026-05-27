@@ -2,7 +2,7 @@
 {
     public static class RoomsLabeles
     {
-        public const string StartRoomName = "СТАРТОВАЯ КОМАНТА";
+        public const string StartRoomName = "СТАРТОВАЯ КОМНАТА";
         public const string StartRoomDescription = "В потолке дыра, через которую Вы сюда провалились.";
         public const string SmallRoomName = "МАЛЕНЬКАЯ КОМНАТА";
         public const string SmallRoomDescription = "Тесная комната. Внутри может быть предмет.";
