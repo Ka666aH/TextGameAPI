@@ -18,13 +18,6 @@ namespace TextGame.Presentation.Controllers
             _gameControllerService = gameControllerRepository;
         }
 
-        //[HttpPost("start")]
-        //public IActionResult Start()
-        //{
-        //    //_gameControllerService.Start();
-        //    var room = _gameControllerService.GetCurrentRoom();
-        //    return Ok(room.ToDTO());
-        //}
         [HttpGet("info")]
         public async Task<IActionResult> GetInfoAsync(CancellationToken ct)
         {

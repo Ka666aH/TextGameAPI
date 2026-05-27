@@ -20,7 +20,7 @@ namespace TextGame.Presentation.Controllers
             _saveService = saveService;
         }
         [HttpPost]
-        public async Task<IActionResult> StartNewGameSessionAsync(string? gameSessionName,CancellationToken ct)
+        public async Task<IActionResult> StartNewGameSessionAsync([FromQuery]string? gameSessionName,CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
             Guid gameSessionId = await _saveService.CreateAsync(userId, gameSessionName, ct);

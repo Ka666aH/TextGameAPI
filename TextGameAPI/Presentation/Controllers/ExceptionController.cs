@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using TextGame.Application.DTO;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;

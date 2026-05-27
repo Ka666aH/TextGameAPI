@@ -3,6 +3,7 @@ using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;
 using TextGame.Presentation.Attributes;
+using TextGame.Presentation.DTO;
 using TextGame.Presentation.Helpers;
 
 namespace TextGame.Presentation.Controllers
@@ -18,17 +19,17 @@ namespace TextGame.Presentation.Controllers
             _authService = authService;
         }
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync(string login, string password, CancellationToken ct)
+        public async Task<IActionResult> RegisterAsync([FromBody]AuthRequest authRequest, CancellationToken ct)
         {
-            await _authService.RegisterAsync(login, password, ct);
-            return await LogInAsync(login, password, ct);
+            await _authService.RegisterAsync(authRequest.Login, authRequest.Password, ct);
+            return await LogInAsync(authRequest, ct);
         }
         [HttpPost("login")]
-        public async Task<IActionResult> LogInAsync(string login, string password, CancellationToken ct)
+        public async Task<IActionResult> LogInAsync([FromBody] AuthRequest authRequest, CancellationToken ct)
         {
             string fingerprint = GetFingerprint();
 
-            var authResult = await _authService.LogInAsync(login, password, fingerprint, ct);
+            var authResult = await _authService.LogInAsync(authRequest.Login, authRequest.Password, fingerprint, ct);
             SetAuthCookies(authResult);
             return Ok();
         }
