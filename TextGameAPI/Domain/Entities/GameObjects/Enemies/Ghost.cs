@@ -13,10 +13,9 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
                   GameBalance.GlassSwordBaseDamage,
                   GameBalance.GhostBaseDamageBlock)
         { }
-        public override int GetDamage(int damage)
+        public override void GetDamage(int damage)
         {
             if (Random.Shared.Next(GameBalance.GhostHitDivider) == 0) Health -= damage;
-            return Health;
         }
         private Ghost() { }
     }

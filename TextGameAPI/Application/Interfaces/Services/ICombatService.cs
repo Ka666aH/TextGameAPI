@@ -1,10 +1,11 @@
-﻿using TextGame.Domain.DTO;
+﻿using TextGame.Application.Enums;
+using TextGame.Domain.DTO;
 
 namespace TextGame.Application.Interfaces.Services
 {
     public interface ICombatService
     {
-        BattleLog DealDamage();
-        BattleLog GetDamage();
+        DealDamageOutcome DealDamage(out BattleLog battleLog);
+        GetDamageOutcome GetDamage(out BattleLog battleLog);
     }
 }

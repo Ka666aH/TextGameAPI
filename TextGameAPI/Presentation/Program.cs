@@ -33,7 +33,6 @@ builder.Services.AddScoped<IGameControllerService, GameControllerService>();
 //Зависимые
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IGameInfoService, GameInfoService>();
-builder.Services.AddScoped<IGetEnemyService, GetEnemyService>();
 builder.Services.AddScoped<IGetRoomService, GetRoomService>();
 builder.Services.AddScoped<ICombatService, CombatService>();
 builder.Services.AddScoped<ICheckItemService, CheckItemService>();

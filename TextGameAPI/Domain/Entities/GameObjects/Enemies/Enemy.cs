@@ -1,4 +1,5 @@
-﻿using TextGame.Domain.Entities.GameObjects.Rooms;
+﻿using TextGame.Domain.DTO;
+using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Domain.Entities.GameObjects.Enemies
 {
@@ -28,11 +29,10 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
             var (minDamageBlock, maxDamageBlock) = GameBalance.CalculateSpread(damageBlock, RoomId);
             DamageBlock = Random.Shared.Next(minDamageBlock, maxDamageBlock + 1);
         }
-        public virtual int Attack() => Damage;
-        public virtual int GetDamage(int damage)
+        public virtual EnemyAttackResult Attack() => new (Damage);
+        public virtual void GetDamage(int damage)
         {
             if (damage > DamageBlock) Health -= damage - DamageBlock;
-            return Health;
         }
         protected Enemy() { }
     }

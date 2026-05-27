@@ -7,6 +7,7 @@ using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 using TextGame.Domain.Entities.GameObjects.Items.Other;
 using TextGame.Application.DTO;
+using TextGame.Application.Enums;
 
 namespace TextGame.Application.Services
 {
@@ -17,7 +18,6 @@ namespace TextGame.Application.Services
         private readonly IGameInfoService _gameInfoService;
         private readonly IGetRoomService _getRoomService;
         private readonly IGetItemService _getItemService;
-        private readonly IGetEnemyService _getEnemyService;
         private readonly ICombatService _combatService;
         private readonly ICheckItemService _checkItemService;
         public RoomControllerService(
@@ -26,7 +26,6 @@ namespace TextGame.Application.Services
             IGameInfoService gameInfoService,
             IGetRoomService getRoomService,
             IGetItemService getItemService,
-            IGetEnemyService getEnemyService,
             ICombatService combatService,
             ICheckItemService checkItemService
             )
@@ -37,7 +36,6 @@ namespace TextGame.Application.Services
             _getRoomService = getRoomService;
             _getItemService = getItemService;
             _combatService = combatService;
-            _getEnemyService = getEnemyService;
             _checkItemService = checkItemService;
         }
         public async Task<Room> GetCurrentRoomAsync(Guid gameSessionId, CancellationToken ct = default)
@@ -131,34 +129,51 @@ namespace TextGame.Application.Services
 
             await _gameSessionService.CacheAsync(gameSessionId, ct);
         }
-        //public List<Enemy> GetEnemies(int roomId) => GetEnemyByIdRepository.GetEnemies();
         public async Task<Enemy> GetEnemyAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
-            return _getEnemyService.GetEnemy();
+            return _gameSessionService.CurrentEnemy;
         }
-        //here
         public async Task<BattleLog> DealDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
-            try
+            Enemy cachedEnemy = _gameSessionService.CurrentEnemy;
+            var outcome = _combatService.DealDamage(out var battleLog);
+            switch(outcome)
             {
-                var battleLog = _combatService.DealDamage();
-                return battleLog;
+                case DealDamageOutcome.BattleContinues: break;
+                case DealDamageOutcome.EnemyDefeated:
+                    if (_gameSessionService.CurrentRoom.Enemy == null) _gameSessionService.EndBattle();
+                    await _gameSessionService.CacheAsync(gameSessionId, ct);
+                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, cachedEnemy.Name), battleLog);
+                case DealDamageOutcome.PlayerDied:
+                    _gameSessionService.EndGame();
+                    await _gameSessionService.CacheAsync(gameSessionId, ct);
+                    throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
             }
-            finally
-            {
-                await _gameSessionService.CacheAsync(gameSessionId, ct);   
-            }
+            await _gameSessionService.CacheAsync(gameSessionId, ct);
+            return battleLog;
         }
         public async Task<BattleLog> GetDamageAsync(Guid gameSessionId, CancellationToken ct = default)
         {
             await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
             RequireGameStarted();
-
-            var battleLog = _combatService.GetDamage();
+            Enemy cachedEnemy = _gameSessionService.CurrentEnemy;
+            var outcome = _combatService.GetDamage(out var battleLog);
+            switch (outcome)
+            {
+                case GetDamageOutcome.BattleContinues: break;
+                case GetDamageOutcome.PlayerDefeated:
+                    _gameSessionService.EndGame();
+                    await _gameSessionService.CacheAsync(gameSessionId, ct);
+                    throw new DefeatException(string.Format(ExceptionsLabels.PlayerDefeated, cachedEnemy.Name), _gameInfoService.GetGameInfo());
+                case GetDamageOutcome.EnemyDied:
+                    _gameSessionService.EndBattle();
+                    await _gameSessionService.CacheAsync(gameSessionId, ct);
+                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemySuicideText, cachedEnemy.Name), battleLog);
+            }
             await _gameSessionService.CacheAsync(gameSessionId, ct);
             return battleLog;
         }
@@ -175,26 +190,39 @@ namespace TextGame.Application.Services
             RequireNotInBattle();
 
             var chest = _chestService.GetChest(chestId, _gameSessionService.CurrentRoom!.Items);
-
+            var mimic = chest.Mimic;
             BattleLog battleLog;
-            if (chest.Mimic is not null)
+            if (mimic is not null)
             {
                 _gameSessionService.SetCurrentMimicChest(chest);
                 _gameSessionService.RemoveItemFromCurrentRoom(chest);
-                _gameSessionService.AddEnemyToCurrentRoom(chest.Mimic);
+                _gameSessionService.AddEnemyToCurrentRoom(mimic);
                 _gameSessionService.StartBattle();
-                battleLog = _combatService.DealDamage();
+                var outcome = _combatService.DealDamage(out battleLog);
+                switch (outcome)
+                {
+                    case DealDamageOutcome.BattleContinues:
+                        await _gameSessionService.CacheAsync(gameSessionId, ct);
+                        return battleLog;
+                    case DealDamageOutcome.EnemyDefeated:
+                        if (_gameSessionService.CurrentRoom.Enemy == null) _gameSessionService.EndBattle();
+                        await _gameSessionService.CacheAsync(gameSessionId, ct);
+                        throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, mimic.Name), battleLog);
+                    case DealDamageOutcome.PlayerDied:
+                        _gameSessionService.EndGame();
+                        await _gameSessionService.CacheAsync(gameSessionId, ct);
+                        throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
+                }
             }
             else
             {
                 int playerHealthBeforeAttack = _gameSessionService.CurrentHealth;
                 //attack
-                var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom!.Id);
+                var attackResult = _gameSessionService.Weapon.Attack(_gameSessionService.CurrentRoom.Id);
                 if (attackResult.SelfDamage != 0) _gameSessionService.AddCurrentHealth(-attackResult.SelfDamage);
                 if (attackResult.IsWeaponBrokenDown) _gameSessionService.RemoveWeapon();
 
-                int playerHealthAfterAttack = playerHealthBeforeAttack - _gameSessionService.CurrentHealth;
-                battleLog = new BattleLog(ItemsLabeles.ChestName, attackResult.Damage, null, null, GeneralLabeles.PlayerName, playerHealthAfterAttack, playerHealthBeforeAttack, _gameSessionService.CurrentHealth);
+                battleLog = new BattleLog(ItemsLabeles.ChestName, attackResult.Damage, null, null, GeneralLabeles.PlayerName, attackResult.SelfDamage, playerHealthBeforeAttack, _gameSessionService.CurrentHealth);
             }
 
             await _gameSessionService.CacheAsync(gameSessionId, ct);

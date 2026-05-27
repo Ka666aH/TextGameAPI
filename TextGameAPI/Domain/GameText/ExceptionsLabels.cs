@@ -99,7 +99,8 @@ namespace TextGame.Domain.GameText
         public const string NotEqiipmentText = "Это не снаряжение.";
 
         public const string EnemyDefeated = "{0} повержен.";
-        public const string SuicideText = "Вы погибли от своей же атаки. Как отчаянно.";
+        public const string PlayerSuicideText = "Вы погибли от своей же атаки. Как отчаянно.";
+        public const string EnemySuicideText = "{0} погиб от своей же атаки. Как глупо.";
         public const string PlayerDefeated = "Вы были повержены {0}ОМ.";
         public const string PlayerPoisoned = "{0} приводит Вас к гибели!";
         public const string PlayerEaten = "НА ВАС НАПАЛ МИМИК! ВЫ БЫЛИ ПРОГЛОЧЕНЫ И ПЕРЕВАРЕНЫ!";

@@ -6,8 +6,8 @@
 	- IReadOnlyList для неизменяемых списков
 	- Унифицировать исключения (NullId и NotFound)
 	- Вынести require из controllerServices в GameSessionService
-	- Параметры авторизации FromBody
-	- BattleWinException заменить на bool (out BattleLog)?
+	- Перестать выкидывать исключения для управления потоком
+	- Сомнительно. public Enemy CurrentEnemy { get => CurrentRoom.Enemy ?? throw new NullEnemyIdException(); }
 2. БД (пользователи, сейвы, токены)
 3. JWT (Access(user и game), Refresh)
 4. Redis (текущая игровая сессия)
@@ -17,6 +17,7 @@
 6. Docker
 
 (Возможно) 
+	- Логин игрока в логах.
 	- Не хранить отозванные токены.
 	- Убрать хардкод интервал из сервиса очистки просроченных токенов.
 	- MessagePack.
