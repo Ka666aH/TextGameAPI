@@ -28,17 +28,15 @@ namespace TextGame.Application.Services
             GameSession gameSession = _gameSessionFactory.CreateGameSession(userId, gameSessionName);
             await _gameSessionRepository.CreateAsync(gameSession, ct);
             await _unitOfWork.SaveChangesAsync(ct);
-            await _cache.SetAsync(gameSession.Id, gameSession.State, ct);
             return gameSession.Id;
         }
-        public async Task<string> LoadAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
+        public async Task<string> LoadAsync(Guid userId, Guid currentGameSessionId, Guid loadingGameSessionId, CancellationToken ct = default)
         {
-            GameSessionState gameSessionState = await _gameSessionRepository.GetStateAsync(gameSessionId, ct)
+            GameSessionState gameSessionState = await _gameSessionRepository.GetStateAsync(loadingGameSessionId, ct)
                 ?? throw new GameSessionNotFoundException();
-            //if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
-            //here
-            await _cache.SetAsync(gameSessionId, gameSessionState, ct);
-            return _tokenRepository.GenerateAccessToken(userId, gameSessionId);
+            if (currentGameSessionId == Guid.Empty) await _cache.DeleteAsync(currentGameSessionId, ct);
+            await _cache.SetAsync(loadingGameSessionId, gameSessionState, ct);
+            return _tokenRepository.GenerateAccessToken(userId, loadingGameSessionId);
         }
         public async Task SaveAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
         {
@@ -47,8 +45,6 @@ namespace TextGame.Application.Services
             if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
             GameSessionState cachedGameSessionState = await _cache.GetAsync(gameSessionId, ct)
                 ?? throw new GameSessionNotFoundException();
-            //if (cachedGameSessionState.UserId != userId) throw new NotGameSessionOwnerException();
-            //here
             gameSession.SetState(cachedGameSessionState);
             gameSession.UpdateLastSavedAt();
             await _unitOfWork.SaveChangesAsync(ct);

@@ -20,11 +20,12 @@ namespace TextGame.Presentation.Controllers
             _saveService = saveService;
         }
         [HttpPost]
-        public async Task<IActionResult> StartNewGameSessionAsync([FromQuery]string? gameSessionName,CancellationToken ct)
+        public async Task<IActionResult> StartNewGameSessionAsync([FromQuery] string? gameSessionName, CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            Guid gameSessionId = await _saveService.CreateAsync(userId, gameSessionName, ct);
-            string newAccessToken = await _saveService.LoadAsync(userId, gameSessionId, ct);
+            User.TryGetGameSessionId(out Guid currentGameSessionId);
+            Guid newGameSessionId = await _saveService.CreateAsync(userId, gameSessionName, ct);
+            string newAccessToken = await _saveService.LoadAsync(userId, currentGameSessionId, newGameSessionId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
             return Ok();
         }
@@ -32,7 +33,8 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> LoadGameSessionAsync(Guid gameSessionId, CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            string newAccessToken = await _saveService.LoadAsync(userId, gameSessionId, ct);
+            User.TryGetGameSessionId(out Guid currentGameSessionId);
+            string newAccessToken = await _saveService.LoadAsync(userId, currentGameSessionId, gameSessionId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
             return Ok();
         }
