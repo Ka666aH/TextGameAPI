@@ -24,7 +24,7 @@
             {
                 var (min, max) = GameBalance.CalculateSpread((int)maxHealthBoost!, _roomId);
                 MaxHealthBoost = Random.Shared.Next(min, max + 1);
-                if (_fromShop) GameBalance.CalculateShopMultiplier((int)MaxHealthBoost!);
+                if (_fromShop) MaxHealthBoost = GameBalance.CalculateShopMultiplier((int)MaxHealthBoost!);
                 Cost += (int)(MaxHealthBoost * GameBalance.MaxHealthCostMultiplier);
             }
 
@@ -33,7 +33,7 @@
             {
                 var (min, max) = GameBalance.CalculateSpread((int)currentHealthBoost!, _roomId);
                 CurrentHealthBoost = Random.Shared.Next(min, max + 1);
-                if (_fromShop) GameBalance.CalculateShopMultiplier((int)CurrentHealthBoost!);
+                if (_fromShop) CurrentHealthBoost = GameBalance.CalculateShopMultiplier((int)CurrentHealthBoost!);
                 Cost += (int)(CurrentHealthBoost * GameBalance.CurrentHealthCostMultiplier);
             }
         }

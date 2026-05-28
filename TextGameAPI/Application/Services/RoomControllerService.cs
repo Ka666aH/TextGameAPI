@@ -125,6 +125,7 @@ namespace TextGame.Application.Services
 
             _gameSessionService.AddCoins(-(int)item.Cost!);
             _gameSessionService.RemoveItemFromCurrentRoom(item);
+            item.RemoveStoreMargin();
             _gameSessionService.AddItemToInventory(item);
 
             await _gameSessionService.CacheAsync(gameSessionId, ct);

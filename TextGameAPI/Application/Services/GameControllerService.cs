@@ -147,7 +147,7 @@ namespace TextGame.Application.Services
             await _gameSessionService.EnsureLoadedAsync(gameSessionId, ct);
 
             RequireGameStarted();
-            //RequireNotInBattle();
+            RequireNotInBattle();
             RequireShop();
 
             Item item = _getItemService.GetItem(itemId, _gameSessionService.Inventory);
