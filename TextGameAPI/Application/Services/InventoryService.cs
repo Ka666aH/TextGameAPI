@@ -76,6 +76,7 @@ namespace TextGame.Application.Services
 
             _gameSessionService.RemoveItemFromInventory(item);
             _gameSessionService.AddCoins((int)item.Cost);
+            _gameSessionService.CurrentRoom.AddItem(item);
         }
     }
 }
