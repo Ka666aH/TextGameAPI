@@ -7,12 +7,12 @@ namespace TextGame.Application.Services
 {
     public class GameSessionProvider : IGameSessionProvider
     {
-        private readonly IGameSessionRepository _gameSessionRepository;
+        private readonly IGameSessionSaveRepository _gameSessionSaveRepository;
         private readonly IGameSessionStateCacheService _gameSessionCacheService;
 
-        public GameSessionProvider(IGameSessionRepository gameSessionRepository, IGameSessionStateCacheService gameSessionCacheService)
+        public GameSessionProvider(IGameSessionSaveRepository gameSessionSaveRepository, IGameSessionStateCacheService gameSessionCacheService)
         {
-            _gameSessionRepository = gameSessionRepository;
+            _gameSessionSaveRepository = gameSessionSaveRepository;
             _gameSessionCacheService = gameSessionCacheService;
         }
 
@@ -20,9 +20,10 @@ namespace TextGame.Application.Services
         {
             var cached = await _gameSessionCacheService.GetAsync(gameSessionId, ct);
             if (cached != null) return cached;
-            var gameSession = await _gameSessionRepository.GetStateAsync(gameSessionId, ct) ?? throw new GameSessionNotFoundException();
-            try { await _gameSessionCacheService.SetAsync(gameSessionId, gameSession, ct); } catch { }
-            return gameSession;
+            var gameSessionSave = await _gameSessionSaveRepository.GetLastSaveAsync(gameSessionId, ct) ?? throw new GameSessionSaveNotFoundException();
+            var gameSessionState = gameSessionSave.State;
+            try { await _gameSessionCacheService.SetAsync(gameSessionId, gameSessionState, ct); } catch { }
+            return gameSessionState;
         }
     }
 }

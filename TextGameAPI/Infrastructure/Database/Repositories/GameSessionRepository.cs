@@ -10,22 +10,13 @@ namespace TextGame.Infrastructure.Database.Repositories
         public GameSessionRepository(AppDbContext db) => _db = db;
         public async Task CreateAsync(GameSession gameSession, CancellationToken ct = default) =>
             await _db.GameSessions.AddAsync(gameSession, ct);
-        public async Task<GameSession?> GetAsync(Guid gameSessionId, CancellationToken ct = default) =>
-            await _db.GameSessions
-            .SingleOrDefaultAsync(x => x.Id == gameSessionId, ct);
         public Task DeleteAsync(GameSession gameSession, CancellationToken ct = default)
         {
             _db.GameSessions.Remove(gameSession);
             return Task.CompletedTask;
         }
-
-        public async Task<GameSessionState?> GetStateAsync(Guid gameSessionId, CancellationToken ct = default) =>
-            await _db.GameSessions
-            .AsNoTracking()
-            .Where(x => x.Id == gameSessionId)
-            .Select(x => x.State)
-            .SingleOrDefaultAsync(ct);
-
+        public async Task<GameSession?> GetAsync(Guid gameSessionId, CancellationToken ct = default) =>
+            await _db.GameSessions.SingleOrDefaultAsync(x => x.Id == gameSessionId, ct);
         public async Task<List<GameSession>> GetListAsync(Guid userId, CancellationToken ct = default) =>
             await _db.GameSessions
             .AsNoTracking()

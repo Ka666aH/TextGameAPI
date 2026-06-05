@@ -8,60 +8,54 @@ namespace TextGame.Application.Services
 {
     public class SaveService : ISaveService
     {
-        private readonly IGameSessionRepository _gameSessionRepository;
+        private readonly IGameSessionSaveRepository _gameSessionSaveRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ITokenRepository _tokenRepository;
         private readonly IGameSessionStateCacheService _cache;
-        private readonly IGameSessionFactory _gameSessionFactory;
+        private readonly IGameSessionSaveFactory _gameSessionSaveFactory;
+        private readonly ISessionAccessGuard _sessionAccessGuard;
 
-        public SaveService(IGameSessionRepository gameSessionRepository, IUnitOfWork unitOfWork, ITokenRepository tokenRepository, IGameSessionStateCacheService cache, IGameSessionFactory gameSessionFactory)
+        public SaveService(IGameSessionSaveRepository gameSessionSaveRepository, IUnitOfWork unitOfWork, IGameSessionStateCacheService cache, IGameSessionSaveFactory gameSessionSaveFactory, ISessionAccessGuard sessionAccessGuard)
         {
-            _gameSessionRepository = gameSessionRepository;
+            _gameSessionSaveRepository = gameSessionSaveRepository;
             _unitOfWork = unitOfWork;
-            _tokenRepository = tokenRepository;
             _cache = cache;
-            _gameSessionFactory = gameSessionFactory;
+            _gameSessionSaveFactory = gameSessionSaveFactory;
+            _sessionAccessGuard = sessionAccessGuard;
         }
 
-        public async Task<Guid> CreateAsync(Guid userId, string? gameSessionName, CancellationToken ct = default)
+        public async Task<Guid> CreateAsync(Guid gameSessionId, SaveType saveType, string? name = null, CancellationToken ct = default)
         {
-            GameSession gameSession = _gameSessionFactory.CreateGameSession(userId, gameSessionName);
-            await _gameSessionRepository.CreateAsync(gameSession, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-            return gameSession.Id;
-        }
-        public async Task<string> LoadAsync(Guid userId, Guid currentGameSessionId, Guid loadingGameSessionId, CancellationToken ct = default)
-        {
-            GameSessionState gameSessionState = await _gameSessionRepository.GetStateAsync(loadingGameSessionId, ct)
-                ?? throw new GameSessionNotFoundException();
-            if (currentGameSessionId == Guid.Empty) await _cache.DeleteAsync(currentGameSessionId, ct);
-            await _cache.SetAsync(loadingGameSessionId, gameSessionState, ct);
-            return _tokenRepository.GenerateAccessToken(userId, loadingGameSessionId);
-        }
-        public async Task SaveAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
-        {
-            GameSession gameSession = await _gameSessionRepository.GetAsync(gameSessionId, ct)
-                ?? throw new GameSessionNotFoundException();
-            if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
-            GameSessionState cachedGameSessionState = await _cache.GetAsync(gameSessionId, ct)
-                ?? throw new GameSessionNotFoundException();
-            gameSession.SetState(cachedGameSessionState);
-            gameSession.UpdateLastSavedAt();
-            await _unitOfWork.SaveChangesAsync(ct);
-        }
-        public async Task DeleteAsync(Guid userId, Guid gameSessionId, CancellationToken ct = default)
-        {
-            GameSession gameSession = await _gameSessionRepository.GetAsync(gameSessionId, ct)
-                ?? throw new GameSessionNotFoundException();
-            if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
+            var state =
+                saveType != SaveType.Initial ?
+                await _cache.GetAsync(gameSessionId, ct) ?? throw new GameSessionNotFoundException() :
+                null;
 
-            await _gameSessionRepository.DeleteAsync(gameSession, ct);
+            var save = saveType switch
+            {
+                SaveType.Initial => _gameSessionSaveFactory.CreateInitialGameSessionSave(gameSessionId),
+                SaveType.Manual => _gameSessionSaveFactory.CreateManualGameSessionSave(gameSessionId, name, state!),
+                _ => _gameSessionSaveFactory.CreateAutoGameSessionSave(gameSessionId, state!)
+            };
+
+            await _gameSessionSaveRepository.CreateAsync(save, ct);
             await _unitOfWork.SaveChangesAsync(ct);
-            await _cache.DeleteAsync(gameSessionId, ct);
+            return save.Id;
         }
-        public async Task<List<GameSession>> GetListAsync(Guid userId, CancellationToken ct = default)
+        public async Task DeleteAsync(Guid gameSessionId, Guid gameSessionSaveId, CancellationToken ct = default)
         {
-            return await _gameSessionRepository.GetListAsync(userId, ct);
+            await _sessionAccessGuard.EnsureOwnershipAsync(gameSessionId, ct);
+            GameSessionSave gameSessionSave = await _gameSessionSaveRepository.GetAsyncWithTrack(gameSessionSaveId, ct) ?? throw new GameSessionSaveNotFoundException();
+            if (gameSessionSave.Type != SaveType.Manual) throw new ImpossibleDeleteSaveException();
+            await _gameSessionSaveRepository.DeleteAsync(gameSessionSave, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
+        public async Task<List<GameSessionSave>> GetListAsync(Guid gameSessionId, CancellationToken ct = default) =>
+            await _gameSessionSaveRepository.GetListAsync(gameSessionId, ct);
+        public async Task LoadAsync(Guid gameSessionId, Guid gameSessionSaveId, CancellationToken ct = default)
+        {
+            await _sessionAccessGuard.EnsureOwnershipAsync(gameSessionId, ct);
+            GameSessionSave gameSessionSave = await _gameSessionSaveRepository.GetAsync(gameSessionSaveId, ct) ?? throw new GameSessionSaveNotFoundException();
+            await _cache.SetAsync(gameSessionId, gameSessionSave.State, ct);
         }
     }
 }

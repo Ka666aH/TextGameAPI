@@ -73,15 +73,16 @@ namespace TextGame.Presentation.Controllers
                 EmptyException or
                 NullEnemyIdException or
                 UserNotFoundException or
+                GameSessionSaveNotFoundException or
                 GameSessionNotFoundException =>
                     Problem(404, originalPath, gameEx),
 
                 InvalidIdException or
                 UncarryableException or
                 ImpossibleStealException or
-                UnsellableItemException =>
-                    Problem(422, originalPath, gameEx),
-
+                UnsellableItemException or //=> Problem(422, originalPath, gameEx),
+                
+                ImpossibleDeleteSaveException or
                 NotGameSessionOwnerException or
                 UnstartedGameException or
                 LockedException or

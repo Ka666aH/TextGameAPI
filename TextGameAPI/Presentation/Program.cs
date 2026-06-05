@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using TextGame.Application.DTO;
 using TextGame.Application.Factories;
 using TextGame.Application.Generators;
@@ -21,7 +22,6 @@ using TextGame.Presentation.Middleware;
 using TextGame.Presentation.Options;
 
 var builder = WebApplication.CreateBuilder(args);
-
 //Ядро состояния
 builder.Services.AddScoped<IGameSessionProvider, GameSessionProvider>();
 builder.Services.AddScoped<IGameSessionStateService, GameSessionStateService>();
@@ -43,7 +43,8 @@ builder.Services.AddScoped<IItemIdService, ItemIdService>();
 builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
 
 //Фабрики
-builder.Services.AddScoped<IGameSessionFactory, GameSessionFactory>();
+builder.Services.AddSingleton<IGameSessionFactory, GameSessionFactory>();
+builder.Services.AddScoped<IGameSessionSaveFactory, GameSessionSaveFactory>();
 builder.Services.AddScoped<IRoomFactory, RoomFactory>();
 builder.Services.AddScoped<IItemFactory, ItemFactory>();
 builder.Services.AddScoped<IEnemyFactory, EnemyFactory>();
@@ -61,17 +62,23 @@ var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 //Кэширование
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") 
+    ?? throw new InvalidOperationException("Reids is not configured."); ;
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.Configuration = redisConnectionString;
 });
 builder.Services.AddSingleton<ICacheRepository, RedisRepository>();
-
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisConnectionString));
 //Репозитории
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
+builder.Services.AddScoped<IGameSessionSaveRepository, GameSessionSaveRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+builder.Services.AddScoped<ISessionAccessGuard, SessionAccessGuard>();
 
 builder.Services.AddSingleton<IGameSessionStateCacheService, GameSessionStateCacheService>();
 
@@ -83,10 +90,12 @@ builder.Services.AddSingleton<IValidator<RegisterCommand>, RegisterCommandValida
 
 //Сервисы
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 builder.Services.AddScoped<ISaveService, SaveService>();
 
 //Фоновые сервисы
 builder.Services.AddHostedService<TokenCleaningService>();
+builder.Services.AddHostedService<AutoSaveService>();
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -104,6 +113,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.RequireGameSession, policy => policy.RequireClaim(AccessClaims.GameSessionId));
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();

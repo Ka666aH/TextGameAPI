@@ -9,8 +9,6 @@ namespace TextGame.Presentation.Mappers
             => new(
             gameSession.Id,
             gameSession.Name,
-            gameSession.State.CurrentRoomId,
-            gameSession.LastSavedAt,
             gameSession.CreatedAt);
         public static List<GameSessionDTO> ToDTO(this List<GameSession> gameSessions) =>
             [.. gameSessions.Select(ToDTO)];

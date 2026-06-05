@@ -10,6 +10,12 @@ namespace TextGame.Domain.GameText
         public const string GameSessionNotFoundCode = "GAME_SESSION_NOT_FOUND";
         public const string GameSessionNotFoundMessage = "Игровая сессия не найдена.";
 
+        public const string GameSessionSaveNotFoundCode = "GAME_SESSION_SAVE_NOT_FOUND";
+        public const string GameSessionSaveNotFoundMessage = "Сохранение не найдено.";
+
+        public const string ImpossibleDeleteGameSessionSaveCode = "IMPOSSIBLE_DELETE_GAME_SESSION_SAVE";
+        public const string ImpossibleDeleteGameSessionSaveMessage = "Невозможно удалить сохранение.";
+
         public const string NotGameSessionOwnerCode = "GAME_SESSION_BELONGS_TO_ANOTHER_USER";
         public const string NotGameSessionOwnerMessage = "Игровая сессия принадлежит другому пользователю.";
 
