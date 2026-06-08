@@ -9,7 +9,7 @@ using TextGame.Presentation.Options;
 namespace TextGame.Presentation.Controllers
 {
     [ApiController]
-    [Authorize(Policy = Policies.RequireGameSession)]
+    [Authorize(Policy = Policies.RequireSession)]
     [Route("saves")]
     public class SaveController : ControllerBase
     {
@@ -22,7 +22,7 @@ namespace TextGame.Presentation.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromQuery] string? gameSessionSaveName, CancellationToken ct)
         {
-            User.TryGetGameSessionId(out Guid gameSessionId);
+            User.TryGetSessionId(out Guid gameSessionId);
             Guid newGameSessionSaveId = await _saveService.CreateAsync(gameSessionId, SaveType.Manual, gameSessionSaveName, ct);
             await _saveService.LoadAsync(gameSessionId, newGameSessionSaveId, ct);
             return Ok();
@@ -30,22 +30,22 @@ namespace TextGame.Presentation.Controllers
         [HttpGet("{gameSessionSaveId}")]
         public async Task<IActionResult> LoadGameSessionSaveAsync(Guid gameSessionSaveId, CancellationToken ct)
         {
-            User.TryGetGameSessionId(out Guid gameSessionId);
+            User.TryGetSessionId(out Guid gameSessionId);
             await _saveService.LoadAsync(gameSessionId, gameSessionSaveId, ct);
             return Ok();
         }
         [HttpDelete("{gameSessionSaveId}")]
         public async Task<IActionResult> DeleteGameSessionAsync(Guid gameSessionSaveId, CancellationToken ct)
         {
-            User.TryGetGameSessionId(out Guid gameSessionId);
+            User.TryGetSessionId(out Guid gameSessionId);
             await _saveService.DeleteAsync(gameSessionId, gameSessionSaveId, ct);
             return Ok();
         }
         [HttpGet]
         public async Task<IActionResult> GetGameSessionSavesAsync(CancellationToken ct)
         {
-            User.TryGetGameSessionId(out Guid gameSessionId);
-            List<GameSessionSave> gameSessionSaves = await _saveService.GetListAsync(gameSessionId, ct);
+            User.TryGetSessionId(out Guid gameSessionId);
+            List<Save> gameSessionSaves = await _saveService.GetListAsync(gameSessionId, ct);
             return Ok(gameSessionSaves.ToDTO());
         }
     }

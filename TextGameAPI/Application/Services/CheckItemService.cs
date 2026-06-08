@@ -7,11 +7,11 @@ namespace TextGame.Application.Services
 {
     public class CheckItemService : ICheckItemService
     {
-        private readonly IGameSessionStateService _gameSessionService;
+        private readonly IStateService _stateService;
 
-        public CheckItemService(IGameSessionStateService gameSessionService)
+        public CheckItemService(IStateService stateService)
         {
-            _gameSessionService = gameSessionService;
+            _stateService = stateService;
         }
 
         public void CheckItem(Item item)
@@ -19,9 +19,9 @@ namespace TextGame.Application.Services
             if (!item.IsCarryable) throw new UncarryableException();
             switch (item)
             {
-                case BagOfCoins: _gameSessionService.AddCoins((int)item.Cost!); break;
-                case Key: _gameSessionService.AddKeys(1); break;
-                default: _gameSessionService.AddItemToInventory(item); break;
+                case BagOfCoins: _stateService.AddCoins((int)item.Cost!); break;
+                case Key: _stateService.AddKeys(1); break;
+                default: _stateService.AddItemToInventory(item); break;
             }
         }
     }

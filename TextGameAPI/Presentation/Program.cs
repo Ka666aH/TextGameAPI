@@ -23,8 +23,8 @@ using TextGame.Presentation.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 //Ядро состояния
-builder.Services.AddScoped<IGameSessionProvider, GameSessionProvider>();
-builder.Services.AddScoped<IGameSessionStateService, GameSessionStateService>();
+builder.Services.AddScoped<ISessionProvider, SessionProvider>();
+builder.Services.AddScoped<IStateService, StateService>();
 
 //Оркестраторные
 builder.Services.AddScoped<IRoomControllerService, RoomControllerService>();
@@ -43,8 +43,8 @@ builder.Services.AddScoped<IItemIdService, ItemIdService>();
 builder.Services.AddScoped<IEnemyIdService, EnemyIdService>();
 
 //Фабрики
-builder.Services.AddSingleton<IGameSessionFactory, GameSessionFactory>();
-builder.Services.AddScoped<IGameSessionSaveFactory, GameSessionSaveFactory>();
+builder.Services.AddSingleton<ISessionFactory, SessionFactory>();
+builder.Services.AddScoped<ISaveFactory, SaveFactory>();
 builder.Services.AddScoped<IRoomFactory, RoomFactory>();
 builder.Services.AddScoped<IItemFactory, ItemFactory>();
 builder.Services.AddScoped<IEnemyFactory, EnemyFactory>();
@@ -63,7 +63,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 
 //Кэширование
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") 
-    ?? throw new InvalidOperationException("Reids is not configured."); ;
+    ?? throw new InvalidOperationException("Reids is not configured.");
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnectionString;
@@ -74,13 +74,13 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 //Репозитории
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
-builder.Services.AddScoped<IGameSessionSaveRepository, GameSessionSaveRepository>();
+builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+builder.Services.AddScoped<ISaveRepository, SaveRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 builder.Services.AddScoped<ISessionAccessGuard, SessionAccessGuard>();
 
-builder.Services.AddSingleton<IGameSessionStateCacheService, GameSessionStateCacheService>();
+builder.Services.AddSingleton<IStateCacheService, StateCacheService>();
 
 builder.Services.AddSingleton<ITokenRepository, JWTRepository>();
 
@@ -90,7 +90,7 @@ builder.Services.AddSingleton<IValidator<RegisterCommand>, RegisterCommandValida
 
 //Сервисы
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IGameSessionService, GameSessionService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<ISaveService, SaveService>();
 
 //Фоновые сервисы
@@ -111,7 +111,7 @@ var jwtSecret = builder.Configuration["JwtSettings:Secret"]
 JwtKeyProvider.Initialize(jwtSecret);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(JWTOptions.Configure);
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy(Policies.RequireGameSession, policy => policy.RequireClaim(AccessClaims.GameSessionId));
+    .AddPolicy(Policies.RequireSession, policy => policy.RequireClaim(AccessClaims.SessionId));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHealthChecks();

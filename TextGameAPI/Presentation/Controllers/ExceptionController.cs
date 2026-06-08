@@ -57,7 +57,7 @@ namespace TextGame.Presentation.Controllers
 
                 AccessTokenNotFoundException or
                 MissingUserIdClaimException or
-                MissingGameSessionIdClaimException or
+                MissingSessionIdClaimException or
                 RefreshTokenNotFoundException or
                 RefreshTokenExpiredException or
                 RefreshTokenCompromisedException =>
@@ -73,8 +73,8 @@ namespace TextGame.Presentation.Controllers
                 EmptyException or
                 NullEnemyIdException or
                 UserNotFoundException or
-                GameSessionSaveNotFoundException or
-                GameSessionNotFoundException =>
+                SaveNotFoundException or
+                SessionNotFoundException =>
                     Problem(404, originalPath, gameEx),
 
                 InvalidIdException or

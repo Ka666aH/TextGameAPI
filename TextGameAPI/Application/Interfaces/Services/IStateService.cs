@@ -8,7 +8,7 @@ using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
 
 namespace TextGame.Application.Interfaces.Services
 {
-    public interface IGameSessionStateService
+    public interface IStateService
     {
         Task EnsureLoadedAsync(Guid gameSessionId, CancellationToken ct = default);
         Task CacheAsync(Guid gameSessionId, CancellationToken ct = default);

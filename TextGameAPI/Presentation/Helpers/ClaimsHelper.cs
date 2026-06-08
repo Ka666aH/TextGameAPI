@@ -11,11 +11,11 @@ namespace TextGame.Presentation.Helpers
             var claimValue = user.FindFirst(AccessClaims.UserId)?.Value;
             return claimValue != null && Guid.TryParse(claimValue, out userId);
         }
-        public static bool TryGetGameSessionId(this ClaimsPrincipal user, out Guid gameSessionId)
+        public static bool TryGetSessionId(this ClaimsPrincipal user, out Guid sessionId)
         {
-            gameSessionId = default;
-            var claimValue = user.FindFirst(AccessClaims.GameSessionId)?.Value;
-            return claimValue != null && Guid.TryParse(claimValue, out gameSessionId);
+            sessionId = default;
+            var claimValue = user.FindFirst(AccessClaims.SessionId)?.Value;
+            return claimValue != null && Guid.TryParse(claimValue, out sessionId);
         }
     }
 }

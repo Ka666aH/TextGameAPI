@@ -21,7 +21,13 @@ namespace TextGame.Application.Services
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AuthService(IValidator<RegisterCommand> registerValidator, IHasher hasher, IUserRepository userRepository, ITokenRepository tokenRepository, IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork)
+        public AuthService(
+            IValidator<RegisterCommand> registerValidator, 
+            IHasher hasher, 
+            IUserRepository userRepository, 
+            ITokenRepository tokenRepository, 
+            IRefreshTokenRepository refreshTokenRepository, 
+            IUnitOfWork unitOfWork)
         {
             _registerValidator = registerValidator;
             _hasher = hasher;
@@ -75,7 +81,7 @@ namespace TextGame.Application.Services
             if (accessToken != "")
             {
                 var principal = _tokenRepository.ReadTokenWithoutLifetime(accessToken);
-                var claimValue = principal.FindFirst(AccessClaims.GameSessionId)?.Value;
+                var claimValue = principal.FindFirst(AccessClaims.SessionId)?.Value;
                 if (claimValue != null && Guid.TryParse(claimValue, out var parsed)) gameSessionId = parsed;
             }
 

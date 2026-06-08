@@ -6,15 +6,15 @@ namespace TextGame.Application.Services
 {
     public class GetRoomService : IGetRoomService
     {
-        private readonly IGameSessionStateService _gameSessionService;
-        public GetRoomService(IGameSessionStateService gameSessionService)
+        private readonly IStateService _stateService;
+        public GetRoomService(IStateService stateService)
         {
-            _gameSessionService = gameSessionService;
+            _stateService = stateService;
         }
         public Room GetRoom(int roomId)
         {
-            if (roomId < 0 || roomId > _gameSessionService.Rooms.Count) throw new NullRoomIdException();
-            Room room = _gameSessionService.Rooms[roomId];
+            if (roomId < 0 || roomId > _stateService.Rooms.Count) throw new NullRoomIdException();
+            Room room = _stateService.Rooms[roomId];
             if (!room.IsDiscovered) throw new UndiscoveredRoomException();
             return room;
         }

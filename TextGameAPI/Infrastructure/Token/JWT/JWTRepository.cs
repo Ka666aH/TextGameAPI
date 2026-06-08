@@ -31,7 +31,7 @@ namespace TextGame.Infrastructure.Token.JWT
                 new(AccessClaims.UserId, userId.ToString())
             };
             if (gameSessionId.HasValue)
-                claims.Add(new(AccessClaims.GameSessionId, gameSessionId.Value.ToString()));
+                claims.Add(new(AccessClaims.SessionId, gameSessionId.Value.ToString()));
             
             var token = new JwtSecurityToken
             (

@@ -47,7 +47,7 @@ public class AutoSaveService : BackgroundService
         if (redisData.Count == 0) return;
 
         using var scope = _scopeFactory.CreateScope();
-        var repo = scope.ServiceProvider.GetRequiredService<IGameSessionSaveRepository>();
+        var repo = scope.ServiceProvider.GetRequiredService<ISaveRepository>();
 
         var existingHashes = await repo.GetAutoSaveHashesAsync([.. redisData.Keys], ct);
 
@@ -58,10 +58,10 @@ public class AutoSaveService : BackgroundService
 
         if (changedIds.Count == 0) return;
 
-        var factory = scope.ServiceProvider.GetRequiredService<IGameSessionSaveFactory>();
-        var autoSaves = new List<GameSessionSave>(changedIds.Count);
+        var factory = scope.ServiceProvider.GetRequiredService<ISaveFactory>();
+        var autoSaves = new List<Save>(changedIds.Count);
         foreach (var id in changedIds)
-            autoSaves.Add(factory.CreateAutoGameSessionSave(id, GameSessionStateSerializer.Deserialize(redisData[id].RawJson)));
+            autoSaves.Add(factory.CreateAutoGameSessionSave(id, StateSerializer.Deserialize(redisData[id].RawJson)));
 
         await repo.BatchReplaceAutoSavesAsync(changedIds, autoSaves, ct);
         Console.WriteLine($"Auto-saved {changedIds.Count} sessions");

@@ -6,26 +6,26 @@ using TextGame.Infrastructure.JSON;
 
 namespace TextGame.Application.Services
 {
-    public class GameSessionStateCacheService : IGameSessionStateCacheService
+    public class StateCacheService : IStateCacheService
     {
         private readonly ICacheRepository _cacheRepository;
 
-        public GameSessionStateCacheService(ICacheRepository cacheRepository)
+        public StateCacheService(ICacheRepository cacheRepository)
         {
             _cacheRepository = cacheRepository;
         }
-        public async Task SetAsync(Guid gameSessionId, GameSessionState gameSessionState, CancellationToken ct)
+        public async Task SetAsync(Guid gameSessionId, State gameSessionState, CancellationToken ct)
         {
             var key = CacheParameters.GameSessionStateKeyPrefix + gameSessionId;
-            var value = GameSessionStateSerializer.Serialize(gameSessionState);
+            var value = StateSerializer.Serialize(gameSessionState);
             await _cacheRepository.SetAsync(key, value, CacheParameters.GameSessionLifetime, ct);
         }
-        public async Task<GameSessionState?> GetAsync(Guid gameSessionId, CancellationToken ct)
+        public async Task<State?> GetAsync(Guid gameSessionId, CancellationToken ct)
         {
             var key = CacheParameters.GameSessionStateKeyPrefix + gameSessionId;
             var value = await _cacheRepository.GetAsync(key, ct);
             if (value == null) return null;
-            return GameSessionStateSerializer.Deserialize(value);
+            return StateSerializer.Deserialize(value);
         }
         public async Task DeleteAsync(Guid gameSessionId, CancellationToken ct = default)
         {

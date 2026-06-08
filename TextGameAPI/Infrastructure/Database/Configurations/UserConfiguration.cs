@@ -12,7 +12,7 @@ namespace TextGame.Infrastructure.Database.Configurations
             builder.Property(x => x.Login).IsRequired().HasMaxLength(100);
             builder.Property(x => x.HashedPass).IsRequired().HasMaxLength(60);
 
-            builder.HasMany<GameSession>()
+            builder.HasMany<Session>()
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);

@@ -9,10 +9,10 @@ namespace TextGame.Application.Factories
         private readonly IEnemyIdService _enemyIdService;
         private readonly IRoomIdService _roomIdService;
 
-        public EnemyFactory(IEnemyIdService enemyIdService, IRoomIdService roomIdService, IRoomIdService rooomIdService)
+        public EnemyFactory(IEnemyIdService enemyIdService, IRoomIdService roomIdService)
         {
             _enemyIdService = enemyIdService;
-            _roomIdService = rooomIdService;
+            _roomIdService = roomIdService;
         }
 
         public Skeletor CreateSkeletor() => new(_enemyIdService.Next(), _roomIdService.Current());

@@ -5,12 +5,12 @@ using TextGame.Infrastructure.JSON;
 
 namespace TextGame.Infrastructure.Database.Configurations
 {
-    public class GameSessionSaveConfiguration : IEntityTypeConfiguration<GameSessionSave>
+    public class SaveConfiguration : IEntityTypeConfiguration<Save>
     {
-        public void Configure(EntityTypeBuilder<GameSessionSave> builder)
+        public void Configure(EntityTypeBuilder<Save> builder)
         {
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.GameSessionId).IsRequired();
+            builder.Property(x => x.SessionId).IsRequired();
             builder.Property(x => x.Type).IsRequired();
             builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
             builder.Property(x => x.CreatedAt).IsRequired();
@@ -19,8 +19,8 @@ namespace TextGame.Infrastructure.Database.Configurations
             builder.Property(x => x.State)
                 .HasColumnType("jsonb")
                 .HasConversion(
-                    v => GameSessionStateSerializer.Serialize(v),
-                    v => GameSessionStateSerializer.Deserialize(v)
+                    v => StateSerializer.Serialize(v),
+                    v => StateSerializer.Deserialize(v)
                 );
         }
     }

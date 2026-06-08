@@ -3,11 +3,11 @@ using TextGame.Domain.Entities;
 
 namespace TextGame.Application.Factories
 {
-    public class GameSessionFactory : IGameSessionFactory
+    public class SessionFactory : ISessionFactory
     {        
-        public GameSession CreateGameSession(Guid userId, string? name = null)
+        public Session CreateGameSession(Guid userId, string? name = null)
         {
-            GameSession gameSession = 
+            Session gameSession = 
                 name != null ? 
                 new(userId, name) : 
                 new(userId);

@@ -2,6 +2,6 @@
 {
     public static class Policies
     {
-        public const string RequireGameSession = "RequireGameSession";
+        public const string RequireSession = "RequireSession";
     }
 }

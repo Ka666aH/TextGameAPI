@@ -7,7 +7,7 @@ using TextGame.Domain.Entities.GameObjects.Rooms;
 
 namespace TextGame.Domain.Entities
 {
-    public class GameSessionState
+    public class State
     {
         public bool IsGameStarted { get; set; } = true;
         public bool IsInBattle { get; set; } = false;

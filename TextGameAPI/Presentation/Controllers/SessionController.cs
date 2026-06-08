@@ -13,10 +13,10 @@ namespace TextGame.Presentation.Controllers
     [Route("sessions")]
     public class SessionController : ControllerBase
     {
-        private readonly IGameSessionService _gameSessionService;
+        private readonly ISessionService _gameSessionService;
         private readonly ISaveService _saveService;
 
-        public SessionController(IGameSessionService gameSessionService, ISaveService saveService)
+        public SessionController(ISessionService gameSessionService, ISaveService saveService)
         {
             _gameSessionService = gameSessionService;
             _saveService = saveService;
@@ -53,7 +53,7 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> GetGameSessionsAsync(CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
-            List<GameSession> gameSessions = await _gameSessionService.GetListAsync(userId, ct);
+            List<Session> gameSessions = await _gameSessionService.GetListAsync(userId, ct);
             return Ok(gameSessions.ToDTO());
         }
     }

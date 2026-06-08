@@ -5,31 +5,31 @@ using TextGame.Domain.GameText;
 
 namespace TextGame.Application.Factories
 {
-    public class GameSessionSaveFactory : IGameSessionSaveFactory
+    public class SaveFactory : ISaveFactory
     {
         private readonly IMapGenerator _mapGenerator;
 
-        public GameSessionSaveFactory(IMapGenerator mapGenerator)
+        public SaveFactory(IMapGenerator mapGenerator)
         {
             _mapGenerator = mapGenerator;
         }
-        public GameSessionSave CreateInitialGameSessionSave(Guid gameSessionId)
+        public Save CreateInitialGameSessionSave(Guid gameSessionId)
         {
-            GameSessionState state = new();
+            State state = new();
             var rooms = _mapGenerator.Generate();
             state.Rooms = rooms;
             state.CurrentRoomId = 0;
             return new(gameSessionId, SaveType.Initial, GeneralLabeles.GameSessionSaveInitialDefaultName, state);
         }
 
-        public GameSessionSave CreateManualGameSessionSave(Guid gameSessionId, string? name, GameSessionState state) =>
+        public Save CreateManualGameSessionSave(Guid gameSessionId, string? name, State state) =>
             new(
                 gameSessionId,
                 SaveType.Manual,
                 name ?? string.Format(GeneralLabeles.GameSessionSaveManualDefaultName, DateTime.UtcNow),
                 state);
 
-        public GameSessionSave CreateAutoGameSessionSave(Guid gameSessionId, GameSessionState state) =>
+        public Save CreateAutoGameSessionSave(Guid gameSessionId, State state) =>
             new(
                 gameSessionId,
                 SaveType.Auto,

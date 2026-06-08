@@ -8,12 +8,12 @@ namespace TextGame.Application.Services
 {
     public class SessionAccessGuard : ISessionAccessGuard
     {
-        private readonly IGameSessionRepository _gameSessionRepository;
+        private readonly ISessionRepository _sessionRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SessionAccessGuard(IGameSessionRepository gameSessionRepository, IHttpContextAccessor httpContextAccessor)
+        public SessionAccessGuard(ISessionRepository sessionRepository, IHttpContextAccessor httpContextAccessor)
         {
-            _gameSessionRepository = gameSessionRepository;
+            _sessionRepository = sessionRepository;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -22,12 +22,12 @@ namespace TextGame.Application.Services
             await GetOwnedSession(gameSessionId, ct);
         }
 
-        public async Task<GameSession> GetOwnedSession(Guid gameSessionId, CancellationToken ct)
+        public async Task<Session> GetOwnedSession(Guid gameSessionId, CancellationToken ct)
         {
             if (!_httpContextAccessor.HttpContext!.User.TryGetUserId(out Guid userId)) throw new MissingUserIdClaimException();
 
-            GameSession gameSession = await _gameSessionRepository.GetAsync(gameSessionId, ct)
-                ?? throw new GameSessionNotFoundException();
+            Session gameSession = await _sessionRepository.GetAsync(gameSessionId, ct)
+                ?? throw new SessionNotFoundException();
             if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
             return gameSession;
         }
