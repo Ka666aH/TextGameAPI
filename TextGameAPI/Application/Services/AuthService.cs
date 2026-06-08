@@ -65,16 +65,16 @@ namespace TextGame.Application.Services
                 ?? throw new RefreshTokenNotFoundException();
 
             bool fingerprintIsCorrect = _hasher.Verify(fingerprint, token.HashedFingerprint);
-            if (token.IsRevoked || !fingerprintIsCorrect)
+            if (!fingerprintIsCorrect)
             {
-                await _refreshTokenRepository.RevokeAllAsync(token.UserId, ct);
+                await _refreshTokenRepository.DeleteAllAsync(token.UserId, ct);
                 await _unitOfWork.SaveChangesAsync(ct);
                 throw new RefreshTokenCompromisedException();
             }
             if (token.ExpiresUTC < DateTime.UtcNow)
                 throw new RefreshTokenExpiredException();
 
-            await _refreshTokenRepository.RevokeAsync(token, ct);
+            await _refreshTokenRepository.DeleteAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
             Guid? gameSessionId = null;
@@ -91,7 +91,7 @@ namespace TextGame.Application.Services
         {
             RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct)
                 ?? throw new RefreshTokenNotFoundException();
-            await _refreshTokenRepository.RevokeAsync(token, ct);
+            await _refreshTokenRepository.DeleteAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
         private async Task<AuthResult> GenerateTokens(Guid userId, string hashedFingerprint, Guid? gameSessionId, CancellationToken ct = default)

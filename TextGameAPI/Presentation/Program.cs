@@ -95,7 +95,6 @@ builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<ISaveService, SaveService>();
 
 //Фоновые сервисы
-builder.Services.AddHostedService<TokenCleaningService>();
 builder.Services.AddHostedService<AutoSaveService>();
 
 builder.Services.AddControllers().AddNewtonsoftJson();
