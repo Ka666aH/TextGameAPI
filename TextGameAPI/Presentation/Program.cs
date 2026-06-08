@@ -7,8 +7,10 @@ using TextGame.Application.Factories;
 using TextGame.Application.Generators;
 using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Generators;
+using TextGame.Application.Interfaces.Orchestrators;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
+using TextGame.Application.Orchestrators;
 using TextGame.Application.Services;
 using TextGame.Application.Validators;
 using TextGame.Infrastructure.Cache;
@@ -27,8 +29,7 @@ builder.Services.AddScoped<ISessionProvider, SessionProvider>();
 builder.Services.AddScoped<IStateService, StateService>();
 
 //Оркестраторные
-builder.Services.AddScoped<IRoomControllerService, RoomControllerService>();
-builder.Services.AddScoped<IGameControllerService, GameControllerService>();
+builder.Services.AddScoped<IStateOrchestrator, StateOrchestrator>();
 
 //Зависимые
 builder.Services.AddScoped<IInventoryService, InventoryService>();
