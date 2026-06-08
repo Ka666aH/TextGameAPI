@@ -47,9 +47,10 @@ public class AutoSaveService : BackgroundService
         if (redisData.Count == 0) return;
 
         using var scope = _scopeFactory.CreateScope();
-        var repo = scope.ServiceProvider.GetRequiredService<ISaveRepository>();
+        var saveRepository = scope.ServiceProvider.GetRequiredService<ISaveRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var existingHashes = await repo.GetAutoSaveHashesAsync([.. redisData.Keys], ct);
+        var existingHashes = await saveRepository.GetAutoSaveHashesAsync([.. redisData.Keys], ct);
 
         var changedIds = new List<Guid>();
         foreach (var (id, (rawJson, hash)) in redisData)
@@ -63,7 +64,8 @@ public class AutoSaveService : BackgroundService
         foreach (var id in changedIds)
             autoSaves.Add(factory.CreateAutoGameSessionSave(id, StateSerializer.Deserialize(redisData[id].RawJson)));
 
-        await repo.BatchReplaceAutoSavesAsync(changedIds, autoSaves, ct);
+        await saveRepository.BatchReplaceAutoSavesAsync(changedIds, autoSaves, ct);
+        await unitOfWork.SaveChangesAsync(ct);
         Console.WriteLine($"Auto-saved {changedIds.Count} sessions");
     }
 

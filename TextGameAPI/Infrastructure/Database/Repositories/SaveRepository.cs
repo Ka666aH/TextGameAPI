@@ -47,7 +47,6 @@ namespace TextGame.Infrastructure.Database.Repositories
 
             _db.Saves.RemoveRange(existing);
             await _db.Saves.AddRangeAsync(saves, ct);
-            await _db.SaveChangesAsync(ct);
         }
     }
 }
