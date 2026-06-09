@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class SessionNotFoundException : GameException
     {
-        public SessionNotFoundException() : base(ExceptionsLabels.GameSessionNotFoundCode, ExceptionsLabels.GameSessionNotFoundMessage) { }
+        public SessionNotFoundException() : base(ExceptionsLabels.SessionNotFoundCode, ExceptionsLabels.SessionNotFoundMessage) { }
     }
 }

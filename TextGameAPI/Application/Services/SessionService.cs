@@ -29,7 +29,7 @@ namespace TextGame.Application.Services
         }
         public async Task<Guid> CreateAsync(Guid userId, string? sessionName, CancellationToken ct = default)
         {
-            Session session = _sessionFactory.CreateGameSession(userId, sessionName);
+            Session session = _sessionFactory.CreateSession(userId, sessionName);
             await _sessionRepository.CreateAsync(session, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             return session.Id;

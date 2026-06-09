@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class SaveNotFoundException : GameException
     {
-        public SaveNotFoundException() : base(ExceptionsLabels.GameSessionSaveNotFoundCode, ExceptionsLabels.GameSessionSaveNotFoundMessage) { }
+        public SaveNotFoundException() : base(ExceptionsLabels.SaveNotFoundCode, ExceptionsLabels.SaveNotFoundMessage) { }
     }
 }

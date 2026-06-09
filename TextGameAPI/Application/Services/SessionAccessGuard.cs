@@ -17,13 +17,13 @@ namespace TextGame.Application.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task EnsureOwnershipAsync(Guid gameSessionId, CancellationToken ct)
+        public async Task EnsureOwnershipAsync(Guid sessionId, CancellationToken ct)
         {
             if (!_httpContextAccessor.HttpContext!.User.TryGetUserId(out Guid userId)) throw new MissingUserIdClaimException();
 
-            Session gameSession = await _sessionRepository.GetAsync(gameSessionId, ct)
+            Session session = await _sessionRepository.GetAsync(sessionId, ct)
                 ?? throw new SessionNotFoundException();
-            if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
+            if (session.UserId != userId) throw new NotSessionOwnerException();
         }
     }
 }

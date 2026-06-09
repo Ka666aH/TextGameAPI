@@ -34,9 +34,9 @@ namespace TextGame.Application.Services
 
             var save = saveType switch
             {
-                SaveType.Initial => _saveFactory.CreateInitialGameSessionSave(sessionId),
-                SaveType.Manual => _saveFactory.CreateManualGameSessionSave(sessionId, name, state!),
-                _ => _saveFactory.CreateAutoGameSessionSave(sessionId, state!)
+                SaveType.Initial => _saveFactory.CreateInitial(sessionId),
+                SaveType.Manual => _saveFactory.CreateManual(sessionId, name, state!),
+                _ => _saveFactory.CreateAuto(sessionId, state!)
             };
 
             await _saveRepository.CreateAsync(save, ct);

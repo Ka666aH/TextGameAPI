@@ -13,27 +13,27 @@ namespace TextGame.Application.Factories
         {
             _mapGenerator = mapGenerator;
         }
-        public Save CreateInitialGameSessionSave(Guid gameSessionId)
+        public Save CreateInitial(Guid sessionId)
         {
             State state = new();
             var rooms = _mapGenerator.Generate();
             state.Rooms = rooms;
             state.CurrentRoomId = 0;
-            return new(gameSessionId, SaveType.Initial, GeneralLabeles.GameSessionSaveInitialDefaultName, state);
+            return new(sessionId, SaveType.Initial, GeneralLabeles.SaveInitialDefaultName, state);
         }
 
-        public Save CreateManualGameSessionSave(Guid gameSessionId, string? name, State state) =>
+        public Save CreateManual(Guid sessionId, string? name, State state) =>
             new(
-                gameSessionId,
+                sessionId,
                 SaveType.Manual,
-                name ?? string.Format(GeneralLabeles.GameSessionSaveManualDefaultName, DateTime.UtcNow),
+                name ?? string.Format(GeneralLabeles.SaveManualDefaultName, DateTime.UtcNow),
                 state);
 
-        public Save CreateAutoGameSessionSave(Guid gameSessionId, State state) =>
+        public Save CreateAuto(Guid sessionId, State state) =>
             new(
-                gameSessionId,
+                sessionId,
                 SaveType.Auto,
-                string.Format(GeneralLabeles.GameSessionSaveAutoDefaultName, DateTime.UtcNow),
+                string.Format(GeneralLabeles.SaveAutoDefaultName, DateTime.UtcNow),
                 state);
     }
 }

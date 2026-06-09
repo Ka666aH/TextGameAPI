@@ -10,8 +10,8 @@ namespace TextGame.Application.Interfaces.Services
 {
     public interface IStateService
     {
-        Task EnsureLoadedAsync(Guid gameSessionId, CancellationToken ct = default);
-        Task CacheAsync(Guid gameSessionId, CancellationToken ct = default);
+        Task EnsureLoadedAsync(Guid sessionId, CancellationToken ct = default);
+        Task CacheAsync(Guid sessionId, CancellationToken ct = default);
         // Свойства для чтения состояния
         bool IsGameStarted { get; }
         bool IsInBattle { get; }

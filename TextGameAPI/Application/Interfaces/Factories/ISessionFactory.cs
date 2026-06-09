@@ -4,6 +4,6 @@ namespace TextGame.Application.Interfaces.Factories
 {
     public interface ISessionFactory
     {
-        Session CreateGameSession(Guid userId, string? name = null);
+        Session CreateSession(Guid userId, string? name = null);
     }
 }

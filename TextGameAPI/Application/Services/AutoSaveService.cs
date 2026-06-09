@@ -65,7 +65,7 @@ public class AutoSaveService : BackgroundService
         var factory = scope.ServiceProvider.GetRequiredService<ISaveFactory>();
         var autoSaves = new List<Save>(changedIds.Count);
         foreach (var id in changedIds)
-            autoSaves.Add(factory.CreateAutoGameSessionSave(id, StateSerializer.Deserialize(redisData[id].RawJson)));
+            autoSaves.Add(factory.CreateAuto(id, StateSerializer.Deserialize(redisData[id].RawJson)));
 
         await saveRepository.BatchReplaceAutoSavesAsync(changedIds, autoSaves, ct);
         await unitOfWork.SaveChangesAsync(ct);
@@ -90,7 +90,7 @@ public class AutoSaveService : BackgroundService
             var rawJson = (string?)values[i];
             if (rawJson == null) continue;
 
-            var idStr = keyStrings[i][CacheParameters.GameSessionStateKeyPrefix.Length..];
+            var idStr = keyStrings[i][CacheParameters.StateKeyPrefix.Length..];
             if (!Guid.TryParse(idStr, out var id)) continue;
 
             output[id] = (rawJson, ComputeHash(rawJson));

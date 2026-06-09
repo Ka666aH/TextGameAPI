@@ -53,7 +53,7 @@ namespace TextGame.Presentation.Controllers
             return NoContent();
         }
         [HttpGet]
-        public async Task<IActionResult> GetGameSessionsAsync(CancellationToken ct)
+        public async Task<IActionResult> GetSessionsAsync(CancellationToken ct)
         {
             User.TryGetUserId(out Guid userId);
             List<Session> sessions = await _sessionService.GetListAsync(userId, ct);

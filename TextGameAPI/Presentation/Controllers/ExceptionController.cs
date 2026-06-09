@@ -83,7 +83,7 @@ namespace TextGame.Presentation.Controllers
                 UnsellableItemException or //=> Problem(422, originalPath, gameEx),
                 
                 ImpossibleDeleteSaveException or
-                NotGameSessionOwnerException or
+                NotSessionOwnerException or
                 NotSaveOwnerException or
                 UnstartedGameException or
                 LockedException or

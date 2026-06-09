@@ -5,13 +5,13 @@ namespace TextGame.Application.Factories
 {
     public class SessionFactory : ISessionFactory
     {        
-        public Session CreateGameSession(Guid userId, string? name = null)
+        public Session CreateSession(Guid userId, string? name = null)
         {
-            Session gameSession = 
+            Session session = 
                 name != null ? 
                 new(userId, name) : 
                 new(userId);
-            return gameSession;
+            return session;
         }
     }
 }

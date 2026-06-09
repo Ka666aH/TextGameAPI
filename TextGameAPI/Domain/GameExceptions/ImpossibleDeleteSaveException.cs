@@ -4,6 +4,6 @@ namespace TextGame.Domain.GameExceptions
 {
     public class ImpossibleDeleteSaveException : GameException
     {
-        public ImpossibleDeleteSaveException() : base(ExceptionsLabels.ImpossibleDeleteGameSessionSaveCode, ExceptionsLabels.ImpossibleDeleteGameSessionSaveMessage) { }
+        public ImpossibleDeleteSaveException() : base(ExceptionsLabels.ImpossibleDeleteSaveCode, ExceptionsLabels.ImpossibleDeleteSaveMessage) { }
     }
 }

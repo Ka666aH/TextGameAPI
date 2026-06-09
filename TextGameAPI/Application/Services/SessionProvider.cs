@@ -16,14 +16,14 @@ namespace TextGame.Application.Services
             _cache = stateCacheService;
         }
 
-        public async Task<State> GetAsync(Guid gameSessionId, CancellationToken ct = default)
+        public async Task<State> GetAsync(Guid sessionId, CancellationToken ct = default)
         {
-            var cached = await _cache.GetAsync(gameSessionId, ct);
+            var cached = await _cache.GetAsync(sessionId, ct);
             if (cached != null) return cached;
-            var gameSessionSave = await _saveRepository.GetLastSaveAsync(gameSessionId, ct) ?? throw new SaveNotFoundException();
-            var gameSessionState = gameSessionSave.State;
-            try { await _cache.SetAsync(gameSessionId, gameSessionState, ct); } catch { }
-            return gameSessionState;
+            var save = await _saveRepository.GetLastSaveAsync(sessionId, ct) ?? throw new SaveNotFoundException();
+            var state = save.State;
+            try { await _cache.SetAsync(sessionId, state, ct); } catch { }
+            return state;
         }
     }
 }

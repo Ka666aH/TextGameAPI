@@ -4,6 +4,6 @@ namespace TextGame.Application.Interfaces.Services
 {
     public interface ISessionProvider
     {
-        Task<State> GetAsync(Guid gameSessionId, CancellationToken ct = default);
+        Task<State> GetAsync(Guid sessionId, CancellationToken ct = default);
     }
 }

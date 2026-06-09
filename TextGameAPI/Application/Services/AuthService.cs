@@ -79,7 +79,7 @@ namespace TextGame.Application.Services
             await _refreshTokenRepository.DeleteAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            Guid? gameSessionId = null;
+            Guid? sessionId = null;
             if (accessToken != "")
             {
                 var principal = _tokenRepository.ReadTokenWithoutLifetime(accessToken);
@@ -87,12 +87,12 @@ namespace TextGame.Application.Services
                 if (claimValue != null && Guid.TryParse(claimValue, out var parsed))
                 {
                     var session = await _sessionRepository.GetAsync(parsed, ct);
-                    if (session == null || session.UserId != token.UserId) gameSessionId = null;
-                    else gameSessionId = parsed;
+                    if (session == null || session.UserId != token.UserId) sessionId = null;
+                    else sessionId = parsed;
                 }
             }
             
-            return await GenerateTokens(token.UserId, token.HashedFingerprint, gameSessionId, ct);
+            return await GenerateTokens(token.UserId, token.HashedFingerprint, sessionId, ct);
         }
         public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
         {
@@ -101,12 +101,12 @@ namespace TextGame.Application.Services
             await _refreshTokenRepository.DeleteAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
-        private async Task<AuthResult> GenerateTokens(Guid userId, string hashedFingerprint, Guid? gameSessionId, CancellationToken ct = default)
+        private async Task<AuthResult> GenerateTokens(Guid userId, string hashedFingerprint, Guid? sessionId, CancellationToken ct = default)
         {
             RefreshToken refreshToken = _tokenRepository.GenerateRefreshToken(userId, hashedFingerprint);
             await _refreshTokenRepository.CreateAsync(refreshToken, ct);
             await _unitOfWork.SaveChangesAsync(ct);
-            string accessToken = _tokenRepository.GenerateAccessToken(userId, gameSessionId);
+            string accessToken = _tokenRepository.GenerateAccessToken(userId, sessionId);
             return new AuthResult(refreshToken.Token, accessToken);
         }
     }

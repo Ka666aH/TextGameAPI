@@ -7,17 +7,17 @@ namespace TextGame.Domain.GameText
         public const string UserNotFoundCode = "USER_NOT_FOUND";
         public const string UserNotFoundMessage = "Пользователь не найден.";
 
-        public const string GameSessionNotFoundCode = "GAME_SESSION_NOT_FOUND";
-        public const string GameSessionNotFoundMessage = "Игровая сессия не найдена.";
+        public const string SessionNotFoundCode = "SESSION_NOT_FOUND";
+        public const string SessionNotFoundMessage = "Игровая сессия не найдена.";
 
-        public const string GameSessionSaveNotFoundCode = "GAME_SESSION_SAVE_NOT_FOUND";
-        public const string GameSessionSaveNotFoundMessage = "Сохранение не найдено.";
+        public const string SaveNotFoundCode = "SAVE_NOT_FOUND";
+        public const string SaveNotFoundMessage = "Сохранение не найдено.";
 
-        public const string ImpossibleDeleteGameSessionSaveCode = "IMPOSSIBLE_DELETE_GAME_SESSION_SAVE";
-        public const string ImpossibleDeleteGameSessionSaveMessage = "Невозможно удалить сохранение.";
+        public const string ImpossibleDeleteSaveCode = "IMPOSSIBLE_DELETE_SAVE";
+        public const string ImpossibleDeleteSaveMessage = "Невозможно удалить сохранение.";
 
-        public const string NotGameSessionOwnerCode = "GAME_SESSION_BELONGS_TO_ANOTHER_USER";
-        public const string NotGameSessionOwnerMessage = "Игровая сессия принадлежит другому пользователю.";
+        public const string NotSessionOwnerCode = "SESSION_BELONGS_TO_ANOTHER_USER";
+        public const string NotSessionOwnerMessage = "Игровая сессия принадлежит другому пользователю.";
 
         public const string NotSaveOwnerCode = "SAVE_BELONGS_TO_ANOTHER_USER";
         public const string NotSaveOwnerMessage = "Сохранение принадлежит другому пользователю.";
@@ -31,8 +31,8 @@ namespace TextGame.Domain.GameText
         public const string MissingUserIdClaimCode = "MISSING_USER_ID_CLAIM";
         public const string MissingUserIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.UserId}.";
 
-        public const string MissingGameSessionIdClaimCode = "MISSING_GAME_SESSION_ID_CLAIM";
-        public const string MissingGameSessionIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.SessionId}.";
+        public const string MissingSessionIdClaimCode = "MISSING_SESSION_ID_CLAIM";
+        public const string MissingSessionIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.SessionId}.";
 
         public const string RefreshTokenNotFoundCode = "REFRESH_TOKEN_NOT_FOUND";
         public const string RefreshTokenNotFoundMessage = "Токен обновления не найден.";

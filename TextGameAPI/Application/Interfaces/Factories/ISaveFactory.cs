@@ -4,8 +4,8 @@ namespace TextGame.Application.Interfaces.Factories
 {
     public interface ISaveFactory
     {
-        Save CreateInitialGameSessionSave(Guid gameSessionId);
-        Save CreateManualGameSessionSave(Guid gameSessionId, string? name, State state);
-        Save CreateAutoGameSessionSave(Guid gameSessionId, State state);
+        Save CreateInitial(Guid sessionId);
+        Save CreateManual(Guid sessionId, string? name, State state);
+        Save CreateAuto(Guid sessionId, State state);
     }
 }

@@ -4,8 +4,8 @@ namespace TextGame.Application.Interfaces.Services
 {
     public interface IStateCacheService
     {
-        Task SetAsync(Guid gameSessionId, State gameSessionState, CancellationToken ct = default);
-        Task<State?> GetAsync(Guid gameSessionId, CancellationToken ct = default);
-        Task DeleteAsync(Guid gameSessionId, CancellationToken ct = default);
+        Task SetAsync(Guid sessionId, State state, CancellationToken ct = default);
+        Task<State?> GetAsync(Guid sessionId, CancellationToken ct = default);
+        Task DeleteAsync(Guid sessionId, CancellationToken ct = default);
     }
 }

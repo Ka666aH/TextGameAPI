@@ -8,29 +8,29 @@ namespace TextGame.Application.Services
 {
     public class StateCacheService : IStateCacheService
     {
-        private readonly ICacheRepository _cacheRepository;
+        private readonly ICacheRepository _cache;
 
         public StateCacheService(ICacheRepository cacheRepository)
         {
-            _cacheRepository = cacheRepository;
+            _cache = cacheRepository;
         }
-        public async Task SetAsync(Guid gameSessionId, State gameSessionState, CancellationToken ct)
+        public async Task SetAsync(Guid sessionId, State state, CancellationToken ct)
         {
-            var key = CacheParameters.GameSessionStateKeyPrefix + gameSessionId;
-            var value = StateSerializer.Serialize(gameSessionState);
-            await _cacheRepository.SetAsync(key, value, CacheParameters.GameSessionLifetime, ct);
+            var key = CacheParameters.StateKeyPrefix + sessionId;
+            var value = StateSerializer.Serialize(state);
+            await _cache.SetAsync(key, value, CacheParameters.StateLifetime, ct);
         }
-        public async Task<State?> GetAsync(Guid gameSessionId, CancellationToken ct)
+        public async Task<State?> GetAsync(Guid sessionId, CancellationToken ct)
         {
-            var key = CacheParameters.GameSessionStateKeyPrefix + gameSessionId;
-            var value = await _cacheRepository.GetAsync(key, ct);
+            var key = CacheParameters.StateKeyPrefix + sessionId;
+            var value = await _cache.GetAsync(key, ct);
             if (value == null) return null;
             return StateSerializer.Deserialize(value);
         }
-        public async Task DeleteAsync(Guid gameSessionId, CancellationToken ct = default)
+        public async Task DeleteAsync(Guid sessionId, CancellationToken ct = default)
         {
-            var key = CacheParameters.GameSessionStateKeyPrefix + gameSessionId;
-            await _cacheRepository.DeleteAsync(key, ct);
+            var key = CacheParameters.StateKeyPrefix + sessionId;
+            await _cache.DeleteAsync(key, ct);
         }
     }
 }
