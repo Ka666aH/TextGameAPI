@@ -10,7 +10,6 @@
 	- Сомнительно. public Enemy CurrentEnemy { get => CurrentRoom.Enemy ?? throw new NullEnemyIdException(); }
 	- Проверки орфографии
 	- Баланс. Много магазинов. Сторонная прога для симуляции и подсчёта?
-	- Пустые ответы
 2. БД (пользователи, сейвы, токены)
 3. JWT (Access(user и game), Refresh)
 4. Redis (текущая игровая сессия)

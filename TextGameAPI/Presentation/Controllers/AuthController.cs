@@ -34,7 +34,7 @@ namespace TextGame.Presentation.Controllers
 
             var authResult = await _authService.LogInAsync(authRequest.Login, authRequest.Password, fingerprint, ct);
             SetAuthCookies(authResult);
-            return Ok();
+            return NoContent();
         }
         [HttpPost("logout")]
         public async Task<IActionResult> LogOut(CancellationToken ct)
@@ -42,7 +42,7 @@ namespace TextGame.Presentation.Controllers
             string refreshToken = GetRefreshToken();
             await _authService.RevokeRefreshTokenAsync(refreshToken, ct);
             HttpContext.Response.DeleteAuthCookies();
-            return Ok();
+            return NoContent();
         }
         private string GetFingerprint()
         {

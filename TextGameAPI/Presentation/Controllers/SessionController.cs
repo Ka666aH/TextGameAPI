@@ -34,23 +34,23 @@ namespace TextGame.Presentation.Controllers
             await _saveService.LoadAsync(newSessionId, initSaveId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
 
-            return Ok(); //here
+            return Created($"/sessions/{newSessionId}", new { sessionId = newSessionId });
         }
-        [HttpGet("{sessionId}")]
+        [HttpPost("{sessionId}")]
         public async Task<IActionResult> LoadAsync(Guid sessionId, CancellationToken ct)
         {
             await _sessionAccessGuard.EnsureOwnershipAsync(sessionId,ct);
             User.TryGetUserId(out Guid userId);
             string newAccessToken = await _sessionService.LoadAsync(userId, sessionId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
-            return Ok();
+            return Ok(new { sessionId });
         }
         [HttpDelete("{sessionId}")]
         public async Task<IActionResult> DeleteAsync(Guid sessionId, CancellationToken ct)
         {
             await _sessionAccessGuard.EnsureOwnershipAsync(sessionId, ct);
             await _sessionService.DeleteAsync(sessionId, ct);
-            return Ok();
+            return NoContent();
         }
         [HttpGet]
         public async Task<IActionResult> GetGameSessionsAsync(CancellationToken ct)

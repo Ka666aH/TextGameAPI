@@ -27,21 +27,21 @@ namespace TextGame.Presentation.Controllers
             User.TryGetSessionId(out Guid sessionId);
             Guid newSaveId = await _saveService.CreateAsync(sessionId, SaveType.Manual, saveName, ct);
             await _saveService.LoadAsync(sessionId, newSaveId, ct);
-            return Ok();
+            return Created($"/saves/{newSaveId}", new { saveId = newSaveId });
         }
-        [HttpGet("{saveId}")]
+        [HttpPost("{saveId}")]
         public async Task<IActionResult> LoadAsync(Guid saveId, CancellationToken ct)
         {
             User.TryGetSessionId(out Guid sessionId);
             await _saveService.LoadAsync(sessionId, saveId, ct);
-            return Ok();
+            return Ok(new { saveId });
         }
         [HttpDelete("{saveId}")]
         public async Task<IActionResult> DeleteAsync(Guid saveId, CancellationToken ct)
         {
             User.TryGetSessionId(out Guid sessionId);
             await _saveService.DeleteAsync(sessionId, saveId, ct);
-            return Ok();
+            return NoContent();
         }
         [HttpGet]
         public async Task<IActionResult> GetAsync(CancellationToken ct)
