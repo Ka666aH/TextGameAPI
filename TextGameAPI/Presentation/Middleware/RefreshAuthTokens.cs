@@ -1,5 +1,4 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;

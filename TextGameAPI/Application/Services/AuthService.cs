@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System.Diagnostics;
 using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
@@ -19,6 +18,7 @@ namespace TextGame.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly ITokenRepository _tokenRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly ISessionRepository _sessionRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public AuthService(
@@ -27,6 +27,7 @@ namespace TextGame.Application.Services
             IUserRepository userRepository, 
             ITokenRepository tokenRepository, 
             IRefreshTokenRepository refreshTokenRepository, 
+            ISessionRepository sessionRepository, 
             IUnitOfWork unitOfWork)
         {
             _registerValidator = registerValidator;
@@ -34,6 +35,7 @@ namespace TextGame.Application.Services
             _userRepository = userRepository;
             _tokenRepository = tokenRepository;
             _refreshTokenRepository = refreshTokenRepository;
+            _sessionRepository = sessionRepository;
             _unitOfWork = unitOfWork;
         }
 
@@ -82,9 +84,14 @@ namespace TextGame.Application.Services
             {
                 var principal = _tokenRepository.ReadTokenWithoutLifetime(accessToken);
                 var claimValue = principal.FindFirst(AccessClaims.SessionId)?.Value;
-                if (claimValue != null && Guid.TryParse(claimValue, out var parsed)) gameSessionId = parsed;
+                if (claimValue != null && Guid.TryParse(claimValue, out var parsed))
+                {
+                    var session = await _sessionRepository.GetAsync(parsed, ct);
+                    if (session == null || session.UserId != token.UserId) gameSessionId = null;
+                    else gameSessionId = parsed;
+                }
             }
-
+            
             return await GenerateTokens(token.UserId, token.HashedFingerprint, gameSessionId, ct);
         }
         public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)

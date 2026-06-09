@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Orchestrators;
 using TextGame.Domain.DTO;
 using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Helpers;
 using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
@@ -11,6 +12,7 @@ namespace TextGame.Presentation.Controllers
 {
     [ApiController]
     [Authorize(Policy = Policies.RequireSession)]
+    [RequireSessionOwnership]
     [Route("state")]
     public class StateController : ControllerBase
     {

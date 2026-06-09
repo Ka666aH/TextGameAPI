@@ -12,55 +12,52 @@ namespace TextGame.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStateCacheService _cache;
         private readonly ISaveFactory _saveFactory;
-        private readonly ISessionAccessGuard _sessionAccessGuard;
 
         public SaveService(
             ISaveRepository saveRepository, 
             IUnitOfWork unitOfWork, 
             IStateCacheService cache, 
-            ISaveFactory saveFactory, 
-            ISessionAccessGuard sessionAccessGuard)
+            ISaveFactory saveFactory)
         {
             _saveRepository = saveRepository;
             _unitOfWork = unitOfWork;
             _cache = cache;
             _saveFactory = saveFactory;
-            _sessionAccessGuard = sessionAccessGuard;
         }
 
-        public async Task<Guid> CreateAsync(Guid gameSessionId, SaveType saveType, string? name = null, CancellationToken ct = default)
+        public async Task<Guid> CreateAsync(Guid sessionId, SaveType saveType, string? name = null, CancellationToken ct = default)
         {
             var state =
                 saveType != SaveType.Initial ?
-                await _cache.GetAsync(gameSessionId, ct) ?? throw new SessionNotFoundException() :
+                await _cache.GetAsync(sessionId, ct) ?? throw new SessionNotFoundException() :
                 null;
 
             var save = saveType switch
             {
-                SaveType.Initial => _saveFactory.CreateInitialGameSessionSave(gameSessionId),
-                SaveType.Manual => _saveFactory.CreateManualGameSessionSave(gameSessionId, name, state!),
-                _ => _saveFactory.CreateAutoGameSessionSave(gameSessionId, state!)
+                SaveType.Initial => _saveFactory.CreateInitialGameSessionSave(sessionId),
+                SaveType.Manual => _saveFactory.CreateManualGameSessionSave(sessionId, name, state!),
+                _ => _saveFactory.CreateAutoGameSessionSave(sessionId, state!)
             };
 
             await _saveRepository.CreateAsync(save, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             return save.Id;
         }
-        public async Task DeleteAsync(Guid gameSessionId, Guid gameSessionSaveId, CancellationToken ct = default)
+        public async Task DeleteAsync(Guid saveId, CancellationToken ct = default)
         {
-            await _sessionAccessGuard.EnsureOwnershipAsync(gameSessionId, ct);
-            Save gameSessionSave = await _saveRepository.GetAsyncWithTrack(gameSessionSaveId, ct) ?? throw new SaveNotFoundException();
-            if (gameSessionSave.Type != SaveType.Manual) throw new ImpossibleDeleteSaveException();
-            await _saveRepository.DeleteAsync(gameSessionSave, ct);
+            Save save = await _saveRepository.GetAsyncWithTrack(saveId, ct) ?? throw new SaveNotFoundException();
+            if (save.Type != SaveType.Manual) throw new ImpossibleDeleteSaveException();
+            await _saveRepository.DeleteAsync(save, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
-        public async Task<List<Save>> GetListAsync(Guid gameSessionId, CancellationToken ct = default) =>
-            await _saveRepository.GetListAsync(gameSessionId, ct);
-        public async Task LoadAsync(Guid gameSessionId, Guid gameSessionSaveId, CancellationToken ct = default)
+        public async Task<List<Save>> GetListAsync(Guid sessionId, CancellationToken ct = default)
         {
-            await _sessionAccessGuard.EnsureOwnershipAsync(gameSessionId, ct);
-            Save gameSessionSave = await _saveRepository.GetAsync(gameSessionSaveId, ct) ?? throw new SaveNotFoundException();
-            await _cache.SetAsync(gameSessionId, gameSessionSave.State, ct);
+            return await _saveRepository.GetListAsync(sessionId, ct);
+        }
+        public async Task LoadAsync(Guid sessionId, Guid saveId, CancellationToken ct = default)
+        {
+            Save save = await _saveRepository.GetAsync(saveId, ct) ?? throw new SaveNotFoundException();
+            await _cache.SetAsync(sessionId, save.State, ct);
         }
     }
 }

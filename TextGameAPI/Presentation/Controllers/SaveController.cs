@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
+using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Helpers;
 using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
@@ -10,6 +11,7 @@ namespace TextGame.Presentation.Controllers
 {
     [ApiController]
     [Authorize(Policy = Policies.RequireSession)]
+    [RequireSessionOwnership]
     [Route("saves")]
     public class SaveController : ControllerBase
     {
@@ -20,33 +22,32 @@ namespace TextGame.Presentation.Controllers
             _saveService = saveService;
         }
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromQuery] string? gameSessionSaveName, CancellationToken ct)
+        public async Task<IActionResult> CreateAsync([FromQuery] string? saveName, CancellationToken ct)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            Guid newGameSessionSaveId = await _saveService.CreateAsync(gameSessionId, SaveType.Manual, gameSessionSaveName, ct);
-            await _saveService.LoadAsync(gameSessionId, newGameSessionSaveId, ct);
+            User.TryGetSessionId(out Guid sessionId);
+            Guid newSaveId = await _saveService.CreateAsync(sessionId, SaveType.Manual, saveName, ct);
+            await _saveService.LoadAsync(sessionId, newSaveId, ct);
             return Ok();
         }
-        [HttpGet("{gameSessionSaveId}")]
-        public async Task<IActionResult> LoadGameSessionSaveAsync(Guid gameSessionSaveId, CancellationToken ct)
+        [HttpGet("{saveId}")]
+        public async Task<IActionResult> LoadAsync(Guid saveId, CancellationToken ct)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _saveService.LoadAsync(gameSessionId, gameSessionSaveId, ct);
+            User.TryGetSessionId(out Guid sessionId);
+            await _saveService.LoadAsync(sessionId, saveId, ct);
             return Ok();
         }
-        [HttpDelete("{gameSessionSaveId}")]
-        public async Task<IActionResult> DeleteGameSessionAsync(Guid gameSessionSaveId, CancellationToken ct)
+        [HttpDelete("{saveId}")]
+        public async Task<IActionResult> DeleteAsync(Guid saveId, CancellationToken ct)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _saveService.DeleteAsync(gameSessionId, gameSessionSaveId, ct);
+            await _saveService.DeleteAsync(saveId, ct);
             return Ok();
         }
         [HttpGet]
-        public async Task<IActionResult> GetGameSessionSavesAsync(CancellationToken ct)
+        public async Task<IActionResult> GetAsync(CancellationToken ct)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            List<Save> gameSessionSaves = await _saveService.GetListAsync(gameSessionId, ct);
-            return Ok(gameSessionSaves.ToDTO());
+            User.TryGetSessionId(out Guid sessionId);
+            List<Save> saves = await _saveService.GetListAsync(sessionId, ct);
+            return Ok(saves.ToDTO());
         }
     }
 }
