@@ -151,9 +151,9 @@ app.UseRefreshAuthTokens();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
-
 app.UseRateLimiter();
+
+app.MapControllers();
 
 app.MapHealthChecks("/health").WithMetadata(new BypassRefreshAttribute());
 
