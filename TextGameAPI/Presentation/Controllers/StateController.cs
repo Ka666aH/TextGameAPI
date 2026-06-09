@@ -13,6 +13,7 @@ namespace TextGame.Presentation.Controllers
     [ApiController]
     [Authorize(Policy = Policies.RequireSession)]
     [RequireSessionOwnership]
+    [RequireStateLoaded]
     [Route("state")]
     public class StateController : ControllerBase
     {
@@ -22,7 +23,6 @@ namespace TextGame.Presentation.Controllers
         {
             _stateOrchestrator = stateOrchestrator;
         }
-
         [HttpGet("info")]
         public async Task<IActionResult> GetInfoAsync(CancellationToken ct)
         {
@@ -61,6 +61,7 @@ namespace TextGame.Presentation.Controllers
             var item = await _stateOrchestrator.GetInventoryItemAsync(itemId, sessionId, ct);
             return Ok(item.ToDTO());
         }
+        [AutoCache]
         [HttpPost("inventory/{itemId}/sell")]
         public async Task<IActionResult> SellInventoryItemAsync(int itemId, CancellationToken ct)
         {
@@ -68,6 +69,7 @@ namespace TextGame.Presentation.Controllers
             await _stateOrchestrator.SellInventoryItemAsync(itemId, sessionId, ct);
             return await GetInfoAsync(ct);
         }
+        [AutoCache]
         [HttpPost("inventory/{itemId}/use")]
         public async Task<IActionResult> UseInventoryItemAsync(int itemId, CancellationToken ct)
         {
@@ -82,6 +84,7 @@ namespace TextGame.Presentation.Controllers
             var equip = await _stateOrchestrator.GetEquipmentAsync(sessionId, ct);
             return Ok(equip.ToDTO());
         }
+        [AutoCache]
         [HttpPost("inventory/{itemId}/equip")]
         public async Task<IActionResult> EquipInventoryItemAsync(int itemId, CancellationToken ct)
         {
@@ -89,6 +92,7 @@ namespace TextGame.Presentation.Controllers
             await _stateOrchestrator.EquipInventoryItemAsync(itemId, sessionId, ct);
             return await GetEquipmentAsync(ct);
         }
+        [AutoCache]
         [HttpPost("equipment/weapon/unequip")]
         public async Task<IActionResult> UnequipWeaponAsync(CancellationToken ct)
         {
@@ -96,6 +100,7 @@ namespace TextGame.Presentation.Controllers
             await _stateOrchestrator.UnequipWeaponAsync(sessionId, ct);
             return await GetEquipmentAsync(ct);
         }
+        [AutoCache]
         [HttpPost("equipment/helm/unequip")]
         public async Task<IActionResult> UnequipHelmAsync(CancellationToken ct)
         {
@@ -103,6 +108,7 @@ namespace TextGame.Presentation.Controllers
             await _stateOrchestrator.UnequipHelmAsync(sessionId, ct);
             return await GetEquipmentAsync(ct);
         }
+        [AutoCache]
         [HttpPost("equipment/chestplate/unequip")]
         public async Task<IActionResult> UnequipChestplateAsync(CancellationToken ct)
         {
@@ -110,7 +116,7 @@ namespace TextGame.Presentation.Controllers
             await _stateOrchestrator.UnequipChestplateAsync(sessionId, ct);
             return await GetEquipmentAsync(ct);
         }
-
+        [AutoCache]
         [HttpPost("rooms/next")]
         public async Task<IActionResult> GoNextRoomAsync(CancellationToken ct)
         {
@@ -118,6 +124,7 @@ namespace TextGame.Presentation.Controllers
             var room = await _stateOrchestrator.GoNextRoomAsync(gameSessionId, ct);
             return Ok(room.ToDTO());
         }
+        [AutoCache]
         [HttpPost("rooms/{roomId}")]
         public async Task<IActionResult> GoRoomAsync(int roomId, CancellationToken ct)
         {
@@ -125,6 +132,7 @@ namespace TextGame.Presentation.Controllers
             var room = await _stateOrchestrator.GoToRoomAsync(roomId, gameSessionId, ct);
             return Ok(room.ToDTO());
         }
+        [AutoCache]
         [HttpGet("rooms/current")]
         public async Task<IActionResult> GetCurrentRoomAsync(CancellationToken ct)
         {
@@ -132,6 +140,7 @@ namespace TextGame.Presentation.Controllers
             var room = await _stateOrchestrator.GetCurrentRoomAsync(gameSessionId, ct);
             return Ok(room.ToDTO());
         }
+        [AutoCache]
         [HttpPost("rooms/current/items")]
         public async Task<IActionResult> SearchAsync(CancellationToken ct)
         {
@@ -139,6 +148,7 @@ namespace TextGame.Presentation.Controllers
             var items = await _stateOrchestrator.SearchAsync(gameSessionId, ct);
             return Ok(items.ToDTO());
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/{itemId}/take")]
         public async Task<IActionResult> TakeItemAsync(int itemId, CancellationToken ct)
         {
@@ -147,6 +157,7 @@ namespace TextGame.Presentation.Controllers
             var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
             return Ok(info);
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/takeall")]
         public async Task<IActionResult> TakeAllItemsAsync(CancellationToken ct)
         {
@@ -155,6 +166,7 @@ namespace TextGame.Presentation.Controllers
             var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
             return Ok(info);
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/{itemId}/buy")]
         public async Task<IActionResult> BuyItemAsync(int itemId, CancellationToken ct)
         {
@@ -164,13 +176,14 @@ namespace TextGame.Presentation.Controllers
             return Ok(info);
         }
         #region CHEST
-
+        [AutoCache]
         [HttpPost("rooms/current/items/{chestId}/chest/hit")]
         public async Task<IActionResult> HitChestAsync(int chestId, CancellationToken ct)
         {
             User.TryGetSessionId(out Guid gameSessionId);
             return Ok(await _stateOrchestrator.HitChestAsync(chestId, gameSessionId, ct));
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/{chestId}/chest/open")]
         public async Task<IActionResult> OpenChestAsync(int chestId, CancellationToken ct)
         {
@@ -179,6 +192,7 @@ namespace TextGame.Presentation.Controllers
             var items = await _stateOrchestrator.SearchChestAsync(chestId, gameSessionId, ct);
             return Ok(items.ToDTO());
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/{chestId}/chest/unlock")]
         public async Task<IActionResult> UnlockChestAsync(int chestId, CancellationToken ct)
         {
@@ -186,6 +200,7 @@ namespace TextGame.Presentation.Controllers
             var chest = await _stateOrchestrator.UnlockChestAsync(chestId, gameSessionId, ct);
             return Ok(chest.ToDTO());
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/{chestId}/chest/items")]
         public async Task<IActionResult> SearchChestAsync(int chestId, CancellationToken ct)
         {
@@ -193,6 +208,7 @@ namespace TextGame.Presentation.Controllers
             var items = await _stateOrchestrator.SearchChestAsync(chestId, gameSessionId, ct);
             return Ok(items.ToDTO());
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/{chestId}/chest/items/{itemId}/take")]
         public async Task<IActionResult> TakeItemFromChestAsync(int chestId, int itemId, CancellationToken ct)
         {
@@ -201,6 +217,7 @@ namespace TextGame.Presentation.Controllers
             var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
             return Ok(info);
         }
+        [AutoCache]
         [HttpPost("rooms/current/items/{chestId}/chest/items/takeall")]
         public async Task<IActionResult> TakeAllItemsFromChestAsync(int chestId, CancellationToken ct)
         {
@@ -218,6 +235,7 @@ namespace TextGame.Presentation.Controllers
             Enemy enemy = await _stateOrchestrator.GetEnemyAsync(gameSessionId, ct);
             return Ok(enemy.ToDTO());
         }
+        [AutoCache]
         [HttpPost("rooms/current/enemy/attack")]
         public async Task<IActionResult> AttackEnemyAsync(CancellationToken ct)
         {
