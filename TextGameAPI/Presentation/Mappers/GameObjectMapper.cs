@@ -57,7 +57,7 @@ namespace TextGame.Presentation.Mappers
 
                     _ => new ItemDTO(item.Id, item.Name!, item.Description!, item.Cost),
                 },
-                _ => new GameObjectDTO(gameObject.Name ?? GeneralLabeles.GameObjectDefaultName, gameObject.Description ?? GeneralLabeles.GameObjectDefaultDescription)
+                _ => new GameObjectDTO(gameObject.Name ?? GeneralLabels.GameObjectDefaultName, gameObject.Description ?? GeneralLabels.GameObjectDefaultDescription)
             };
         }
         public static List<IGameObjectDTO> ToDTO(this IEnumerable<GameObject> gameObjects) =>

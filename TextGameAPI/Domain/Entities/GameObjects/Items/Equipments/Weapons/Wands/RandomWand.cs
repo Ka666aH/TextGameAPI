@@ -7,8 +7,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
     {
         public RandomWand(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.RandomWandName,
-                  ItemsLabeles.RandomWandDescription, 
+                  ItemsLabels.RandomWandName,
+                  ItemsLabels.RandomWandDescription, 
                   roomId, 
                   fromShop, 
                   GameBalance.RandomWandBaseDamage) { }

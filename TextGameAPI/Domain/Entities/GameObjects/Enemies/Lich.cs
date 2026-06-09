@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
     {
         public Lich(int id,int roomId)
             : base(id,
-                  EnemiesLabeles.LichName,
-                  EnemiesLabeles.LichDescription,
+                  EnemiesLabels.LichName,
+                  EnemiesLabels.LichDescription,
                   roomId,
                   GameBalance.LichBaseHealth,
                   GameBalance.LichBaseDamage,

@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
     {
         public SkeletorArcher(int id, int roomId)
             : base(id,
-                  EnemiesLabeles.SkeletorArcherName,
-                  EnemiesLabeles.SkeletorArcherDescription,
+                  EnemiesLabels.SkeletorArcherName,
+                  EnemiesLabels.SkeletorArcherDescription,
                   roomId,
                   GameBalance.SkeletorArcherBaseHealth,
                   GameBalance.SkeletorArcherBaseDamage,

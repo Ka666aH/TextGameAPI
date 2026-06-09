@@ -7,8 +7,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms
 
         public WoodenBucket(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.WoodenBucketName,
-                  ItemsLabeles.WoodenBucketDescription,
+                  ItemsLabels.WoodenBucketName,
+                  ItemsLabels.WoodenBucketDescription,
                   roomId,
                   fromShop,
                   GameBalance.WoodenBucketBaseDurability,

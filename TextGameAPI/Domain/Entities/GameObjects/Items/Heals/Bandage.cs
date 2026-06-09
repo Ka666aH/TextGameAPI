@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
     {
         public Bandage(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.BandageName,
-                  ItemsLabeles.BandageDescription,
+                  ItemsLabels.BandageName,
+                  ItemsLabels.BandageDescription,
                   roomId,
                   fromShop,
                   GameBalance.BandageBaseMaxHealthBoost,

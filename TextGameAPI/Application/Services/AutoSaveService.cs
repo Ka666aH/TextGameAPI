@@ -4,6 +4,7 @@ using System.Text;
 using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Domain.Entities;
+using TextGame.Domain.GameText;
 using TextGame.Infrastructure.Cache;
 using TextGame.Infrastructure.JSON;
 
@@ -39,7 +40,7 @@ public class AutoSaveService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Auto-save error");
+                _logger.LogError(ex, LoggersText.AutoSaveError);
             }
         }
     }
@@ -69,7 +70,7 @@ public class AutoSaveService : BackgroundService
 
         await saveRepository.BatchReplaceAutoSavesAsync(changedIds, autoSaves, ct);
         await unitOfWork.SaveChangesAsync(ct);
-        _logger.LogInformation("Auto-saved {Count} sessions", changedIds.Count);
+        _logger.LogInformation(LoggersText.AutoSaveSuccess, changedIds.Count);
     }
 
     private async Task<Dictionary<Guid, (string RawJson, string Hash)>> FetchFromRedis(CancellationToken ct)

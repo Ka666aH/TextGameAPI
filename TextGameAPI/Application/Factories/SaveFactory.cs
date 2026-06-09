@@ -19,21 +19,21 @@ namespace TextGame.Application.Factories
             var rooms = _mapGenerator.Generate();
             state.Rooms = rooms;
             state.CurrentRoomId = 0;
-            return new(sessionId, SaveType.Initial, GeneralLabeles.SaveInitialDefaultName, state);
+            return new(sessionId, SaveType.Initial, GeneralLabels.SaveInitialDefaultName, state);
         }
 
         public Save CreateManual(Guid sessionId, string? name, State state) =>
             new(
                 sessionId,
                 SaveType.Manual,
-                name ?? string.Format(GeneralLabeles.SaveManualDefaultName, DateTime.UtcNow),
+                name ?? string.Format(GeneralLabels.SaveManualDefaultName, DateTime.UtcNow),
                 state);
 
         public Save CreateAuto(Guid sessionId, State state) =>
             new(
                 sessionId,
                 SaveType.Auto,
-                string.Format(GeneralLabeles.SaveAutoDefaultName, DateTime.UtcNow),
+                string.Format(GeneralLabels.SaveAutoDefaultName, DateTime.UtcNow),
                 state);
     }
 }

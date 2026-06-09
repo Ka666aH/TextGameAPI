@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
     {
         public SilverSword(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.SilverSwordName,
-                  ItemsLabeles.SilverSwordDescription,
+                  ItemsLabels.SilverSwordName,
+                  ItemsLabels.SilverSwordDescription,
                   roomId,
                   fromShop,
                   GameBalance.

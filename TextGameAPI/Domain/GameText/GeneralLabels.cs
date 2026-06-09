@@ -1,6 +1,6 @@
 ﻿namespace TextGame.Domain.GameText
 {
-    public static class GeneralLabeles
+    public static class GeneralLabels
     {
         public const string SessionDefaultName = "НОВАЯ ИГРА";
         public const string SaveInitialDefaultName = "НАЧАЛЬНОЕ СОХРАНЕНИЕ";

@@ -7,8 +7,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
 
         public MagicWand(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.MagicWandName,
-                  ItemsLabeles.MagicWandDescription,
+                  ItemsLabels.MagicWandName,
+                  ItemsLabels.MagicWandDescription,
                   roomId,
                   fromShop,
                   GameBalance.MagicWandBaseDamage)

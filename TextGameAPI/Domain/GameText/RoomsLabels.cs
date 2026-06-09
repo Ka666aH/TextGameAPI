@@ -1,6 +1,6 @@
 ﻿namespace TextGame.Domain.GameText
 {
-    public static class RoomsLabeles
+    public static class RoomsLabels
     {
         public const string StartRoomName = "СТАРТОВАЯ КОМНАТА";
         public const string StartRoomDescription = "В потолке дыра, через которую Вы сюда провалились.";

@@ -7,7 +7,7 @@
         public User User { get; private set; }
         public string Name { get; private set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-        public Session(Guid userId, string name = GameText.GeneralLabeles.SessionDefaultName)
+        public Session(Guid userId, string name = GameText.GeneralLabels.SessionDefaultName)
         {
             UserId = userId;
             Name = name;

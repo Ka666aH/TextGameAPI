@@ -14,7 +14,7 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
         public IReadOnlyList<Item> Items => _items.AsReadOnly();
 
         public Chest(int id, int roomId, List<Item> items, Mimic? mimic = null)
-            : base(id, ItemsLabeles.ChestName, ItemsLabeles.ChestDescription, roomId, false)
+            : base(id, ItemsLabels.ChestName, ItemsLabels.ChestDescription, roomId, false)
         {
             Cost = null;
             IsLocked = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
@@ -38,8 +38,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
         public void KillMimic()
         {
             Mimic = null;
-            Name = ItemsLabeles.DeadMimicName;
-            Description = ItemsLabeles.DeadMimicDescription;
+            Name = ItemsLabels.DeadMimicName;
+            Description = ItemsLabels.DeadMimicDescription;
             IsLocked = false;
             IsClosed = false;
         }

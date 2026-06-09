@@ -7,8 +7,8 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
 
         public Skeletor(int id, int roomId)
             : base(id,
-                  EnemiesLabeles.SkeletorName,
-                  EnemiesLabeles.SkeletorDescription,
+                  EnemiesLabels.SkeletorName,
+                  EnemiesLabels.SkeletorDescription,
                   roomId,
                   GameBalance.SkeletorBaseHealth,
                   GameBalance.SkeletorBaseDamage,

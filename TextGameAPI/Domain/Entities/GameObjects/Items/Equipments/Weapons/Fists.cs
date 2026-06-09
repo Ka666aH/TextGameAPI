@@ -9,8 +9,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons
 
         public Fists()
             : base(0,
-                  ItemsLabeles.FistsName,
-                  ItemsLabeles.FistsDescription,
+                  ItemsLabels.FistsName,
+                  ItemsLabels.FistsDescription,
                   null,
                   GameBalance.FistsBaseDamage,
                   0,

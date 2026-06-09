@@ -32,7 +32,7 @@ namespace TextGame.Application.Services
                 attackResult.Damage,
                 enemyHealthBeforeAttack,
                 enemyHealthAfterAttack,
-                GeneralLabeles.PlayerName,
+                GeneralLabels.PlayerName,
                 attackResult.SelfDamage,
                 playerHealthBeforeAttack,
                 _stateService.CurrentHealth);
@@ -75,7 +75,7 @@ namespace TextGame.Application.Services
             int playerHealthBeforeAttack = _stateService.CurrentHealth;
             if (damageAfterBlock > 0) _stateService.AddCurrentHealth(-damageAfterBlock);
             battleLog = new BattleLog(
-                GeneralLabeles.PlayerName,
+                GeneralLabels.PlayerName,
                 enemyAttackResult.Damage, 
                 playerHealthBeforeAttack, 
                 _stateService.CurrentHealth, 

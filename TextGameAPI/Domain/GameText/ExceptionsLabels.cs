@@ -104,8 +104,8 @@ namespace TextGame.Domain.GameText
         public const string NotChestText = "Это не сундук.";
         public const string NotHealCode = "NOT_HEAL";
         public const string NotHealText = "Это не предмет лечения.";
-        public const string NotEqiipmentCode = "NOT_EQUIPMENT";
-        public const string NotEqiipmentText = "Это не снаряжение.";
+        public const string NotEquipmentCode = "NOT_EQUIPMENT";
+        public const string NotEquipmentText = "Это не снаряжение.";
 
         public const string EnemyDefeated = "{0} повержен.";
         public const string PlayerSuicideText = "Вы погибли от своей же атаки. Как отчаянно.";

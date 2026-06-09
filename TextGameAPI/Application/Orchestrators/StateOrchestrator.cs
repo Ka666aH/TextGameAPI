@@ -75,7 +75,7 @@ namespace TextGame.Application.Orchestrators
         public void EquipInventoryItem(int itemId)
         {
             Item item = _getItemService.GetItem(itemId, _stateService.Inventory);
-            if (item is not Equipment equip) throw new InvalidIdException(ExceptionsLabels.NotEqiipmentCode, ExceptionsLabels.NotEqiipmentText);
+            if (item is not Equipment equip) throw new InvalidIdException(ExceptionsLabels.NotEquipmentCode, ExceptionsLabels.NotEquipmentText);
             _inventoryService.EquipInventoryItem(equip);
         }
 
@@ -117,7 +117,7 @@ namespace TextGame.Application.Orchestrators
         public List<MapRoomDTO> GetMap()
         {
             if (!_stateService.Inventory.OfType<Map>().Any()) throw new NoMapException();
-            return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabeles.GameObjectDefaultName)).ToList();
+            return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName)).ToList();
         }
 
         [RequireGameStarted]
@@ -176,7 +176,7 @@ namespace TextGame.Application.Orchestrators
                 if (attackResult.SelfDamage != 0) _stateService.AddCurrentHealth(-attackResult.SelfDamage);
                 if (attackResult.IsWeaponBrokenDown) _stateService.RemoveWeapon();
 
-                battleLog = new BattleLog(ItemsLabeles.ChestName, attackResult.Damage, null, null, GeneralLabeles.PlayerName, attackResult.SelfDamage, playerHealthBeforeAttack, _stateService.CurrentHealth);
+                battleLog = new BattleLog(ItemsLabels.ChestName, attackResult.Damage, null, null, GeneralLabels.PlayerName, attackResult.SelfDamage, playerHealthBeforeAttack, _stateService.CurrentHealth);
             }
 
             return battleLog;

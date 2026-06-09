@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
     {
         public Deadman(int id, int roomId)
             : base(id,
-                  EnemiesLabeles.DeadmanName,
-                  EnemiesLabeles.DeadmanDescription,
+                  EnemiesLabels.DeadmanName,
+                  EnemiesLabels.DeadmanDescription,
                   roomId,
                   GameBalance.DeadmanBaseHealth,
                   GameBalance.DeadmanBaseDamage,

@@ -1,6 +1,6 @@
 ﻿namespace TextGame.Domain.GameText
 {
-    public static class ItemsLabeles
+    public static class ItemsLabels
     {
         public const string BagOfCoinsName = "МЕШОЧЕК С МОНЕТАМИ";
         public const string BagOfCoinsDescription = "Потрёпанный кусок ткани с разными монетами внутри.";

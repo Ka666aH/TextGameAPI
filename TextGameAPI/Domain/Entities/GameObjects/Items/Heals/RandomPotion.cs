@@ -7,8 +7,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
     {
         public RandomPotion(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.RandomPotionName,
-                  ItemsLabeles.RandomPotionDescription,
+                  ItemsLabels.RandomPotionName,
+                  ItemsLabels.RandomPotionDescription,
                   roomId,
                   fromShop,
                   null,

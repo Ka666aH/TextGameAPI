@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplat
     {
         public IronCuirass(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.IronCuirassName,
-                  ItemsLabeles.IronCuirassDescription,
+                  ItemsLabels.IronCuirassName,
+                  ItemsLabels.IronCuirassDescription,
                   roomId,
                   fromShop,
                   GameBalance.IronCuirassBaseDurability,

@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
     {
         public RegenPotion(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.RegenPotionName,
-                  ItemsLabeles.RegenPotionDescription,
+                  ItemsLabels.RegenPotionName,
+                  ItemsLabels.RegenPotionDescription,
                   roomId,
                   fromShop,
                   GameBalance.RegenPotionBaseMaxHealthBoost,

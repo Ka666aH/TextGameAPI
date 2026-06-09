@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
     {
         public Mimic(int id, int roomId)
             : base(id,
-                  EnemiesLabeles.MimicName,
-                  EnemiesLabeles.MimicDescription,
+                  EnemiesLabels.MimicName,
+                  EnemiesLabels.MimicDescription,
                   roomId,
                   GameBalance.MimicBaseHealth,
                   GameBalance.MimicBaseDamage,

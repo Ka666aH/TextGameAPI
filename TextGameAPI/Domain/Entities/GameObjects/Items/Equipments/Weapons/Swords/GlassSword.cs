@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
     {
         public GlassSword(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.GlassSwordName,
-                  ItemsLabeles.GlassSwordDescription,
+                  ItemsLabels.GlassSwordName,
+                  ItemsLabels.GlassSwordDescription,
                   roomId,
                   fromShop,
                   GameBalance.GlassSwordBaseDurability,

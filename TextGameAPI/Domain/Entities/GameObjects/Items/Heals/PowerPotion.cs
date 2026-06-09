@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
     {
         public PowerPotion(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.PowerPotionName,
-                  ItemsLabeles.PowerPotionDescription,
+                  ItemsLabels.PowerPotionName,
+                  ItemsLabels.PowerPotionDescription,
                   roomId,
                   fromShop,
                   GameBalance.PowerPotionBaseMaxHealthBoost,

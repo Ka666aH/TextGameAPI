@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms
     {
         public LeatherHelm(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.LeatherHelmName,
-                  ItemsLabeles.LeatherHelmDescription,
+                  ItemsLabels.LeatherHelmName,
+                  ItemsLabels.LeatherHelmDescription,
                   roomId,
                   fromShop,
                   GameBalance.LeatherHelmBaseDurability,

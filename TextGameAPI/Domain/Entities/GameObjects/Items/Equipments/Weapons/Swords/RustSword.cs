@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
     {
         public RustSword(int id, int roomId, bool fromShop)
             : base(id,
-                  ItemsLabeles.RustSwordName,
-                  ItemsLabeles.RustSwordDescription,
+                  ItemsLabels.RustSwordName,
+                  ItemsLabels.RustSwordDescription,
                   roomId,
                   fromShop,
                   GameBalance.RustSwordBaseDurability,

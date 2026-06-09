@@ -6,8 +6,8 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
     {
         public Ghost(int id, int roomId)
             : base(id,
-                  EnemiesLabeles.GhostName,
-                  EnemiesLabeles.GhostDescription,
+                  EnemiesLabels.GhostName,
+                  EnemiesLabels.GhostDescription,
                   roomId,
                   GameBalance.GhostBaseHealth,
                   GameBalance.GlassSwordBaseDamage,

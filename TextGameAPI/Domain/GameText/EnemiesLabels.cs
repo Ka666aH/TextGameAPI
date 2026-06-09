@@ -1,6 +1,6 @@
 ﻿namespace TextGame.Domain.GameText
 {
-    public static class EnemiesLabeles
+    public static class EnemiesLabels
     {
         public const string DeadmanName = "МЕРТВЯК";
         public const string DeadmanDescription = "Мёртвое полуразложившееся тело. Источник жуткого смрада.";
