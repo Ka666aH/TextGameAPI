@@ -41,7 +41,7 @@ namespace TextGame.Domain.GameText
         public const string RefreshTokenExpiredMessage = "Токен обновления просрочен.";
 
         public const string RefreshTokenCompromisedCode = "REFRESH_TOKEN_COMPROMISED";
-        public const string RefreshTokenCompromisedMessage = "Токен обновления скомпроментирован.";
+        public const string RefreshTokenCompromisedMessage = "Токен обновления скомпрометирован.";
 
         public const string BattleWinCode = "YOU_WIN_IN_BATTLE";
         public const string DefeatCode = "DEFEAT";

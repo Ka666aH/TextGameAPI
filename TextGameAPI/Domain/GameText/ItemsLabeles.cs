@@ -31,7 +31,7 @@
         public const string GlassSwordName = "СТЕКЛЯННЫЙ МЕЧ";
         public const string GlassSwordDescription = "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.";
         public const string IronSwordName = "ЖЕЛЕЗНЫЙ МЕЧ";
-        public const string IronSwordDescription = "Добротное оружие воина. На лезвии оттиск \"304\".Номер, наверное.";
+        public const string IronSwordDescription = "Добротное оружие воина. На лезвии оттиск \"304\". Номер, наверное.";
         public const string RustSwordName = "РЖАВЫЙ МЕЧ";
         public const string RustSwordDescription = "Очень старый меч. Лучше, чем ничего.";
         public const string SilverSwordName = "СЕРЕБРЯНЫЙ МЕЧ";
@@ -39,11 +39,11 @@
 
         public const string WoodenBucketName = "ДЕРЕВЯННОЕ ВЕДРО";
         public const string WoodenBucketDescription = "Старое дырявое ведро. Кто в своём уме наденет его на голову?";
-        public const string LeatherHelmName = "КОЖАННЫЙ ШЛЕМ";
-        public const string LeatherHelmDescription = "Изысканный чёрный шлем мастера подземелия.";
+        public const string LeatherHelmName = "КОЖАНЫЙ ШЛЕМ";
+        public const string LeatherHelmDescription = "Изысканный чёрный шлем мастера подземелья.";
         public const string IronHelmName = "ЖЕЛЕЗНЫЙ ШЛЕМ";
         public const string IronHelmDescription = "Крепкий шлем из качественного металла.";
-        public const string LeatherVestName = "КОЖАННАЯ КУРТКА";
+        public const string LeatherVestName = "КОЖАНАЯ КУРТКА";
         public const string LeatherVestDescription = "Лёгкая куртка из плотной кожи.";
         public const string IronCuirassName = "ЖЕЛЕЗНАЯ КИРАСА";
         public const string IronCuirassDescription = "Тяжёлая и прочная. Имеет небольшой оттиск \"304\" на внутренней части.";

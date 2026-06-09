@@ -11,7 +11,7 @@
         public const string MimicName = "МИМИК";
         public const string MimicDescription = "Подлый монстр, изменяющий свой облик для охоты на неосторожных попаданцев.";
         public const string SkeletorName = "СКЕЛЕТОР";
-        public const string SkeletorDescription = "Чей-то скелет, наделёный возможностью двигаться.";
+        public const string SkeletorDescription = "Чей-то скелет, наделённый возможностью двигаться.";
         public const string SkeletorArcherName = "СКЕЛЕТОР-ЛУЧНИК";
         public const string SkeletorArcherDescription = "Из тех, кто при жизни умел обращаться с луком.";
     }
