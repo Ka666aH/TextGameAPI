@@ -23,6 +23,7 @@ using TextGame.Infrastructure.Token.JWT;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Middleware;
 using TextGame.Presentation.Options;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 //Ядро состояния
@@ -119,6 +120,16 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.RequireSession, policy => policy.RequireClaim(AccessClaims.SessionId));
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter(RateLimiter.AuthPolicyName,opt =>
+    {
+        opt.PermitLimit = RateLimiter.AuthPermitLimit;
+        opt.Window = RateLimiter.AuthWindow;
+        opt.QueueLimit = RateLimiter.AuthQueueLimit;
+    });
+});
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
@@ -141,6 +152,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseRateLimiter();
 
 app.MapHealthChecks("/health").WithMetadata(new BypassRefreshAttribute());
 

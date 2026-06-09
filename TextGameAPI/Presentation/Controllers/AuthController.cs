@@ -1,15 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.DTO;
 using TextGame.Presentation.Helpers;
+using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
 {
     [ApiController]
     [BypassRefresh]
+    [EnableRateLimiting(RateLimiter.AuthPolicyName)]
     [Route("auth")]
     public class AuthController : ControllerBase
     {
