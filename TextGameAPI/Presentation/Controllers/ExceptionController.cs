@@ -48,7 +48,7 @@ namespace TextGame.Presentation.Controllers
             }
 
             if (exception is not GameException gameEx)
-                return InternalServerError(originalPath, exception?.Message);
+                return InternalServerError();
 
             return gameEx switch
             {
@@ -97,7 +97,7 @@ namespace TextGame.Presentation.Controllers
                 NoMoneyException =>
                     Problem(403, originalPath, gameEx),
 
-                _ => InternalServerError(originalPath, gameEx?.Message)
+                _ => InternalServerError()
             };
         }
 
@@ -107,13 +107,13 @@ namespace TextGame.Presentation.Controllers
             return Problem(statusCode: statusCode, title: ex.Code, detail: ex.Message, instance: instance);
         }
 
-        private IActionResult InternalServerError(string instance, string? detail = null)
+        private IActionResult InternalServerError()
         {
             TryRefreshAuthCookies(HttpContext);
             return Problem(
                 statusCode: StatusCodes.Status500InternalServerError,
                 title: ExceptionsLabels.InternalServerErrorCode,
-                detail: detail ?? ExceptionsLabels.InternalServerErrorMessage,
+                detail: ExceptionsLabels.InternalServerErrorMessage,
                 instance: HttpContext.Request.Path
             );
         }
