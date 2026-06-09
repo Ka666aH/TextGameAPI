@@ -84,6 +84,7 @@ namespace TextGame.Presentation.Controllers
                 
                 ImpossibleDeleteSaveException or
                 NotGameSessionOwnerException or
+                NotSaveOwnerException or
                 UnstartedGameException or
                 LockedException or
                 NoKeyException or

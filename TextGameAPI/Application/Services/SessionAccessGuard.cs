@@ -19,17 +19,11 @@ namespace TextGame.Application.Services
 
         public async Task EnsureOwnershipAsync(Guid gameSessionId, CancellationToken ct)
         {
-            await GetOwnedSession(gameSessionId, ct);
-        }
-
-        public async Task<Session> GetOwnedSession(Guid gameSessionId, CancellationToken ct)
-        {
             if (!_httpContextAccessor.HttpContext!.User.TryGetUserId(out Guid userId)) throw new MissingUserIdClaimException();
 
             Session gameSession = await _sessionRepository.GetAsync(gameSessionId, ct)
                 ?? throw new SessionNotFoundException();
             if (gameSession.UserId != userId) throw new NotGameSessionOwnerException();
-            return gameSession;
         }
     }
 }

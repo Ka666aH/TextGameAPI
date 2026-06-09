@@ -14,9 +14,9 @@ namespace TextGame.Application.Services
         private readonly ISaveFactory _saveFactory;
 
         public SaveService(
-            ISaveRepository saveRepository, 
-            IUnitOfWork unitOfWork, 
-            IStateCacheService cache, 
+            ISaveRepository saveRepository,
+            IUnitOfWork unitOfWork,
+            IStateCacheService cache,
             ISaveFactory saveFactory)
         {
             _saveRepository = saveRepository;
@@ -43,20 +43,20 @@ namespace TextGame.Application.Services
             await _unitOfWork.SaveChangesAsync(ct);
             return save.Id;
         }
-        public async Task DeleteAsync(Guid saveId, CancellationToken ct = default)
+        public async Task DeleteAsync(Guid sessionId, Guid saveId, CancellationToken ct = default)
         {
             Save save = await _saveRepository.GetAsyncWithTrack(saveId, ct) ?? throw new SaveNotFoundException();
+            if (save.SessionId != sessionId) throw new NotSaveOwnerException();
             if (save.Type != SaveType.Manual) throw new ImpossibleDeleteSaveException();
             await _saveRepository.DeleteAsync(save, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
-        public async Task<List<Save>> GetListAsync(Guid sessionId, CancellationToken ct = default)
-        {
-            return await _saveRepository.GetListAsync(sessionId, ct);
-        }
+        public async Task<List<Save>> GetListAsync(Guid sessionId, CancellationToken ct = default) =>
+            await _saveRepository.GetListAsync(sessionId, ct);
         public async Task LoadAsync(Guid sessionId, Guid saveId, CancellationToken ct = default)
         {
             Save save = await _saveRepository.GetAsync(saveId, ct) ?? throw new SaveNotFoundException();
+            if (save.SessionId != sessionId) throw new NotSaveOwnerException();
             await _cache.SetAsync(sessionId, save.State, ct);
         }
     }

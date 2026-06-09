@@ -19,6 +19,9 @@ namespace TextGame.Domain.GameText
         public const string NotGameSessionOwnerCode = "GAME_SESSION_BELONGS_TO_ANOTHER_USER";
         public const string NotGameSessionOwnerMessage = "Игровая сессия принадлежит другому пользователю.";
 
+        public const string NotSaveOwnerCode = "SAVE_BELONGS_TO_ANOTHER_USER";
+        public const string NotSaveOwnerMessage = "Сохранение принадлежит другому пользователю.";
+
         public const string IncorrectPasswordCode = "INCORRECT_PASSWORD";
         public const string IncorrectPasswordMessage = "Неверный пароль.";
 

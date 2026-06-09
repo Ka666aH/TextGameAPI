@@ -22,6 +22,7 @@ namespace TextGame.Infrastructure.Database.Repositories
 
         public async Task<Save?> GetLastSaveAsync(Guid sessionId, CancellationToken ct = default) =>
         await _db.Saves
+            .Where(x => x.SessionId == sessionId)
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync(ct);
 

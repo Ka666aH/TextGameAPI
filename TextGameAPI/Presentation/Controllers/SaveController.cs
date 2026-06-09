@@ -39,7 +39,8 @@ namespace TextGame.Presentation.Controllers
         [HttpDelete("{saveId}")]
         public async Task<IActionResult> DeleteAsync(Guid saveId, CancellationToken ct)
         {
-            await _saveService.DeleteAsync(saveId, ct);
+            User.TryGetSessionId(out Guid sessionId);
+            await _saveService.DeleteAsync(sessionId, saveId, ct);
             return Ok();
         }
         [HttpGet]
