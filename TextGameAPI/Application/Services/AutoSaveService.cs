@@ -13,15 +13,18 @@ public class AutoSaveService : BackgroundService
 {
     private readonly IConnectionMultiplexer _redis;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<AutoSaveService> _logger;
 
     private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
 
     public AutoSaveService(
         IConnectionMultiplexer redis,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        ILogger<AutoSaveService> logger)
     {
         _redis = redis;
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,7 +39,7 @@ public class AutoSaveService : BackgroundService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Auto-save error:{ex.Message}");
+                _logger.LogError(ex, "Auto-save error");
             }
         }
     }
@@ -66,7 +69,7 @@ public class AutoSaveService : BackgroundService
 
         await saveRepository.BatchReplaceAutoSavesAsync(changedIds, autoSaves, ct);
         await unitOfWork.SaveChangesAsync(ct);
-        Console.WriteLine($"Auto-saved {changedIds.Count} sessions");
+        _logger.LogInformation("Auto-saved {Count} sessions", changedIds.Count);
     }
 
     private async Task<Dictionary<Guid, (string RawJson, string Hash)>> FetchFromRedis(CancellationToken ct)
