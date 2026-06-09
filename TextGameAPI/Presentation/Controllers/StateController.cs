@@ -4,7 +4,6 @@ using TextGame.Application.Interfaces.Orchestrators;
 using TextGame.Domain.DTO;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Presentation.Attributes;
-using TextGame.Presentation.Helpers;
 using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
 
@@ -23,228 +22,229 @@ namespace TextGame.Presentation.Controllers
         {
             _stateOrchestrator = stateOrchestrator;
         }
+
         [HttpGet("info")]
-        public async Task<IActionResult> GetInfoAsync(CancellationToken ct)
+        public IActionResult GetInfo()
         {
-            User.TryGetSessionId(out Guid sessionId);
-            return Ok(await _stateOrchestrator.GetGameInfoAsync(sessionId, ct));
+            return Ok(_stateOrchestrator.GetGameInfo());
         }
+
         [HttpGet("map")]
-        public async Task<IActionResult> GetMapAsync(CancellationToken ct)
+        public IActionResult GetMap()
         {
-            User.TryGetSessionId(out Guid sessionId);
-            return Ok(await _stateOrchestrator.GetMapAsync(sessionId, ct));
+            return Ok(_stateOrchestrator.GetMap());
         }
+
         [HttpGet("coins")]
-        public async Task<IActionResult> GetCoinsAsync(CancellationToken ct)
+        public IActionResult GetCoins()
         {
-            User.TryGetSessionId(out Guid sessionId);
-            return Ok(await _stateOrchestrator.GetCoinsAsync(sessionId, ct));
+            return Ok(_stateOrchestrator.GetCoins());
         }
+
         [HttpGet("keys")]
-        public async Task<IActionResult> GetKeysAsync(CancellationToken ct)
+        public IActionResult GetKeys()
         {
-            User.TryGetSessionId(out Guid sessionId);
-            return Ok(await _stateOrchestrator.GetKeysAsync(sessionId, ct));
+            return Ok(_stateOrchestrator.GetKeys());
         }
+
         [HttpGet("inventory")]
-        public async Task<IActionResult> GetInventoryAsync(CancellationToken ct)
+        public IActionResult GetInventory()
         {
-            User.TryGetSessionId(out Guid sessionId);
-            var items = await _stateOrchestrator.GetInventoryAsync(sessionId, ct);
+            var items = _stateOrchestrator.GetInventory();
             return Ok(items.ToDTO());
         }
+
         [HttpGet("inventory/{itemId}")]
-        public async Task<IActionResult> GetInventoryItemAsync(int itemId, CancellationToken ct)
+        public IActionResult GetInventoryItem(int itemId)
         {
-            User.TryGetSessionId(out Guid sessionId);
-            var item = await _stateOrchestrator.GetInventoryItemAsync(itemId, sessionId, ct);
+            var item = _stateOrchestrator.GetInventoryItem(itemId);
             return Ok(item.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("inventory/{itemId}/sell")]
-        public async Task<IActionResult> SellInventoryItemAsync(int itemId, CancellationToken ct)
-        {
-            User.TryGetSessionId(out Guid sessionId);
-            await _stateOrchestrator.SellInventoryItemAsync(itemId, sessionId, ct);
-            return await GetInfoAsync(ct);
-        }
         [AutoCache]
-        [HttpPost("inventory/{itemId}/use")]
-        public async Task<IActionResult> UseInventoryItemAsync(int itemId, CancellationToken ct)
+        public IActionResult SellInventoryItem(int itemId)
         {
-            User.TryGetSessionId(out Guid sessionId);
-            await _stateOrchestrator.UseInventoryItemAsync(itemId, sessionId, ct);
-            return await GetInfoAsync(ct);
+            _stateOrchestrator.SellInventoryItem(itemId);
+            return GetInfo();
         }
-        [HttpGet("equipment")]
-        public async Task<IActionResult> GetEquipmentAsync(CancellationToken ct)
+
+        [HttpPost("inventory/{itemId}/use")]
+        [AutoCache]
+        public IActionResult UseInventoryItem(int itemId)
         {
-            User.TryGetSessionId(out Guid sessionId);
-            var equip = await _stateOrchestrator.GetEquipmentAsync(sessionId, ct);
+            _stateOrchestrator.UseInventoryItem(itemId);
+            return GetInfo();
+        }
+
+        [HttpGet("equipment")]
+        public IActionResult GetEquipment()
+        {
+            var equip = _stateOrchestrator.GetEquipment();
             return Ok(equip.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("inventory/{itemId}/equip")]
-        public async Task<IActionResult> EquipInventoryItemAsync(int itemId, CancellationToken ct)
-        {
-            User.TryGetSessionId(out Guid sessionId);
-            await _stateOrchestrator.EquipInventoryItemAsync(itemId, sessionId, ct);
-            return await GetEquipmentAsync(ct);
-        }
         [AutoCache]
+        public IActionResult EquipInventoryItem(int itemId)
+        {
+            _stateOrchestrator.EquipInventoryItem(itemId);
+            return GetEquipment();
+        }
+
         [HttpPost("equipment/weapon/unequip")]
-        public async Task<IActionResult> UnequipWeaponAsync(CancellationToken ct)
-        {
-            User.TryGetSessionId(out Guid sessionId);
-            await _stateOrchestrator.UnequipWeaponAsync(sessionId, ct);
-            return await GetEquipmentAsync(ct);
-        }
         [AutoCache]
+        public IActionResult UnequipWeapon()
+        {
+            _stateOrchestrator.UnequipWeapon();
+            return GetEquipment();
+        }
+
         [HttpPost("equipment/helm/unequip")]
-        public async Task<IActionResult> UnequipHelmAsync(CancellationToken ct)
-        {
-            User.TryGetSessionId(out Guid sessionId);
-            await _stateOrchestrator.UnequipHelmAsync(sessionId, ct);
-            return await GetEquipmentAsync(ct);
-        }
         [AutoCache]
+        public IActionResult UnequipHelm()
+        {
+            _stateOrchestrator.UnequipHelm();
+            return GetEquipment();
+        }
+
         [HttpPost("equipment/chestplate/unequip")]
-        public async Task<IActionResult> UnequipChestplateAsync(CancellationToken ct)
-        {
-            User.TryGetSessionId(out Guid sessionId);
-            await _stateOrchestrator.UnequipChestplateAsync(sessionId, ct);
-            return await GetEquipmentAsync(ct);
-        }
         [AutoCache]
+        public IActionResult UnequipChestplate()
+        {
+            _stateOrchestrator.UnequipChestplate();
+            return GetEquipment();
+        }
+
         [HttpPost("rooms/next")]
-        public async Task<IActionResult> GoNextRoomAsync(CancellationToken ct)
+        [AutoCache]
+        public IActionResult GoNextRoom()
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            var room = await _stateOrchestrator.GoNextRoomAsync(gameSessionId, ct);
+            var room = _stateOrchestrator.GoNextRoom();
             return Ok(room.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("rooms/{roomId}")]
-        public async Task<IActionResult> GoRoomAsync(int roomId, CancellationToken ct)
+        [AutoCache]
+        public IActionResult GoRoom(int roomId)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            var room = await _stateOrchestrator.GoToRoomAsync(roomId, gameSessionId, ct);
+            var room = _stateOrchestrator.GoToRoom(roomId);
             return Ok(room.ToDTO());
         }
-        [AutoCache]
+
         [HttpGet("rooms/current")]
-        public async Task<IActionResult> GetCurrentRoomAsync(CancellationToken ct)
+        public IActionResult GetCurrentRoom()
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            var room = await _stateOrchestrator.GetCurrentRoomAsync(gameSessionId, ct);
+            var room = _stateOrchestrator.GetCurrentRoom();
             return Ok(room.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/items")]
-        public async Task<IActionResult> SearchAsync(CancellationToken ct)
+        [AutoCache]
+        public IActionResult Search()
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            var items = await _stateOrchestrator.SearchAsync(gameSessionId, ct);
+            var items = _stateOrchestrator.Search();
             return Ok(items.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/items/{itemId}/take")]
-        public async Task<IActionResult> TakeItemAsync(int itemId, CancellationToken ct)
+        [AutoCache]
+        public IActionResult TakeItem(int itemId)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _stateOrchestrator.TakeItemAsync(itemId, gameSessionId, ct);
-            var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
+            _stateOrchestrator.TakeItem(itemId);
+            var info = _stateOrchestrator.GetGameInfo();
             return Ok(info);
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/items/takeall")]
-        public async Task<IActionResult> TakeAllItemsAsync(CancellationToken ct)
+        [AutoCache]
+        public IActionResult TakeAllItems()
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _stateOrchestrator.TakeAllItemsAsync(gameSessionId, ct);
-            var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
+            _stateOrchestrator.TakeAllItems();
+            var info = _stateOrchestrator.GetGameInfo();
             return Ok(info);
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/items/{itemId}/buy")]
-        public async Task<IActionResult> BuyItemAsync(int itemId, CancellationToken ct)
+        [AutoCache]
+        public IActionResult BuyItem(int itemId)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _stateOrchestrator.BuyItemAsync(itemId, gameSessionId, ct);
-            var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
+            _stateOrchestrator.BuyItem(itemId);
+            var info = _stateOrchestrator.GetGameInfo();
             return Ok(info);
         }
+
         #region CHEST
-        [AutoCache]
+
         [HttpPost("rooms/current/items/{chestId}/chest/hit")]
-        public async Task<IActionResult> HitChestAsync(int chestId, CancellationToken ct)
-        {
-            User.TryGetSessionId(out Guid gameSessionId);
-            return Ok(await _stateOrchestrator.HitChestAsync(chestId, gameSessionId, ct));
-        }
         [AutoCache]
-        [HttpPost("rooms/current/items/{chestId}/chest/open")]
-        public async Task<IActionResult> OpenChestAsync(int chestId, CancellationToken ct)
+        public IActionResult HitChest(int chestId)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _stateOrchestrator.OpenChestAsync(chestId, gameSessionId, ct);
-            var items = await _stateOrchestrator.SearchChestAsync(chestId, gameSessionId, ct);
+            return Ok(_stateOrchestrator.HitChest(chestId));
+        }
+
+        [HttpPost("rooms/current/items/{chestId}/chest/open")]
+        [AutoCache]
+        public IActionResult OpenChest(int chestId)
+        {
+            _stateOrchestrator.OpenChest(chestId);
+            var items = _stateOrchestrator.SearchChest(chestId);
             return Ok(items.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/items/{chestId}/chest/unlock")]
-        public async Task<IActionResult> UnlockChestAsync(int chestId, CancellationToken ct)
+        [AutoCache]
+        public IActionResult UnlockChest(int chestId)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            var chest = await _stateOrchestrator.UnlockChestAsync(chestId, gameSessionId, ct);
+            var chest = _stateOrchestrator.UnlockChest(chestId);
             return Ok(chest.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/items/{chestId}/chest/items")]
-        public async Task<IActionResult> SearchChestAsync(int chestId, CancellationToken ct)
+        public IActionResult SearchChest(int chestId)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            var items = await _stateOrchestrator.SearchChestAsync(chestId, gameSessionId, ct);
+            var items = _stateOrchestrator.SearchChest(chestId);
             return Ok(items.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/items/{chestId}/chest/items/{itemId}/take")]
-        public async Task<IActionResult> TakeItemFromChestAsync(int chestId, int itemId, CancellationToken ct)
-        {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _stateOrchestrator.TakeItemFromChestAsync(chestId, itemId, gameSessionId, ct);
-            var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
-            return Ok(info);
-        }
         [AutoCache]
-        [HttpPost("rooms/current/items/{chestId}/chest/items/takeall")]
-        public async Task<IActionResult> TakeAllItemsFromChestAsync(int chestId, CancellationToken ct)
+        public IActionResult TakeItemFromChest(int chestId, int itemId)
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            await _stateOrchestrator.TakeAllItemsFromChestAsync(chestId, gameSessionId, ct);
-            var info = await _stateOrchestrator.GetGameInfoAsync(gameSessionId, ct);
+            _stateOrchestrator.TakeItemFromChest(chestId, itemId);
+            var info = _stateOrchestrator.GetGameInfo();
             return Ok(info);
         }
+
+        [HttpPost("rooms/current/items/{chestId}/chest/items/takeall")]
+        [AutoCache]
+        public IActionResult TakeAllItemsFromChest(int chestId)
+        {
+            _stateOrchestrator.TakeAllItemsFromChest(chestId);
+            var info = _stateOrchestrator.GetGameInfo();
+            return Ok(info);
+        }
+
         #endregion
         #region ENEMIES
+
         [HttpGet("rooms/current/enemy")]
-        public async Task<IActionResult> GetEnemyAsync(CancellationToken ct)
+        public IActionResult GetEnemy()
         {
-            User.TryGetSessionId(out Guid gameSessionId);
-            Enemy enemy = await _stateOrchestrator.GetEnemyAsync(gameSessionId, ct);
+            Enemy enemy = _stateOrchestrator.GetEnemy();
             return Ok(enemy.ToDTO());
         }
-        [AutoCache]
+
         [HttpPost("rooms/current/enemy/attack")]
-        public async Task<IActionResult> AttackEnemyAsync(CancellationToken ct)
+        [AutoCache]
+        public IActionResult AttackEnemy()
         {
-            User.TryGetSessionId(out Guid gameSessionId);
             List<BattleLog> battleLogs = [
-                await _stateOrchestrator.DealDamageAsync(gameSessionId, ct),
-                await _stateOrchestrator.GetDamageAsync(gameSessionId, ct)];
+                _stateOrchestrator.DealDamage(),
+                _stateOrchestrator.GetDamage()];
             return Ok(battleLogs);
         }
+
         #endregion
     }
 }
