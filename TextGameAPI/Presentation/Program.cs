@@ -10,6 +10,7 @@ using TextGame.Application.Interfaces.Generators;
 using TextGame.Application.Interfaces.Orchestrators;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
+using TextGame.Application.GuardAttributes;
 using TextGame.Application.Orchestrators;
 using TextGame.Application.Services;
 using TextGame.Application.Validators;
@@ -29,7 +30,11 @@ builder.Services.AddScoped<ISessionProvider, SessionProvider>();
 builder.Services.AddScoped<IStateService, StateService>();
 
 //Оркестраторные
-builder.Services.AddScoped<IStateOrchestrator, StateOrchestrator>();
+builder.Services.AddScoped<StateOrchestrator>();
+builder.Services.AddScoped<IStateOrchestrator>(sp =>
+    GuardProxyFactory.Create<IStateOrchestrator>(
+        sp.GetRequiredService<StateOrchestrator>(),
+        sp.GetRequiredService<IStateService>()));
 
 //Зависимые
 builder.Services.AddScoped<IInventoryService, InventoryService>();
