@@ -10,7 +10,7 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
                   EnemiesLabels.GhostDescription,
                   roomId,
                   GameBalance.GhostBaseHealth,
-                  GameBalance.GlassSwordBaseDamage,
+                  GameBalance.GhostBaseDamage,
                   GameBalance.GhostBaseDamageBlock)
         { }
         public override void GetDamage(int damage)
