@@ -45,7 +45,7 @@ namespace TextGame.Domain
 
         //Расчёт весов (вероятности) появления врагов в комнате
         public static int CalculateNoneWeight(int roomId) => roomId < 100 ? (int)(-0.4 * roomId + 60) : 20;
-        public static int CalculateSkeletorWeight(int roomId) => roomId < 50 ? (int)-0.48 * roomId + 24 : 0;
+        public static int CalculateSkeletorWeight(int roomId) => roomId < 50 ? (int)(-0.48 * roomId + 24) : 0;
         public static int CalculateSkeletorArcherWeight(int roomId) => roomId switch
         {
             < 10 => (int)(0.3 * roomId + 12),
@@ -112,7 +112,7 @@ namespace TextGame.Domain
         public const double FistSelfHarmDivider = 2;
 
         //Sword
-        public static int CalculateSwordCost(int durability, int damage) => 1 + (durability * damage / 10);
+        public static int CalculateSwordCost(int durability, int damage) => 1 + (durability * damage / 10) + (damage * damage / 200);
         //Rust
         public const int RustSwordBaseDurability = 8;
         public const int RustSwordBaseDamage = 15;
