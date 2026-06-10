@@ -27,7 +27,7 @@
         public const string MagicWandName = "ВОЛШЕБНЫЙ ЖЕЗЛ";
         public const string MagicWandDescription = "Простое магическое оружие. Может использовать каждый.";
         public const string RandomWandName = "ЖЕЗЛ СЛУЧАЙНОСТЕЙ";
-        public const string RandomWandDescription = "Странное магическое оружие. Становится сильнее со временем.";
+        public const string RandomWandDescription = "Криво сделанный магический жезл. Бьёт как придётся.";
         public const string GlassSwordName = "СТЕКЛЯННЫЙ МЕЧ";
         public const string GlassSwordDescription = "Скорее объект искусства, чем оружие. Очень хрупкий, но невероятно сильный.";
         public const string IronSwordName = "ЖЕЛЕЗНЫЙ МЕЧ";
