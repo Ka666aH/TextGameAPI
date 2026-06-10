@@ -55,10 +55,10 @@ namespace TextGame.Presentation.Controllers
                 IncorrectPasswordException =>
                     Problem(401, originalPath, gameEx),
 
-                AccessTokenNotFoundException or
+                AccessTokenMissingException or
                 MissingUserIdClaimException or
                 MissingSessionIdClaimException or
-                RefreshTokenNotFoundException or
+                RefreshTokenMissingException or
                 RefreshTokenExpiredException or
                 RefreshTokenCompromisedException =>
                     DeleteCookieAndProblem(401, originalPath, gameEx),
@@ -68,10 +68,10 @@ namespace TextGame.Presentation.Controllers
 
                 BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog)),
 
-                NullRoomIdException or
-                NullItemIdException or
-                EmptyException or
-                NullEnemyIdException or
+                RoomNotFoundException or
+                ItemNotFoundException or
+                NothingFoundException or
+                EnemyNotFoundException or
                 UserNotFoundException or
                 SaveNotFoundException or
                 SessionNotFoundException =>

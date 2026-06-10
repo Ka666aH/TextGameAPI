@@ -64,7 +64,7 @@ namespace TextGame.Application.Services
         public async Task<AuthResult> RefreshAsync(string refreshToken, string accessToken, string fingerprint, CancellationToken ct = default)
         {
             RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct)
-                ?? throw new RefreshTokenNotFoundException();
+                ?? throw new RefreshTokenMissingException();
 
             bool fingerprintIsCorrect = _hasher.Verify(fingerprint, token.HashedFingerprint);
             if (!fingerprintIsCorrect)
@@ -97,7 +97,7 @@ namespace TextGame.Application.Services
         public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
         {
             RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct)
-                ?? throw new RefreshTokenNotFoundException();
+                ?? throw new RefreshTokenMissingException();
             await _refreshTokenRepository.DeleteAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }

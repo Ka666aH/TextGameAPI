@@ -9,7 +9,7 @@ namespace TextGame.Application.Services
         public Item GetItem(int itemId, IEnumerable<Item> items)
         {
             Item? item = items.FirstOrDefault(i => i.Id == itemId);
-            return item ?? throw new NullItemIdException();
+            return item ?? throw new ItemNotFoundException();
         }
     }
 }

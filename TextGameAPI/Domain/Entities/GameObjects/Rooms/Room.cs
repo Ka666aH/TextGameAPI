@@ -21,12 +21,12 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
         public void RemoveItem(Item item)
         {
             if (_items.Contains(item)) _items.Remove(item);
-            else throw new NullItemIdException();
+            else throw new ItemNotFoundException();
         }
         public void AddEnemy(Enemy enemy) => _enemies.Add(enemy);
         public void RemoveEnemy(Enemy enemy)
         {
-            if (!_enemies.Remove(enemy)) throw new NullEnemyIdException();
+            if (!_enemies.Remove(enemy)) throw new EnemyNotFoundException();
         }
         public List<Item> Search()
         {

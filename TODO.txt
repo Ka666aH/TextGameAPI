@@ -5,7 +5,6 @@
 	- Костыль ReadTokenWithoutLifetime
 	- Лайфтаймы токенов и кук
 	- IReadOnlyList для неизменяемых списков
-	- Унифицировать исключения (NullId и NotFound). Упростить названия.
 	- Перестать выкидывать исключения для управления потоком
 	- Сомнительно. public Enemy CurrentEnemy { get => CurrentRoom.Enemy ?? throw new NullEnemyIdException(); }
 	- Баланс. Много магазинов. Сторонная прога для симуляции и подсчёта?

@@ -222,7 +222,7 @@ namespace TextGame.Application.Orchestrators
         public void TakeAllItems()
         {
             List<Item> carryableItems = [.. _stateService.CurrentRoom!.Items.Where(i => i.IsCarryable)];
-            if (carryableItems.Count <= 0) throw new EmptyException();
+            if (carryableItems.Count <= 0) throw new NothingFoundException();
             foreach (Item item in carryableItems)
             {
                 _checkItemService.CheckItem(item);

@@ -36,7 +36,7 @@ namespace TextGame.Application.Services
         public bool IsInBattle { get => State.IsInBattle; }
         public int CurrentRoomId { get => State.CurrentRoomId; }
         public Room CurrentRoom { get => State.Rooms[CurrentRoomId]; }
-        public Enemy CurrentEnemy { get => CurrentRoom.Enemy ?? throw new NullEnemyIdException(); }
+        public Enemy CurrentEnemy { get => CurrentRoom.Enemy ?? throw new EnemyNotFoundException(); }
         public IReadOnlyList<Room> Rooms => State.Rooms.AsReadOnly();
         public IReadOnlyList<Item> Inventory => State.Inventory.AsReadOnly();
         public int Coins { get => State.Coins; }

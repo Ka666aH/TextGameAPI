@@ -51,21 +51,21 @@ namespace TextGame.Application.Services
         }
         public void UnequipWeapon()
         {
-            if (_stateService.Weapon == Fists.DefaultFists) throw new EmptyException();
+            if (_stateService.Weapon == Fists.DefaultFists) throw new NothingFoundException();
 
             _stateService.AddItemToInventory(_stateService.Weapon);
             _stateService.RemoveWeapon();
         }
         public void UnequipHelm()
         {
-            if (_stateService.Helm == null) throw new EmptyException();
+            if (_stateService.Helm == null) throw new NothingFoundException();
 
             _stateService.AddItemToInventory(_stateService.Helm);
             _stateService.RemoveHelm();
         }
         public void UnequipChestplate()
         {
-            if (_stateService.Chestplate == null) throw new EmptyException();
+            if (_stateService.Chestplate == null) throw new NothingFoundException();
 
             _stateService.AddItemToInventory(_stateService.Chestplate);
             _stateService.RemoveChestplate();

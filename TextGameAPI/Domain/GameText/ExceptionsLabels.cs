@@ -25,8 +25,8 @@ namespace TextGame.Domain.GameText
         public const string IncorrectPasswordCode = "INCORRECT_PASSWORD";
         public const string IncorrectPasswordMessage = "Неверный пароль.";
 
-        public const string AccessTokenNotFoundCode = "ACCESS_TOKEN_NOT_FOUND";
-        public const string AccessTokenNotFoundMessage = "Токен доступа не найден.";
+        public const string AccessTokenMissingCode = "ACCESS_TOKEN_NOT_FOUND";
+        public const string AccessTokenMissingMessage = "Токен доступа не найден.";
 
         public const string MissingUserIdClaimCode = "MISSING_USER_ID_CLAIM";
         public const string MissingUserIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.UserId}.";
@@ -34,8 +34,8 @@ namespace TextGame.Domain.GameText
         public const string MissingSessionIdClaimCode = "MISSING_SESSION_ID_CLAIM";
         public const string MissingSessionIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.SessionId}.";
 
-        public const string RefreshTokenNotFoundCode = "REFRESH_TOKEN_NOT_FOUND";
-        public const string RefreshTokenNotFoundMessage = "Токен обновления не найден.";
+        public const string RefreshTokenMissingCode = "REFRESH_TOKEN_NOT_FOUND";
+        public const string RefreshTokenMissingMessage = "Токен обновления не найден.";
 
         public const string RefreshTokenExpiredCode = "REFRESH_TOKEN_EXPIRED";
         public const string RefreshTokenExpiredMessage = "Токен обновления просрочен.";
@@ -49,8 +49,8 @@ namespace TextGame.Domain.GameText
         public const string ClosedCode = "CLOSED";
         public const string ClosedText = "Сундук закрыт!";
 
-        public const string EmptyCode = "EMPTY_ERROR";
-        public const string EmptyText = "Тут ничего нет!";
+        public const string NothingFoundCode = "NOTHING_FOUND";
+        public const string NothingFoundMessage = "Тут ничего нет!";
 
         public const string ImpossibleStealCode = "CAN_NOT_STEAL";
         public const string ImpossibleStealText = "Невозможно украсть. За Вами следят.";
@@ -73,14 +73,14 @@ namespace TextGame.Domain.GameText
         public const string NotShopCode = "NOT_IN_SHOP";
         public const string NotShopText = "Невозможно вне магазина!";
 
-        public const string NullEnemyIdCode = "ENEMY_NOT_FOUND";
-        public const string NullEnemyIdText = "Противник не найден.";
+        public const string EnemyNotFoundCode = "ENEMY_NOT_FOUND";
+        public const string EnemyNotFoundMessage = "Противник не найден.";
 
-        public const string NullItemIdCode = "ITEM_NOT_FOUND";
-        public const string NullItemIdText = "Предмет не найден.";
+        public const string ItemNotFoundCode = "ITEM_NOT_FOUND";
+        public const string ItemNotFoundMessage = "Предмет не найден.";
 
-        public const string NullRoomIdCode = "ROOM_NOT_FOUND";
-        public const string NullRoomIdText = "Комната не найдена.";
+        public const string RoomNotFoundCode = "ROOM_NOT_FOUND";
+        public const string RoomNotFoundMessage = "Комната не найдена.";
 
         public const string UncarryableCode = "UNCARRYABLE_ERROR";
         public const string UncarryableText = "Невозможно поднять этот предмет!";

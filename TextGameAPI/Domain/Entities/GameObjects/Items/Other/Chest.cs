@@ -26,7 +26,7 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
         public void RemoveItem(Item item)
         {
             if (_items.Contains(item)) _items.Remove(item);
-            else throw new NullItemIdException();
+            else throw new ItemNotFoundException();
         }
         public void RemoveAllItems()
         {
