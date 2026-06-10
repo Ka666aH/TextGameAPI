@@ -1,5 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameText;
+﻿using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
@@ -13,22 +12,25 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
                   fromShop,
                   null,
                   null)
-        { }
+        {
+            var (minCost, maxCost) = GameBalance.CalculateSpread(GameBalance.CalculateRandomPotionBaseCost(), roomId);
+            Cost = Random.Shared.Next(minCost, maxCost);
+            if (fromShop) Cost = (int)(Cost! * GameBalance.StoreMargin);
+        }
         public override (int, int) Use()
         {
-            double maxHealthFloor = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadFloor;
-            double maxHealthCeiling = GameBalance.RandomPotionBaseMaxHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadCeiling;
-            double currentHealthFloor = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadFloor;
-            double currentHealthCeiling = GameBalance.RandomPotionBaseCurrentHealthBoost * GameBalance.CalculateGain(_roomId) * GameBalance.SpreadCeiling;
+            double gain = GameBalance.CalculateGain(_roomId);
+            int maxBase = (int)(GameBalance.RandomPotionBaseMaxHealthBoost * gain);
+            int currentBase = (int)(GameBalance.RandomPotionBaseCurrentHealthBoost * gain);
             if (_fromShop)
             {
-                maxHealthFloor *= 1 / GameBalance.ShopMultiplier;
-                maxHealthCeiling *= GameBalance.ShopMultiplier;
-                currentHealthFloor *= 1 / GameBalance.ShopMultiplier;
-                currentHealthCeiling *= GameBalance.ShopMultiplier;
+                maxBase = GameBalance.CalculateShopMultiplier(maxBase);
+                currentBase = GameBalance.CalculateShopMultiplier(currentBase);
             }
-            MaxHealthBoost = Random.Shared.Next((int)maxHealthFloor, (int)currentHealthCeiling + 1);
-            CurrentHealthBoost = Random.Shared.Next((int)currentHealthFloor, (int)currentHealthCeiling + 1);
+            int maxRoll = Random.Shared.Next(-maxBase, maxBase * 2 + 1);
+            int currentRoll = Random.Shared.Next(-currentBase, currentBase * 2 + 1);
+            MaxHealthBoost = maxRoll;
+            CurrentHealthBoost = currentRoll;
             return base.Use();
         }
         private RandomPotion() { }

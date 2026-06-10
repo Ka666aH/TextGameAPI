@@ -101,6 +101,12 @@ namespace TextGame.Domain
         //Random
         public const int RandomPotionBaseMaxHealthBoost = 25;
         public const int RandomPotionBaseCurrentHealthBoost = 50;
+        public static int CalculateRandomPotionBaseCost()
+        {
+            double avgMax = RandomPotionBaseMaxHealthBoost / 2.0;
+            double avgCurrent = RandomPotionBaseCurrentHealthBoost / 2.0;
+            return 1 + (int)(avgMax * MaxHealthCostMultiplier) + (int)(avgCurrent * CurrentHealthCostMultiplier);
+        }
 
         //Equip
 
