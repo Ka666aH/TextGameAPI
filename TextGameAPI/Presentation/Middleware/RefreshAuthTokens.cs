@@ -1,5 +1,4 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;
 using TextGame.Infrastructure.Token;
@@ -23,21 +22,17 @@ namespace TextGame.Presentation.Middleware
             if (context.GetEndpoint()?.Metadata.GetMetadata<BypassRefreshAttribute>() is not null) { await _next(context); return; }
 
             //Получить необходимые сервисы
-            var tokenRepo = context.RequestServices.GetRequiredService<ITokenRepository>();
             var authService = context.RequestServices.GetRequiredService<IAuthService>();
             //Проверить срок жизни токена
             bool accessTokenExist = context.Request.TryGetAccessToken(out string accessToken);
             if (accessTokenExist)
             {
-                var principal = tokenRepo.ReadTokenWithoutLifetime(accessToken);
-                if (principal == null) { await _next(context); return; }
-
-                var expClaim = principal.FindFirst(JwtRegisteredClaimNames.Exp)?.Value;
-                if (expClaim == null) { await _next(context); return; }
-
-                var expUnix = long.Parse(expClaim);
-                var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
-                if (expTime > DateTime.UtcNow) { await _next(context); return; }
+                var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+                if (jwtToken.ValidTo > DateTime.UtcNow)
+                {
+                    await _next(context);
+                    return;
+                }
             }
             //Получить остальные данные
             string refreshToken = GetRefreshToken(context);
