@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using TextGame.Application.Interfaces.Services;
 
 namespace TextGame.Application.GuardAttributes
@@ -31,7 +32,15 @@ namespace TextGame.Application.GuardAttributes
                 guard.Validate(_stateService);
             }
 
-            return targetMethod.Invoke(_inner, args);
+            try
+            {
+                return targetMethod.Invoke(_inner, args);
+            }
+            catch (TargetInvocationException ex) when (ex.InnerException != null)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
         }
     }
 
