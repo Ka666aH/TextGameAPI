@@ -14,12 +14,10 @@ namespace TextGame.Presentation.Controllers
     public class SessionController : ControllerBase
     {
         private readonly ISessionService _sessionService;
-        private readonly ISaveService _saveService;
-
-        public SessionController(ISessionService sessionService, ISaveService saveService)
+        
+        public SessionController(ISessionService sessionService)
         {
             _sessionService = sessionService;
-            _saveService = saveService;
         }
 
         [HttpPost]
@@ -29,8 +27,6 @@ namespace TextGame.Presentation.Controllers
             Guid newSessionId = await _sessionService.CreateAsync(userId, sessionName, ct);
             string newAccessToken = await _sessionService.LoadAsync(userId, newSessionId, ct);
 
-            Guid initSaveId = await _saveService.CreateAsync(newSessionId, SaveType.Initial, null, ct);
-            await _saveService.LoadAsync(newSessionId, initSaveId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
 
             return Created($"/sessions/{newSessionId}", new { sessionId = newSessionId });
