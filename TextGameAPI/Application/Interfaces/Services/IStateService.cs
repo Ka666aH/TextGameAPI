@@ -17,7 +17,7 @@ namespace TextGame.Application.Interfaces.Services
         bool IsInBattle { get; }
         int CurrentRoomId { get; }
         Room CurrentRoom { get; }
-        Enemy CurrentEnemy { get; }
+        Enemy? CurrentEnemy { get; }
         IReadOnlyList<Room> Rooms { get; }
         IReadOnlyList<Item> Inventory { get; }
         int Coins { get; }

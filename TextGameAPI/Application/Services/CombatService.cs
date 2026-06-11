@@ -17,7 +17,7 @@ namespace TextGame.Application.Services
         public DealDamageOutcome DealDamage(out BattleLog battleLog)
         {
             int playerHealthBeforeAttack = _stateService.CurrentHealth;
-            Enemy enemy = _stateService.CurrentEnemy;
+            Enemy enemy = _stateService.CurrentEnemy!;
 
             var attackResult = _stateService.Weapon.Attack(_stateService.CurrentRoom!.Id);
             if (attackResult.SelfDamage != 0) _stateService.AddCurrentHealth(-attackResult.SelfDamage);
@@ -51,7 +51,7 @@ namespace TextGame.Application.Services
         }
         public GetDamageOutcome GetDamage(out BattleLog battleLog)
         {
-            Enemy enemy = _stateService.CurrentEnemy;
+            Enemy enemy = _stateService.CurrentEnemy!;
             int enemyHealthBeforeAttack = enemy.Health;
             var enemyAttackResult = enemy.Attack();
 

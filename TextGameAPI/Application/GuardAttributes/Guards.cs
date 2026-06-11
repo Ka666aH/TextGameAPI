@@ -49,4 +49,12 @@ namespace TextGame.Application.GuardAttributes
             if (state.CurrentRoom is not Shop) throw new NotShopException();
         }
     }
+
+    public class RequireEnemyExistsAttribute : GuardAttribute
+    {
+        public override void Validate(IStateService state)
+        {
+            if (state.CurrentEnemy == null) throw new EnemyNotFoundException();
+        }
+    }
 }

@@ -54,9 +54,10 @@ namespace TextGame.Application.Orchestrators
         }
 
         [RequireGameStarted]
+        [RequireEnemyExists]
         public BattleLog DealDamage()
         {
-            Enemy cachedEnemy = _stateService.CurrentEnemy;
+            Enemy cachedEnemy = _stateService.CurrentEnemy!;
             var outcome = _combatService.DealDamage(out var battleLog);
             switch (outcome)
             {
@@ -84,9 +85,10 @@ namespace TextGame.Application.Orchestrators
         public Room GetCurrentRoom() => _stateService.CurrentRoom;
 
         [RequireGameStarted]
+        [RequireEnemyExists]
         public BattleLog GetDamage()
         {
-            Enemy cachedEnemy = _stateService.CurrentEnemy;
+            Enemy cachedEnemy = _stateService.CurrentEnemy!;
             var outcome = _combatService.GetDamage(out var battleLog);
             switch (outcome)
             {
@@ -102,7 +104,8 @@ namespace TextGame.Application.Orchestrators
         }
 
         [RequireGameStarted]
-        public Enemy GetEnemy() => _stateService.CurrentEnemy;
+        [RequireEnemyExists]
+        public Enemy GetEnemy() => _stateService.CurrentEnemy!;
 
         public List<Equipment> GetEquipment() => _inventoryService.GetEquipment();
 
