@@ -31,7 +31,7 @@ namespace TextGame.Application.Services
         {
             Session session = _sessionFactory.CreateSession(userId, sessionName);
             await _sessionRepository.CreateAsync(session, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
+            //await _unitOfWork.SaveChangesAsync(ct);
             return session.Id;
         }
         public async Task DeleteAsync(Guid sessionId, CancellationToken ct = default)
