@@ -1,4 +1,5 @@
 ﻿using TextGame.Application.DTO;
+using TextGame.Infrastructure.Configuration;
 using TextGame.Infrastructure.Token;
 
 namespace TextGame.Presentation.Helpers
@@ -22,9 +23,9 @@ namespace TextGame.Presentation.Helpers
                 Expires = DateTimeOffset.UtcNow.Add(tokenLifetime)
             };
         public static void SetRefreshCookie(this HttpResponse response, string value) =>
-                response.Cookies.Append(TokenParameters.RefreshToken, value, SetExpiringOptions(TokenParameters.RefreshTokenLifetime));
+                response.Cookies.Append(TokenParameters.RefreshToken, value, SetExpiringOptions(TimeSettings.RefreshCookieLifetime));
         public static void SetAccessCookie(this HttpResponse response, string value) =>
-            response.Cookies.Append(TokenParameters.AccessToken, value, SetExpiringOptions(TokenParameters.RefreshTokenLifetime));
+            response.Cookies.Append(TokenParameters.AccessToken, value, SetExpiringOptions(TimeSettings.AccessCookieLifetime));
         public static void SetAuthCookies(AuthResult authResult, HttpContext context)
         {
             var response = context.Response;

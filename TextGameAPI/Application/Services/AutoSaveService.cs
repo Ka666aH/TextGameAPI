@@ -6,6 +6,7 @@ using TextGame.Application.Interfaces.Repositories;
 using TextGame.Domain.Entities;
 using TextGame.Domain.GameText;
 using TextGame.Infrastructure.Cache;
+using TextGame.Infrastructure.Configuration;
 using TextGame.Infrastructure.JSON;
 
 namespace TextGame.Application.Services;
@@ -15,8 +16,6 @@ public class AutoSaveService : BackgroundService
     private readonly IConnectionMultiplexer _redis;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<AutoSaveService> _logger;
-
-    private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
 
     public AutoSaveService(
         IConnectionMultiplexer redis,
@@ -32,7 +31,7 @@ public class AutoSaveService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(Interval, stoppingToken);
+            await Task.Delay(TimeSettings.AutoSaveInterval, stoppingToken);
 
             try
             {

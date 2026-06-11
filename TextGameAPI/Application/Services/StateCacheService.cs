@@ -2,6 +2,7 @@
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
 using TextGame.Infrastructure.Cache;
+using TextGame.Infrastructure.Configuration;
 using TextGame.Infrastructure.JSON;
 
 namespace TextGame.Application.Services
@@ -18,7 +19,7 @@ namespace TextGame.Application.Services
         {
             var key = CacheParameters.StateKeyPrefix + sessionId;
             var value = StateSerializer.Serialize(state);
-            await _cache.SetAsync(key, value, CacheParameters.StateLifetime, ct);
+            await _cache.SetAsync(key, value, TimeSettings.StateCacheLifetime, ct);
         }
         public async Task<State?> GetAsync(Guid sessionId, CancellationToken ct)
         {

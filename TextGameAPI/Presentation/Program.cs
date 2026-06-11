@@ -15,6 +15,7 @@ using TextGame.Application.Orchestrators;
 using TextGame.Application.Services;
 using TextGame.Application.Validators;
 using TextGame.Infrastructure.Cache;
+using TextGame.Infrastructure.Configuration;
 using TextGame.Infrastructure.Database;
 using TextGame.Infrastructure.Database.Repositories;
 using TextGame.Infrastructure.PasswordHasher;
@@ -63,6 +64,9 @@ builder.Services.AddScoped<IRoomContentGenerator, RoomContentGenerator>();
 //Синглтоны
 builder.Services.AddSingleton<IGetItemService, GetItemService>();
 builder.Services.AddSingleton<IChestService, ChestService>();
+
+//Настройки конфигурации
+TimeSettings.Initialize(builder.Configuration);
 
 //База данных
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
@@ -125,9 +129,9 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddFixedWindowLimiter(RateLimiter.AuthPolicyName,opt =>
     {
-        opt.PermitLimit = RateLimiter.AuthPermitLimit;
-        opt.Window = RateLimiter.AuthWindow;
-        opt.QueueLimit = RateLimiter.AuthQueueLimit;
+        opt.PermitLimit = TimeSettings.RateLimitPermitLimit;
+        opt.Window = TimeSettings.RateLimitWindow;
+        opt.QueueLimit = TimeSettings.RateLimitQueueLimit;
     });
 });
 builder.Services.AddHealthChecks();

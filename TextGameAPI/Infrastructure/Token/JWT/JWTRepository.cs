@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Domain.Entities;
 using TextGame.Domain.GameExceptions;
+using TextGame.Infrastructure.Configuration;
 
 namespace TextGame.Infrastructure.Token.JWT
 {
@@ -20,7 +21,7 @@ namespace TextGame.Infrastructure.Token.JWT
             return new RefreshToken(
                 userId,
                 token,
-                DateTime.UtcNow.Add(TokenParameters.RefreshTokenLifetime),
+                DateTime.UtcNow.Add(TimeSettings.RefreshTokenLifetime),
                 hashedFingerprint);
         }
 
@@ -38,7 +39,7 @@ namespace TextGame.Infrastructure.Token.JWT
                 issuer: TokenParameters.Issuer,
                 audience: TokenParameters.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.Add(TokenParameters.AccessTokenLifetime),
+                expires: DateTime.UtcNow.Add(TimeSettings.AccessTokenLifetime),
                 signingCredentials: new SigningCredentials(JwtKeyProvider.Instance, SecurityAlgorithms.HmacSha256)
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
