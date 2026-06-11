@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
+using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Helpers;
 using TextGame.Presentation.Mappers;
 
@@ -14,13 +15,11 @@ namespace TextGame.Presentation.Controllers
     {
         private readonly ISessionService _sessionService;
         private readonly ISaveService _saveService;
-        private readonly ISessionAccessGuard _sessionAccessGuard;
 
-        public SessionController(ISessionService sessionService, ISaveService saveService, ISessionAccessGuard sessionAccessGuard)
+        public SessionController(ISessionService sessionService, ISaveService saveService)
         {
             _sessionService = sessionService;
             _saveService = saveService;
-            _sessionAccessGuard = sessionAccessGuard;
         }
 
         [HttpPost]
@@ -36,19 +35,19 @@ namespace TextGame.Presentation.Controllers
 
             return Created($"/sessions/{newSessionId}", new { sessionId = newSessionId });
         }
+        [RequireSessionOwnership]
         [HttpPost("{sessionId}")]
         public async Task<IActionResult> LoadAsync(Guid sessionId, CancellationToken ct)
         {
-            await _sessionAccessGuard.EnsureOwnershipAsync(sessionId,ct);
             User.TryGetUserId(out Guid userId);
             string newAccessToken = await _sessionService.LoadAsync(userId, sessionId, ct);
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
             return Ok(new { sessionId });
         }
+        [RequireSessionOwnership]
         [HttpDelete("{sessionId}")]
         public async Task<IActionResult> DeleteAsync(Guid sessionId, CancellationToken ct)
         {
-            await _sessionAccessGuard.EnsureOwnershipAsync(sessionId, ct);
             await _sessionService.DeleteAsync(sessionId, ct);
             return NoContent();
         }
