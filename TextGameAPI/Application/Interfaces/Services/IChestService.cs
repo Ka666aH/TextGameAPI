@@ -11,6 +11,6 @@ namespace TextGame.Application.Interfaces.Services
         void UnlockChest(Chest chest);
         IReadOnlyList<Item> SearchChest(Chest chest);
         void TakeItemFromChest(Chest chest, Item item);
-        IReadOnlyList<Item> TakeAllItemsFromChest(Chest chest);
+        void TakeAllItemsFromChest(Chest chest);
     }
 }

@@ -44,14 +44,12 @@ namespace TextGame.Application.Services
 
             chest.RemoveItem(item);
         }
-        public IReadOnlyList<Item> TakeAllItemsFromChest(Chest chest)
+        public void TakeAllItemsFromChest(Chest chest)
         {
             RequireUnlocked(chest);
             RequireOpened(chest);
 
-            var items = chest.Items.ToList();
             chest.RemoveAllItems();
-            return items.AsReadOnly();
         }
         private void RequireOpened(Chest chest)
         {

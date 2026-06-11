@@ -238,7 +238,8 @@ namespace TextGame.Application.Orchestrators
         public void TakeAllItemsFromChest(int chestId)
         {
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
-            var items = _chestService.TakeAllItemsFromChest(chest);
+            var items = chest.Items.ToList();
+            _chestService.TakeAllItemsFromChest(chest);
             foreach (var item in items) _checkItemService.CheckItem(item);
         }
 
