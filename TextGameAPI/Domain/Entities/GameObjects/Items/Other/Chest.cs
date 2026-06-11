@@ -34,7 +34,7 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Other
         }
         public void Open() => IsClosed = false;
         public void Unlock() => IsLocked = false;
-        public List<Item> Search() => Items.ToList();
+        public IReadOnlyList<Item> Search() => Items;
         public void KillMimic()
         {
             Mimic = null;

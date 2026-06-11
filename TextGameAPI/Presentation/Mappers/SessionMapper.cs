@@ -10,7 +10,7 @@ namespace TextGame.Presentation.Mappers
             session.Id,
             session.Name,
             session.CreatedAt);
-        public static List<SessionDTO> ToDTO(this List<Session> sessions) =>
+        public static List<SessionDTO> ToDTO(this IEnumerable<Session> sessions) =>
             [.. sessions.Select(ToDTO)];
     }
 }

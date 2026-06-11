@@ -16,12 +16,12 @@ namespace TextGame.Application.Services
         {
             _stateService = stateService;
         }
-        public List<Equipment> GetEquipment()
+        public IReadOnlyList<Equipment> GetEquipment()
         {
             List<Equipment> equipmentList = [_stateService.Weapon];
             if (_stateService.Helm != null) equipmentList.Add(_stateService.Helm);
             if (_stateService.Chestplate != null) equipmentList.Add(_stateService.Chestplate);
-            return equipmentList;
+            return equipmentList.AsReadOnly();
         }
         public void EquipInventoryItem(Equipment equip)
         {

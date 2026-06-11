@@ -47,7 +47,7 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> GetAsync(CancellationToken ct)
         {
             User.TryGetSessionId(out Guid sessionId);
-            List<Save> saves = await _saveService.GetListAsync(sessionId, ct);
+            var saves = await _saveService.GetListAsync(sessionId, ct);
             return Ok(saves.ToDTO());
         }
     }

@@ -17,7 +17,7 @@ namespace TextGame.Infrastructure.Database.Repositories
         }
         public async Task<Session?> GetAsync(Guid sessionId, CancellationToken ct = default) =>
             await _db.Sessions.SingleOrDefaultAsync(x => x.Id == sessionId, ct);
-        public async Task<List<Session>> GetListAsync(Guid userId, CancellationToken ct = default) =>
+        public async Task<IReadOnlyList<Session>> GetListAsync(Guid userId, CancellationToken ct = default) =>
             await _db.Sessions
             .AsNoTracking()
             .Where(x => x.UserId == userId)

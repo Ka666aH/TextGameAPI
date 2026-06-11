@@ -30,7 +30,7 @@ namespace TextGame.Application.Services
         {
             chest.Unlock();
         }
-        public List<Item> SearchChest(Chest chest)
+        public IReadOnlyList<Item> SearchChest(Chest chest)
         {
             RequireUnlocked(chest);
             RequireOpened(chest);
@@ -44,14 +44,14 @@ namespace TextGame.Application.Services
 
             chest.RemoveItem(item);
         }
-        public List<Item> TakeAllItemsFromChest(Chest chest)
+        public IReadOnlyList<Item> TakeAllItemsFromChest(Chest chest)
         {
             RequireUnlocked(chest);
             RequireOpened(chest);
 
             var items = chest.Items.ToList();
             chest.RemoveAllItems();
-            return items;
+            return items.AsReadOnly();
         }
         private void RequireOpened(Chest chest)
         {

@@ -16,8 +16,7 @@ namespace TextGame.Application.Factories
         public Save CreateInitial(Guid sessionId)
         {
             State state = new();
-            var rooms = _mapGenerator.Generate();
-            state.Rooms = rooms;
+            state.Rooms = _mapGenerator.Generate();
             state.CurrentRoomId = 0;
             return new(sessionId, SaveType.Initial, GeneralLabels.SaveInitialDefaultName, state);
         }

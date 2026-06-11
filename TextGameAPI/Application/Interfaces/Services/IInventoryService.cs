@@ -6,7 +6,7 @@ namespace TextGame.Application.Interfaces.Services
     public interface IInventoryService
     {
         void EquipInventoryItem(Equipment equip);
-        List<Equipment> GetEquipment();
+        IReadOnlyList<Equipment> GetEquipment();
         void UnequipWeapon();
         void UnequipHelm();
         void UnequipChestplate();

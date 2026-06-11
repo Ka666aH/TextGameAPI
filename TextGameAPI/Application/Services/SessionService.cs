@@ -42,7 +42,7 @@ namespace TextGame.Application.Services
             await _sessionRepository.DeleteAsync(session, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
-        public async Task<List<Session>> GetListAsync(Guid userId, CancellationToken ct = default) =>
+        public async Task<IReadOnlyList<Session>> GetListAsync(Guid userId, CancellationToken ct = default) =>
             await _sessionRepository.GetListAsync(userId, ct);
 
         public async Task<string> LoadAsync(Guid userId, Guid sessionId, CancellationToken ct = default) =>

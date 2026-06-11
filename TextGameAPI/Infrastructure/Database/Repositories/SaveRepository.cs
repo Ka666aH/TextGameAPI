@@ -26,13 +26,13 @@ namespace TextGame.Infrastructure.Database.Repositories
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
-        public async Task<List<Save>> GetListAsync(Guid sessionId, CancellationToken ct = default) =>
+        public async Task<IReadOnlyList<Save>> GetListAsync(Guid sessionId, CancellationToken ct = default) =>
             await _db.Saves
                 .AsNoTracking()
                 .Where(x => x.SessionId == sessionId)
                 .ToListAsync(ct);
 
-        public async Task<Dictionary<Guid, string?>> GetAutoSaveHashesAsync(List<Guid> sessionIds, CancellationToken ct)
+        public async Task<Dictionary<Guid, string?>> GetAutoSaveHashesAsync(IReadOnlyList<Guid> sessionIds, CancellationToken ct)
         {
             return await _db.Saves
                 .Where(x => sessionIds.Contains(x.SessionId) && x.Type == SaveType.Auto)
@@ -40,7 +40,7 @@ namespace TextGame.Infrastructure.Database.Repositories
                 .ToDictionaryAsync(x => x.SessionId, x => x.StateHash, ct);
         }
 
-        public async Task BatchReplaceAutoSavesAsync(List<Guid> sessionIds, List<Save> saves, CancellationToken ct)
+        public async Task BatchReplaceAutoSavesAsync(IReadOnlyList<Guid> sessionIds, IReadOnlyList<Save> saves, CancellationToken ct)
         {
             var existing = await _db.Saves
                 .Where(x => sessionIds.Contains(x.SessionId) && x.Type == SaveType.Auto)

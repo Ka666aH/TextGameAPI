@@ -7,6 +7,6 @@ namespace TextGame.Application.Interfaces.Services
         Task<Guid> CreateAsync(Guid userId, string? sessionName, CancellationToken ct = default);
         Task<string> LoadAsync(Guid userId, Guid sessionId, CancellationToken ct = default);
         Task DeleteAsync(Guid sessionId, CancellationToken ct = default);
-        Task<List<Session>> GetListAsync(Guid userId, CancellationToken ct = default);
+        Task<IReadOnlyList<Session>> GetListAsync(Guid userId, CancellationToken ct = default);
     }
 }

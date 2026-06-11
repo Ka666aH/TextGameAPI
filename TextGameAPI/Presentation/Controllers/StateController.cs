@@ -239,9 +239,9 @@ namespace TextGame.Presentation.Controllers
         [AutoCache]
         public IActionResult AttackEnemy()
         {
-            List<BattleLog> battleLogs = [
+            var battleLogs = new List<BattleLog>([
                 _stateOrchestrator.DealDamage(),
-                _stateOrchestrator.GetDamage()];
+                _stateOrchestrator.GetDamage()]);
             return Ok(battleLogs);
         }
 

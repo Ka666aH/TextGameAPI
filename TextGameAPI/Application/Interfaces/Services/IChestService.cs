@@ -9,8 +9,8 @@ namespace TextGame.Application.Interfaces.Services
         Chest GetChest(int chestId, IEnumerable<Item> items);
         bool OpenChest(Chest chest);
         void UnlockChest(Chest chest);
-        List<Item> SearchChest(Chest chest);
+        IReadOnlyList<Item> SearchChest(Chest chest);
         void TakeItemFromChest(Chest chest, Item item);
-        List<Item> TakeAllItemsFromChest(Chest chest);
+        IReadOnlyList<Item> TakeAllItemsFromChest(Chest chest);
     }
 }

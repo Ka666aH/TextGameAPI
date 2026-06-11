@@ -107,7 +107,7 @@ namespace TextGame.Application.Orchestrators
         [RequireEnemyExists]
         public Enemy GetEnemy() => _stateService.CurrentEnemy!;
 
-        public List<Equipment> GetEquipment() => _inventoryService.GetEquipment();
+        public IReadOnlyList<Equipment> GetEquipment() => _inventoryService.GetEquipment();
 
         public GameInfoDTO GetGameInfo() => _gameInfoService.GetGameInfo();
 
@@ -117,7 +117,7 @@ namespace TextGame.Application.Orchestrators
         
         public int GetKeys() => _stateService.Keys;
         
-        public List<MapRoomDTO> GetMap()
+        public IReadOnlyList<MapRoomDTO> GetMap()
         {
             if (!_stateService.Inventory.OfType<Map>().Any()) throw new NoMapException();
             return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName)).ToList();
@@ -199,11 +199,11 @@ namespace TextGame.Application.Orchestrators
 
         [RequireGameStarted]
         [RequireNotInBattle]
-        public List<Item> Search() =>_stateService.SearchCurrentRoom();
+        public IReadOnlyList<Item> Search() =>_stateService.SearchCurrentRoom();
         
         [RequireGameStarted]
         [RequireNotInBattle]
-        public List<Item> SearchChest(int chestId)
+        public IReadOnlyList<Item> SearchChest(int chestId)
         {
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             return _chestService.SearchChest(chest);
@@ -239,7 +239,7 @@ namespace TextGame.Application.Orchestrators
         {
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var items = _chestService.TakeAllItemsFromChest(chest);
-            items.ForEach(_checkItemService.CheckItem);
+            foreach (var item in items) _checkItemService.CheckItem(item);
         }
 
         [RequireGameStarted]

@@ -12,7 +12,7 @@ namespace TextGame.Presentation.Mappers
                 save.State.CurrentRoomId,
                 save.CreatedAt
                 );
-        public static List<SaveDTO> ToDTO(this List<Save> saves) =>
+        public static List<SaveDTO> ToDTO(this IEnumerable<Save> saves) =>
             [.. saves.Select(ToDTO)];
     }
 }

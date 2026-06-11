@@ -14,10 +14,10 @@ namespace TextGame.Application.Interfaces.Orchestrators
         IEnumerable<Item> GetInventory();
         int GetCoins();
         int GetKeys();
-        List<MapRoomDTO> GetMap();
+        IReadOnlyList<MapRoomDTO> GetMap();
         void UseInventoryItem(int itemId);
         Item GetInventoryItem(int itemId);
-        List<Equipment> GetEquipment();
+        IReadOnlyList<Equipment> GetEquipment();
         void EquipInventoryItem(int itemId);
         void UnequipWeapon();
         void UnequipHelm();
@@ -26,7 +26,7 @@ namespace TextGame.Application.Interfaces.Orchestrators
         Room GetCurrentRoom();
         Room GoNextRoom();
         Room GoToRoom(int roomId);
-        List<Item> Search();
+        IReadOnlyList<Item> Search();
         void TakeItem(int itemId);
         void TakeAllItems();
         void BuyItem(int itemId);
@@ -36,7 +36,7 @@ namespace TextGame.Application.Interfaces.Orchestrators
         BattleLog HitChest(int chestId);
         Chest UnlockChest(int chestId);
         void OpenChest(int chestId);
-        List<Item> SearchChest(int chestId);
+        IReadOnlyList<Item> SearchChest(int chestId);
         void TakeItemFromChest(int chestId, int itemId);
         void TakeAllItemsFromChest(int chestId);
     }

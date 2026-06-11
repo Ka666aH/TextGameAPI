@@ -86,6 +86,6 @@ namespace TextGame.Application.Services
         public void AddItemToCurrentRoom(Item item) => CurrentRoom.AddItem(item);
         public void RemoveItemFromCurrentRoom(Item item) => CurrentRoom.RemoveItem(item);
 
-        public List<Item> SearchCurrentRoom() => CurrentRoom.Search();
+        public IReadOnlyList<Item> SearchCurrentRoom() => CurrentRoom.Search();
     }
 }

@@ -28,7 +28,7 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
         {
             if (!_enemies.Remove(enemy)) throw new EnemyNotFoundException();
         }
-        public List<Item> Search()
+        public IReadOnlyList<Item> Search()
         {
             IsSearched = true;
             return _items;
