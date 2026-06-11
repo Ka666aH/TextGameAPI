@@ -77,7 +77,7 @@ namespace TextGame.Application.Services
                 throw new RefreshTokenExpiredException();
 
             await _refreshTokenRepository.DeleteAsync(token, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
+            //await _unitOfWork.SaveChangesAsync(ct);
 
             Guid? sessionId = null;
             if (accessToken != "")
