@@ -55,10 +55,10 @@ namespace TextGame.Presentation.Controllers
                 IncorrectPasswordException =>
                     Problem(401, originalPath, gameEx),
 
-                AccessTokenMissingException or
+                AccessTokenNotFoundException or
                 MissingUserIdClaimException or
                 MissingSessionIdClaimException or
-                RefreshTokenMissingException or
+                RefreshTokenNotFoundException or
                 RefreshTokenExpiredException or
                 RefreshTokenCompromisedException =>
                     DeleteCookieAndProblem(401, originalPath, gameEx),

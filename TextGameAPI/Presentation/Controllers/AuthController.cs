@@ -54,7 +54,7 @@ namespace TextGame.Presentation.Controllers
         {
             var request = HttpContext.Request;
             bool refreshTokenExist = request.TryGetRefreshToken(out string refreshToken);
-            if (!refreshTokenExist) throw new RefreshTokenMissingException();
+            if (!refreshTokenExist) throw new RefreshTokenNotFoundException();
             return refreshToken;
         }
         private void SetAuthCookies(AuthResult authResult)

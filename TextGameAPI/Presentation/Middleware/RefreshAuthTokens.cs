@@ -58,7 +58,7 @@ namespace TextGame.Presentation.Middleware
         {
             var request = context.Request;
             bool refreshTokenExist = request.TryGetRefreshToken(out string refreshToken);
-            if (!refreshTokenExist) throw new RefreshTokenMissingException();
+            if (!refreshTokenExist) throw new RefreshTokenNotFoundException();
             return refreshToken;
         }
     }

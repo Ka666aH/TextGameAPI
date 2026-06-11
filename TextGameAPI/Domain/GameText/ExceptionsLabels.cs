@@ -25,8 +25,8 @@ namespace TextGame.Domain.GameText
         public const string IncorrectPasswordCode = "INCORRECT_PASSWORD";
         public const string IncorrectPasswordMessage = "Неверный пароль.";
 
-        public const string AccessTokenMissingCode = "ACCESS_TOKEN_NOT_FOUND";
-        public const string AccessTokenMissingMessage = "Токен доступа не найден.";
+        public const string AccessTokenNotFoundCode = "ACCESS_TOKEN_NOT_FOUND";
+        public const string AccessTokenNotFoundMessage = "Токен доступа не найден.";
 
         public const string MissingUserIdClaimCode = "MISSING_USER_ID_CLAIM";
         public const string MissingUserIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.UserId}.";
@@ -34,8 +34,8 @@ namespace TextGame.Domain.GameText
         public const string MissingSessionIdClaimCode = "MISSING_SESSION_ID_CLAIM";
         public const string MissingSessionIdClaimMessage = $"Токен доступа не содержит клейм {AccessClaims.SessionId}.";
 
-        public const string RefreshTokenMissingCode = "REFRESH_TOKEN_NOT_FOUND";
-        public const string RefreshTokenMissingMessage = "Токен обновления не найден.";
+        public const string RefreshTokenNotFoundCode = "REFRESH_TOKEN_NOT_FOUND";
+        public const string RefreshTokenNotFoundMessage = "Токен обновления не найден.";
 
         public const string RefreshTokenExpiredCode = "REFRESH_TOKEN_EXPIRED";
         public const string RefreshTokenExpiredMessage = "Токен обновления просрочен.";
