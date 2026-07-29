@@ -18,14 +18,12 @@
         }
         protected virtual void Initialize(int? maxHealthBoost, int? currentHealthBoost)
         {
-            Cost = 1;
             if (maxHealthBoost is null) MaxHealthBoost = null;
             else
             {
                 var (min, max) = GameBalance.CalculateSpread((int)maxHealthBoost!, _roomId);
                 MaxHealthBoost = Random.Shared.Next(min, max + 1);
                 if (_fromShop) MaxHealthBoost = GameBalance.CalculateShopMultiplier((int)MaxHealthBoost!);
-                Cost += (int)(MaxHealthBoost * GameBalance.MaxHealthCostMultiplier);
             }
 
             if (currentHealthBoost is null) CurrentHealthBoost = null;
@@ -34,8 +32,8 @@
                 var (min, max) = GameBalance.CalculateSpread((int)currentHealthBoost!, _roomId);
                 CurrentHealthBoost = Random.Shared.Next(min, max + 1);
                 if (_fromShop) CurrentHealthBoost = GameBalance.CalculateShopMultiplier((int)CurrentHealthBoost!);
-                Cost += (int)(CurrentHealthBoost * GameBalance.CurrentHealthCostMultiplier);
             }
+            Cost = GameBalance.CalculateHealCost(MaxHealthBoost, CurrentHealthBoost);
         }
         public virtual (int, int) Use() => ((int)MaxHealthBoost!, (int)CurrentHealthBoost!);
         protected Heal() { }

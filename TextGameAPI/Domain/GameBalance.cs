@@ -87,7 +87,14 @@ namespace TextGame.Domain
         public const int ChestDivider = 100;
 
         //Heal
-        public const double MaxHealthCostMultiplier = 2;
+        public static int CalculateHealCost(int? maxHealthBoost, int? currentBoost)
+        {
+            int cost = 1;
+            cost += (int)(MaxHealthCostMultiplier * (maxHealthBoost ?? 0));
+            cost += (int)(CurrentHealthCostMultiplier * (currentBoost ?? 0));
+            return cost / 2;
+        }
+        public const double MaxHealthCostMultiplier = 5;
         public const double CurrentHealthCostMultiplier = 1;
         //Bandage
         public const int BandageBaseMaxHealthBoost = 0;
@@ -105,7 +112,7 @@ namespace TextGame.Domain
         {
             double avgMax = RandomPotionBaseMaxHealthBoost / 2.0;
             double avgCurrent = RandomPotionBaseCurrentHealthBoost / 2.0;
-            return 1 + (int)(avgMax * MaxHealthCostMultiplier) + (int)(avgCurrent * CurrentHealthCostMultiplier);
+            return (1 + (int)(avgMax * MaxHealthCostMultiplier) + (int)(avgCurrent * CurrentHealthCostMultiplier)) / 2;
         }
 
         //Equip
@@ -118,7 +125,7 @@ namespace TextGame.Domain
         public const double FistSelfHarmDivider = 2;
 
         //Sword
-        public static int CalculateSwordCost(int durability, int damage) => 1 + (durability * damage / 10) + (damage * damage / 200);
+        public static int CalculateSwordCost(int durability, int damage) => 1 + (durability * damage / 15) + (damage * damage / 150);
         //Rust
         public const int RustSwordBaseDurability = 8;
         public const int RustSwordBaseDamage = 15;
@@ -133,14 +140,14 @@ namespace TextGame.Domain
         public const int GlassSwordBaseDamage = 115;
 
         //Wand
-        public static int CalculateWandCost(int damage) => damage * 3;
+        public static int CalculateWandCost(int damage) => damage * 2;
         //Magic
         public const int MagicWandBaseDamage = 21;
         //Random
         public const int RandomWandBaseDamage = 41;
 
         //Armor
-        public static int CalculateArmorCost(int durability, int damageBlock) => 1 + (durability * damageBlock / 10);
+        public static int CalculateArmorCost(int durability, int damageBlock) => 1 + (durability * damageBlock / 4);
         //Bucket
         public const int WoodenBucketBaseDurability = 3;
         public const int WoodenBucketBaseDamageBlock = 2;
