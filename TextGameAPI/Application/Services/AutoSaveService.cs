@@ -31,8 +31,7 @@ public class AutoSaveService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSettings.AutoSaveInterval, stoppingToken);
-
+            _logger.LogInformation(LoggersText.AutoSaveStarted);
             try
             {
                 await ProcessAutoSaves(stoppingToken);
@@ -41,6 +40,7 @@ public class AutoSaveService : BackgroundService
             {
                 _logger.LogError(ex, LoggersText.AutoSaveError);
             }
+            await Task.Delay(TimeSettings.AutoSaveInterval, stoppingToken);
         }
     }
 

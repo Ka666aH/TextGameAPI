@@ -75,13 +75,9 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 //Кэширование
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") 
     ?? throw new InvalidOperationException("Reids is not configured.");
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = redisConnectionString;
-});
-builder.Services.AddSingleton<ICacheRepository, RedisRepository>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisConnectionString));
+builder.Services.AddSingleton<ICacheRepository, RedisRepository>();
 //Репозитории
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

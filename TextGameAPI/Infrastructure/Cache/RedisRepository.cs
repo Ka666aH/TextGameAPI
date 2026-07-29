@@ -1,29 +1,28 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using StackExchange.Redis;
 using TextGame.Application.Interfaces.Repositories;
 
 namespace TextGame.Infrastructure.Cache
 {
     public class RedisRepository : ICacheRepository
     {
-        private readonly IDistributedCache _cache;
+        private readonly IDatabase _db;
 
-        public RedisRepository(IDistributedCache cache)
+        public RedisRepository(IConnectionMultiplexer redis)
         {
-            _cache = cache;
+            _db = redis.GetDatabase();
         }
 
         public async Task SetAsync(string key, string value, TimeSpan? expiration, CancellationToken ct = default)
         {
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = expiration
-            };
-            await _cache.SetStringAsync(key, value, options, ct);
+            if (expiration.HasValue)
+                await _db.StringSetAsync(key, value, expiration.Value);
+            else
+                await _db.StringSetAsync(key, value);
         }
         public async Task<string?> GetAsync(string key, CancellationToken ct = default) =>
-            await _cache.GetStringAsync(key, ct);
+            await _db.StringGetAsync(key);
 
         public async Task DeleteAsync(string key, CancellationToken ct = default) =>
-            await _cache.RemoveAsync(key, ct);
+            await _db.KeyDeleteAsync(key);
     }
 }
