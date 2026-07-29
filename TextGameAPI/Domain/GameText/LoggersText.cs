@@ -2,8 +2,8 @@
 {
     public static class LoggersText
     {
-        public const string AutoSaveStarted = "Автосохранение запущено";
-        public const string AutoSaveSuccess = "Cессий авто-сохранено: {0}";
-        public const string AutoSaveError = "Ошибка авто-сохранения";
+        public const string AutoSaveStarted = "Auto-save started";
+        public const string AutoSaveSuccess = "Auto-saved sessions: {0}";
+        public const string AutoSaveError = "Auto-save error";
     }
 }
