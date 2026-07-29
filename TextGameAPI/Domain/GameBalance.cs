@@ -186,7 +186,7 @@ namespace TextGame.Domain
         public static int CalculateNoneRoomWeight() => 30;
         public static int CalculateKeyRoomWeight() => 6;
         public static int CalculateBagOfCoinsRoomWeight() => 14;
-        public static int CalculateChestRoomWeight() => 20;
+        public static int CalculateChestRoomWeight() => 10;
         //RoomWeapon
         public static int CalculateRustSwordRoomWeight(int r) => r < 100 ? (int)(-0.89 * r + 89) : 0;
         public static int CalculateIronSwordRoomWeight(int r) => (int)(0.25 * r + 5);
