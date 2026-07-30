@@ -1,0 +1,48 @@
+﻿using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Domain.GameExceptions;
+using TextGame.Domain.GameText;
+
+namespace TextGame.Domain.Entities.GameObjects.Items.Other
+{
+    public class Chest : Item
+    {
+        public bool IsLocked { get; set; }
+        public bool IsClosed { get; set; } = true;
+        public int? MimicId { get; private set; }
+        public Mimic? Mimic { get; private set; }
+        public readonly List<Item> _items = new();
+        public IReadOnlyList<Item> Items => _items.AsReadOnly();
+
+        public Chest(int id, int roomId, List<Item> items, Mimic? mimic = null)
+            : base(id, ItemsLabels.ChestName, ItemsLabels.ChestDescription, roomId, false)
+        {
+            Cost = null;
+            IsLocked = Random.Shared.Next(GameBalance.ChestDivider) < GameBalance.LockedProbabilityDenominator;
+            Mimic = mimic;
+            MimicId = mimic?.Id;
+            _items = items;
+        }
+        //public void AddItem(Item item) => _items.Add(item);
+        public void RemoveItem(Item item)
+        {
+            if (_items.Contains(item)) _items.Remove(item);
+            else throw new ItemNotFoundException();
+        }
+        public void RemoveAllItems()
+        {
+            _items.Clear();
+        }
+        public void Open() => IsClosed = false;
+        public void Unlock() => IsLocked = false;
+        public IReadOnlyList<Item> Search() => Items;
+        public void KillMimic()
+        {
+            Mimic = null;
+            Name = ItemsLabels.DeadMimicName;
+            Description = ItemsLabels.DeadMimicDescription;
+            IsLocked = false;
+            IsClosed = false;
+        }
+        private Chest() { }
+    }
+}

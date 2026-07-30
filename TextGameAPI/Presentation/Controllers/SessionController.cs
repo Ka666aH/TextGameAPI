@@ -1,0 +1,58 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TextGame.Application.Interfaces.Services;
+using TextGame.Domain.Entities;
+using TextGame.Presentation.Attributes;
+using TextGame.Presentation.Helpers;
+using TextGame.Presentation.Mappers;
+
+namespace TextGame.Presentation.Controllers
+{
+    [ApiController]
+    [Authorize]
+    [Route("sessions")]
+    public class SessionController : ControllerBase
+    {
+        private readonly ISessionService _sessionService;
+        
+        public SessionController(ISessionService sessionService)
+        {
+            _sessionService = sessionService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAsync([FromQuery] string? sessionName, CancellationToken ct)
+        {
+            User.TryGetUserId(out Guid userId);
+            Guid newSessionId = await _sessionService.CreateAsync(userId, sessionName, ct);
+            string newAccessToken = await _sessionService.LoadAsync(userId, newSessionId, ct);
+
+            CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
+
+            return Created($"/sessions/{newSessionId}", new { sessionId = newSessionId });
+        }
+        [RequireSessionOwnership]
+        [HttpPost("{sessionId}")]
+        public async Task<IActionResult> LoadAsync(Guid sessionId, CancellationToken ct)
+        {
+            User.TryGetUserId(out Guid userId);
+            string newAccessToken = await _sessionService.LoadAsync(userId, sessionId, ct);
+            CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
+            return Ok(new { sessionId });
+        }
+        [RequireSessionOwnership]
+        [HttpDelete("{sessionId}")]
+        public async Task<IActionResult> DeleteAsync(Guid sessionId, CancellationToken ct)
+        {
+            await _sessionService.DeleteAsync(sessionId, ct);
+            return NoContent();
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetSessionsAsync(CancellationToken ct)
+        {
+            User.TryGetUserId(out Guid userId);
+            var sessions = await _sessionService.GetListAsync(userId, ct);
+            return Ok(sessions.ToDTO());
+        }
+    }
+}

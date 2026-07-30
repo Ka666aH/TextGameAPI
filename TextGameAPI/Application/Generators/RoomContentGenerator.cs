@@ -1,0 +1,88 @@
+﻿using TextGame.Application.Interfaces.Factories;
+using TextGame.Application.Interfaces.Generators;
+using TextGame.Domain;
+using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
+using TextGame.Domain.Entities.GameObjects.Rooms;
+
+namespace TextGame.Application.Generators
+{
+    public class RoomContentGenerator : IRoomContentGenerator
+    {
+        private readonly IItemFactory _itemFactory;
+        private readonly IEnemyFactory _enemyFactory;
+        public RoomContentGenerator(IItemFactory itemFactory, IEnemyFactory enemyFactory)
+        {
+            _itemFactory = itemFactory;
+            _enemyFactory = enemyFactory;
+        }
+        public void GenerateContent(Room room)
+        {
+            switch (room)
+            {
+                case SmallRoom smallRoom: GenerateSmallRoomContent(smallRoom); break;
+                case BigRoom bigRoom: GenerateBigRoomContent(bigRoom); break;
+                case Shop shop: GenerateShopContent(shop); break;
+            }
+            if (room is not Shop && room is not StartRoom && room is not EndRoom) GenerateEnemy(room);
+        }
+        private void GenerateSmallRoomContent(SmallRoom room)
+        {
+            for (int i = 0; i < GameBalance.SmallRoomItemsAmount; i++)
+            {
+                Item? item = _itemFactory.CreateRoomItem();
+                if (item != null) room.AddItem(item);
+                //if (item is Chest chest && chest.Mimic != null) room.AddEnemy(chest.Mimic);
+            }
+        }
+        private void GenerateBigRoomContent(BigRoom room)
+        {
+            for (int i = 0; i < GameBalance.BigRoomItemsAmount; i++)
+            {
+                Item? item = _itemFactory.CreateRoomItem();
+                if (item != null) room.AddItem(item);
+                //if (item is Chest chest && chest.Mimic != null) room.AddEnemy(chest.Mimic);
+            }
+        }
+        private void GenerateShopContent(Shop room)
+        {
+            for (int i = 0; i < GameBalance.ShopItemsAmount; i++)
+            {
+                Item? item = _itemFactory.CreateShopItem();
+                if (item == null) continue;
+                item.AddStoreMargin();
+                room.AddItem(item);
+            }
+        }
+        private void GenerateEnemy(Room room)
+        {
+            //Логика создания врагов
+            //Формирование списка взвешенного выбора
+            var options = new List<(int Weight, Func<Enemy?> Create)>
+            {
+                (GameBalance.CalculateNoneWeight(room.Id),            () => null),
+                (GameBalance.CalculateSkeletorWeight(room.Id),        _enemyFactory.CreateSkeletor),
+                (GameBalance.CalculateSkeletorArcherWeight(room.Id),  _enemyFactory.CreateSkeletorArcher),
+                (GameBalance.CalculateDeadmanWeight(room.Id),         _enemyFactory.CreateDeadman),
+                (GameBalance.CalculateGhostWeight(room.Id),           _enemyFactory.CreateGhost),
+                (GameBalance.CalculateLichWeight(room.Id),            _enemyFactory.CreateLich),
+            };
+            //Выбор
+            int weightsSum = options.Sum(x => x.Weight);
+            int roll = Random.Shared.Next(weightsSum);
+            int accumulated = 0;
+
+            foreach (var option in options)
+            {
+                if (roll < accumulated + option.Weight)
+                {
+                    var enemy = option.Create();
+                    if (enemy is not null) room.AddEnemy(enemy);
+                    break;
+                }
+                accumulated += option.Weight;
+            }
+        }
+    }
+}

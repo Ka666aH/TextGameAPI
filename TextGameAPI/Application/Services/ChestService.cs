@@ -1,0 +1,63 @@
+﻿using TextGame.Application.Interfaces.Services;
+using TextGame.Domain.GameExceptions;
+using TextGame.Domain.GameText;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
+
+namespace TextGame.Application.Services
+{
+    public class ChestService : IChestService
+    {
+        private readonly IGetItemService _getItemService;
+        public ChestService(IGetItemService getItemService)
+        {
+            _getItemService = getItemService;
+        }
+        public Chest GetChest(int chestId, IEnumerable<Item> items)
+        {
+            Item item = _getItemService.GetItem(chestId, items);
+            if (item is not Chest) throw new InvalidIdException(ExceptionsLabels.NotChestCode, ExceptionsLabels.NotChestText);
+            return (Chest)item;
+        }
+        public bool OpenChest(Chest chest)
+        {
+            RequireUnlocked(chest);
+
+            chest.Open();
+            return chest.Mimic is null;
+        }
+        public void UnlockChest(Chest chest)
+        {
+            chest.Unlock();
+        }
+        public IReadOnlyList<Item> SearchChest(Chest chest)
+        {
+            RequireUnlocked(chest);
+            RequireOpened(chest);
+
+            return chest.Search();
+        }
+        public void TakeItemFromChest(Chest chest, Item item)
+        {
+            RequireUnlocked(chest);
+            RequireOpened(chest);
+
+            chest.RemoveItem(item);
+        }
+        public void TakeAllItemsFromChest(Chest chest)
+        {
+            RequireUnlocked(chest);
+            RequireOpened(chest);
+
+            chest.RemoveAllItems();
+        }
+        private void RequireOpened(Chest chest)
+        {
+            if (chest.IsClosed) throw new ClosedException();
+        }
+        private void RequireUnlocked(Chest chest)
+        {
+            if (chest.IsLocked) throw new LockedException();
+        }
+    }
+}
