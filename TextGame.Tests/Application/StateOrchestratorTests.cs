@@ -1,0 +1,149 @@
+using TextGame.Application.Orchestrators;
+using TextGame.Application.Services;
+using TextGame.Domain.Entities;
+using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Rooms;
+using TextGame.Domain.GameExceptions;
+using TextGame.Tests.TestSupport;
+
+namespace TextGame.Tests.Application;
+
+/// <summary>
+/// Orchestrator scenarios. Tests marked KnownBug are red on purpose: they assert the
+/// behaviour described in notes/AGENTS.md §1.1, §2.2 and §2.3, not the current one.
+/// </summary>
+public class StateOrchestratorTests
+{
+    [Fact]
+    public void GoToRoom_WhenRoomIsDiscovered_MovesThePlayer()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        var targetRoom = new EmptyRoom(id: 1);
+        targetRoom.Discover();
+        state.Rooms.Add(targetRoom);
+        var stateService = new FakeStateService(state);
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Room room = orchestrator.GoToRoom(1);
+
+        // Assert
+        room.Should().BeSameAs(targetRoom);
+        stateService.CurrentRoomId.Should().Be(1);
+        stateService.IsGameStarted.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", "KnownBug")]
+    public void GoToRoom_WhenRoomIsUndiscovered_ThrowsUndiscoveredRoomException()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        state.Rooms.Add(new EmptyRoom(id: 1));
+        var stateService = new FakeStateService(state);
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Action act = () => orchestrator.GoToRoom(1);
+
+        // Assert
+        // notes/AGENTS.md §1.1: no IsDiscovered check, so the player teleports into a
+        // room they have not opened yet.
+        act.Should().Throw<UndiscoveredRoomException>();
+    }
+
+    [Fact]
+    [Trait("Category", "KnownBug")]
+    public void GoToRoom_WhenIdIsOutsideTheMap_ThrowsRoomNotFoundException()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        var stateService = new FakeStateService(state);
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Action act = () => orchestrator.GoToRoom(999);
+
+        // Assert
+        // notes/AGENTS.md §1.1: no range check, so the id reaches StateService and the
+        // request dies with a raw index-out-of-range instead of a 404.
+        act.Should().Throw<RoomNotFoundException>();
+    }
+
+    [Fact]
+    public void GoToRoom_WhenRoomIsTheEndRoom_EndsTheGameAndThrowsWinException()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        state.Rooms.Add(new EndRoom(id: 1));
+        var stateService = new FakeStateService(state);
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Action act = () => orchestrator.GoToRoom(1);
+
+        // Assert
+        act.Should().Throw<WinException>();
+        stateService.IsGameStarted.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", "KnownBug")]
+    public void UnlockChest_WhenChestDoesNotExist_DoesNotSpendAKey()
+    {
+        // Arrange
+        var state = new State { Keys = 1 };
+        state.Rooms.Add(new StartRoom());
+        var stateService = new FakeStateService(state);
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Action act = () => orchestrator.UnlockChest(chestId: 999);
+
+        // Assert
+        // notes/AGENTS.md §2.2: the key is spent before the chest is even looked up.
+        act.Should().Throw<ItemNotFoundException>();
+        stateService.Keys.Should().Be(1);
+    }
+
+    [Fact]
+    [Trait("Category", "KnownBug")]
+    public void UseInventoryItem_WhenPotionKillsThePlayer_EndsTheGame()
+    {
+        // Arrange
+        var state = new State { CurrentHealth = 10, MaxHealth = 100 };
+        state.Rooms.Add(new StartRoom());
+        var stateService = new FakeStateService(state);
+        var poisonedPotion = new ScriptedHeal(maxHealthBoost: 0, currentHealthBoost: -20);
+        stateService.AddItemToInventory(poisonedPotion);
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Action act = () => orchestrator.UseInventoryItem(itemId: 0);
+
+        // Assert
+        // notes/AGENTS.md §2.3: DefeatException is thrown without EndGame, so the state
+        // stays "started" with health at or below zero.
+        act.Should().Throw<DefeatException>();
+        stateService.IsGameStarted.Should().BeFalse();
+    }
+
+    private static StateOrchestrator CreateOrchestrator(FakeStateService stateService)
+    {
+        var getItemService = new GetItemService();
+
+        return new StateOrchestrator(
+            stateService,
+            new FakeGameInfoService(),
+            getItemService,
+            new InventoryService(stateService),
+            new ChestService(getItemService),
+            new CombatService(stateService),
+            new FakeCheckItemService());
+    }
+}
