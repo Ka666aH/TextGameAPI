@@ -70,6 +70,7 @@ Presentation   — контроллеры, middleware, атрибуты, DTO
 - Rate limiting на auth-эндпоинтах
 
 ### Игровое состояние и сохранения
+- Сид генерации: задаётся игроком при создании сессии (`POST /sessions?seed=...`), иначе генерируется сам; хранится в сессии и виден в `GET /sessions`. Одинаковый сид → одинаковое подземелье (комнаты, содержимое, сундуки, мимик).
 - Активная сессия живёт в **Redis** — каждый запрос читает и пишет состояние без обращения к БД
 - 3 типа сохранений: Начальное (создаётся при старте сессии), Ручное, Автоматическое (фоновый сервис)
 - При сохранении состояние сериализуется в JSON и записывается в **PostgreSQL**
@@ -108,18 +109,18 @@ Swagger UI: `http://localhost:5000/swagger`
 
 | Метод | Эндпоинт | Параметры | Назначение |
 |-------|----------|-----------|------------|
-| POST | `/auth/register` | login, password | Регистрация |
-| POST | `/auth/login` | login, password | Вход |
-| POST | `/auth/logout` | — | Выход |
-| POST | `/sessions` | name? | Новая сессия |
-| POST | `/sessions/{id}` | id | Загрузить сессию |
+| POST | `/users` | login, password | Регистрация (сразу вход, 201) |
+| POST | `/auth/tokens` | login, password | Вход |
+| DELETE | `/auth/tokens` | — | Выход |
+| POST | `/sessions` | name?, seed? | Новая игра (без seed — сгенерируется и вернётся) |
+| PUT | `/sessions/current` | id (в теле) | Сделать сессию активной |
 | DELETE | `/sessions/{id}` | id | Удалить сессию |
-| GET | `/sessions` | — | Список сессий |
+| GET | `/sessions` | — | Список сессий (с сидами) |
 | POST | `/saves` | name? | Создать сохранение |
-| POST | `/saves/{id}` | id | Загрузить сохранение |
+| PUT | `/saves/current` | id (в теле) | Загрузить сохранение |
 | DELETE | `/saves/{id}` | id | Удалить сохранение |
 | GET | `/saves` | — | Список сохранений |
-| GET | `/state/info` | — | Состояние игры |
+| GET | `/state` | — | Состояние игры |
 | GET | `/state/map` | — | Карта подземелья |
 | GET | `/state/coins` | — | Баланс монет |
 | GET | `/state/keys` | — | Количество ключей |
@@ -129,12 +130,12 @@ Swagger UI: `http://localhost:5000/swagger`
 | POST | `/state/inventory/{id}/use` | id | Использовать предмет |
 | POST | `/state/inventory/{id}/equip` | id | Экипировать |
 | GET | `/state/equipment` | — | Текущая экипировка |
-| POST | `/state/equipment/weapon/unequip` | — | Снять оружие |
-| POST | `/state/equipment/helm/unequip` | — | Снять шлем |
-| POST | `/state/equipment/chestplate/unequip` | — | Снять нагрудник |
+| DELETE | `/state/equipment/weapon` | — | Снять оружие |
+| DELETE | `/state/equipment/helm` | — | Снять шлем |
+| DELETE | `/state/equipment/chestplate` | — | Снять нагрудник |
 | GET | `/state/rooms/current` | — | Текущая комната |
-| POST | `/state/rooms/next` | — | Следующая комната |
-| POST | `/state/rooms/{id}` | id | Перейти в комнату |
+| POST | `/state/rooms` | — | Следующая комната |
+| PUT | `/state/rooms/current` | id (в теле) | Перейти в комнату |
 | POST | `/state/rooms/current/enemy/attack` | — | Атаковать врага |
 | GET | `/state/rooms/current/enemy` | — | Информация о враге |
 | GET | `/state/rooms/current/items` | — | Предметы в комнате |

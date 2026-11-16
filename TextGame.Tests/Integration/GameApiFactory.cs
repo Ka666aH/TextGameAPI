@@ -79,7 +79,7 @@ public abstract class IntegrationTestBase
     protected static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     protected static async Task<HttpResponseMessage> RegisterAsync(HttpClient client, AuthRequest credentials) =>
-        await client.PostAsJsonAsync("/auth/register", credentials, Ct);
+        await client.PostAsJsonAsync("/users", credentials, Ct);
 
     protected static async Task<Guid> CreateSessionAsync(HttpClient client)
     {

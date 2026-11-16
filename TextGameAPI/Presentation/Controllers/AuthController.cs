@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.DTO;
@@ -9,6 +8,9 @@ using TextGame.Presentation.Options;
 
 namespace TextGame.Presentation.Controllers
 {
+    /// <summary>
+    /// Пара токенов как ресурс: POST — выпустить (вход), DELETE — отозвать (выход).
+    /// </summary>
     [ApiController]
     [BypassRefresh]
     [EnableRateLimiting(RateLimiter.AuthPolicyName)]
@@ -20,13 +22,7 @@ namespace TextGame.Presentation.Controllers
         {
             _authService = authService;
         }
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromBody]AuthRequest authRequest, CancellationToken ct)
-        {
-            await _authService.RegisterAsync(authRequest.Login, authRequest.Password, ct);
-            return await LogInAsync(authRequest, ct);
-        }
-        [HttpPost("login")]
+        [HttpPost("tokens")]
         public async Task<IActionResult> LogInAsync([FromBody] AuthRequest authRequest, CancellationToken ct)
         {
             string fingerprint = HttpContext.GetFingerprint();
@@ -35,7 +31,7 @@ namespace TextGame.Presentation.Controllers
             CookieHelper.SetAuthCookies(authResult, HttpContext);
             return NoContent();
         }
-        [HttpPost("logout")]
+        [HttpDelete("tokens")]
         public async Task<IActionResult> LogOut(CancellationToken ct)
         {
             string refreshToken = HttpContext.Request.GetRequiredRefreshToken();

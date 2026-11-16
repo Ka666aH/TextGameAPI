@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Orchestrators;
 using TextGame.Domain.DTO;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Presentation.Attributes;
+using TextGame.Presentation.DTO;
 using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
 
@@ -23,7 +24,7 @@ namespace TextGame.Presentation.Controllers
             _stateOrchestrator = stateOrchestrator;
         }
 
-        [HttpGet("info")]
+        [HttpGet]
         public IActionResult GetInfo()
         {
             return Ok(_stateOrchestrator.GetGameInfo());
@@ -92,7 +93,7 @@ namespace TextGame.Presentation.Controllers
             return GetEquipment();
         }
 
-        [HttpPost("equipment/weapon/unequip")]
+        [HttpDelete("equipment/weapon")]
         [AutoCache]
         public IActionResult UnequipWeapon()
         {
@@ -100,7 +101,7 @@ namespace TextGame.Presentation.Controllers
             return GetEquipment();
         }
 
-        [HttpPost("equipment/helm/unequip")]
+        [HttpDelete("equipment/helm")]
         [AutoCache]
         public IActionResult UnequipHelm()
         {
@@ -108,7 +109,7 @@ namespace TextGame.Presentation.Controllers
             return GetEquipment();
         }
 
-        [HttpPost("equipment/chestplate/unequip")]
+        [HttpDelete("equipment/chestplate")]
         [AutoCache]
         public IActionResult UnequipChestplate()
         {
@@ -116,7 +117,8 @@ namespace TextGame.Presentation.Controllers
             return GetEquipment();
         }
 
-        [HttpPost("rooms/next")]
+        /// <summary>Войти в следующую комнату подземелья (открыть её).</summary>
+        [HttpPost("rooms")]
         [AutoCache]
         public IActionResult GoNextRoom()
         {
@@ -124,11 +126,12 @@ namespace TextGame.Presentation.Controllers
             return Ok(room.ToDTO());
         }
 
-        [HttpPost("rooms/{roomId}")]
+        /// <summary>Вернуться в уже открытую комнату.</summary>
+        [HttpPut("rooms/current")]
         [AutoCache]
-        public IActionResult GoRoom(int roomId)
+        public IActionResult GoRoom([FromBody] SetCurrentRoomRequest request)
         {
-            var room = _stateOrchestrator.GoToRoom(roomId);
+            var room = _stateOrchestrator.GoToRoom(request.Id);
             return Ok(room.ToDTO());
         }
 

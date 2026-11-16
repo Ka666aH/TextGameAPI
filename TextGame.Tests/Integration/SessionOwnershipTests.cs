@@ -1,11 +1,12 @@
 using System.Net;
+using System.Net.Http.Json;
 
 namespace TextGame.Tests.Integration;
 
 /// <summary>
 /// Two real users over real HTTP. Both red tests are the IDOR from notes/AGENTS.md §1.2: the
 /// ownership filter validates the session stored in the caller's own claim, so the session id
-/// from the route is never checked against the owner.
+/// from the request is never checked against the owner.
 /// </summary>
 [Collection(ApiCollection.Name)]
 [Trait("Category", "Integration")]
@@ -22,7 +23,7 @@ public class SessionOwnershipTests : IntegrationTestBase
         Guid sessionId = await CreateSessionAsync(client);
 
         // Act
-        HttpResponseMessage response = await client.PostAsync($"/sessions/{sessionId}", content: null, Ct);
+        HttpResponseMessage response = await client.PutAsJsonAsync("/sessions/current", new { id = sessionId }, Ct);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -41,7 +42,7 @@ public class SessionOwnershipTests : IntegrationTestBase
         await CreateSessionAsync(attacker);
 
         // Act
-        HttpResponseMessage response = await attacker.PostAsync($"/sessions/{victimSessionId}", content: null, Ct);
+        HttpResponseMessage response = await attacker.PutAsJsonAsync("/sessions/current", new { id = victimSessionId }, Ct);
 
         // Assert
         // notes/AGENTS.md §1.2: the attacker gets an access token for a session they do not own.

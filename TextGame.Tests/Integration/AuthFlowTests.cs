@@ -25,7 +25,8 @@ public class AuthFlowTests : IntegrationTestBase
         HttpResponseMessage response = await RegisterAsync(client, credentials);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        // POST /users создаёт аккаунт и сразу логинит: 201 + обе куки.
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
         IEnumerable<string> setCookies = response.Headers.TryGetValues("Set-Cookie", out IEnumerable<string>? values)
             ? values
             : [];
@@ -44,7 +45,7 @@ public class AuthFlowTests : IntegrationTestBase
 
         // Act
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/auth/login",
+            "/auth/tokens",
             credentials with { Password = "Wrong1" },
             Ct);
 
