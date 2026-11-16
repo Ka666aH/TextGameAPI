@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Factories;
+using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Generators;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain;
@@ -17,8 +17,12 @@ namespace TextGame.Application.Generators
             _roomContentGenerator = roomContentGenerator;
             _roomIdService = roomIdService;
         }
-        public List<Room> Generate()
+        public List<Room> Generate(long seed)
         {
+            // Весь генерационный поток — карта, содержимое комнат, статы — идёт через один
+            // сидированный Random: одинаковый сид сессии даёт одинаковое подземелье.
+            var random = new Random(SeedDeriver.DeriveInt(seed, salt: 0));
+
             var rooms = new List<Room> { _roomFactory.CreateStartRoom() };
             var options = new (int Weight, Func<Room> Create)[]
             {
@@ -34,12 +38,12 @@ namespace TextGame.Application.Generators
                 int endRoomWeight = _roomIdService.Current();
                 int totalWeight = baseWeightSum + endRoomWeight;
 
-                int roll = Random.Shared.Next(totalWeight);
+                int roll = random.Next(totalWeight);
 
                 if (roll >= baseWeightSum)
                 {
                     Room room = _roomFactory.CreateEndRoom();
-                    _roomContentGenerator.GenerateContent(room);
+                    _roomContentGenerator.GenerateContent(room, random);
                     rooms.Add(room);
                 }
                 else
@@ -50,7 +54,7 @@ namespace TextGame.Application.Generators
                         if (roll < acc + weight)
                         {
                             Room room = (create());
-                            _roomContentGenerator.GenerateContent(room);
+                            _roomContentGenerator.GenerateContent(room, random);
                             rooms.Add(room);
                             break;
                         }

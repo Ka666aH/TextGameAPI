@@ -13,7 +13,7 @@ internal sealed class TestEnemy : Enemy
     {
     }
 
-    public override void Initialize(int health, int damage, int damageBlock)
+    public override void Initialize(int health, int damage, int damageBlock, Random? random = null)
     {
         Health = health;
         Damage = damage;

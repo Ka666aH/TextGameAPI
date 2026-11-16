@@ -25,16 +25,15 @@ namespace TextGame.Application.Services
             _tokenRepository = tokenRepository;
         }
 
-        public async Task<Guid> CreateAsync(Guid userId, string? sessionName, CancellationToken ct = default)
+        public async Task<Session> CreateAsync(Guid userId, string? sessionName, long? seed = null, CancellationToken ct = default)
         {
-            Session session = _sessionFactory.CreateSession(userId, sessionName);
+            Session session = _sessionFactory.CreateSession(userId, sessionName, seed);
             await _sessionRepository.CreateAsync(session, ct);
 
-            var newSessionId = session.Id;
-            Guid initSaveId = await _saveService.CreateAsync(newSessionId, SaveType.Initial, null, ct);
-            await _saveService.LoadAsync(newSessionId, initSaveId, ct);
+            Guid initSaveId = await _saveService.CreateAsync(session.Id, SaveType.Initial, seed: session.Seed, ct: ct);
+            await _saveService.LoadAsync(session.Id, initSaveId, ct);
 
-            return newSessionId;
+            return session;
         }
         public async Task DeleteAsync(Guid sessionId, CancellationToken ct = default)
         {

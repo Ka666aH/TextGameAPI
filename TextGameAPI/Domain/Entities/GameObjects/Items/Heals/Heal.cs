@@ -1,4 +1,4 @@
-﻿namespace TextGame.Domain.Entities.GameObjects.Items.Heals
+namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
     public abstract class Heal : Item
     {
@@ -8,21 +8,22 @@
         protected readonly int _roomId;
         protected readonly bool _fromShop;
 
-        public Heal(int id, string name, string description, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost)
+        public Heal(int id, string name, string description, int roomId, bool fromShop, int? maxHealthBoost, int? currentHealthBoost, Random? random = null)
             : base(id, name, description, roomId)
         {
             _roomId = roomId;
             _fromShop = fromShop;
 
-            Initialize(maxHealthBoost, currentHealthBoost);
+            Initialize(maxHealthBoost, currentHealthBoost, random);
         }
-        protected virtual void Initialize(int? maxHealthBoost, int? currentHealthBoost)
+        protected virtual void Initialize(int? maxHealthBoost, int? currentHealthBoost, Random? random = null)
         {
+            var rng = random ?? Random.Shared;
             if (maxHealthBoost is null) MaxHealthBoost = null;
             else
             {
                 var (min, max) = GameBalance.CalculateSpread((int)maxHealthBoost!, _roomId);
-                MaxHealthBoost = Random.Shared.Next(min, max + 1);
+                MaxHealthBoost = rng.Next(min, max + 1);
                 if (_fromShop) MaxHealthBoost = GameBalance.CalculateShopMultiplier((int)MaxHealthBoost!);
             }
 
@@ -30,7 +31,7 @@
             else
             {
                 var (min, max) = GameBalance.CalculateSpread((int)currentHealthBoost!, _roomId);
-                CurrentHealthBoost = Random.Shared.Next(min, max + 1);
+                CurrentHealthBoost = rng.Next(min, max + 1);
                 if (_fromShop) CurrentHealthBoost = GameBalance.CalculateShopMultiplier((int)CurrentHealthBoost!);
             }
             Cost = GameBalance.CalculateHealCost(MaxHealthBoost, CurrentHealthBoost);

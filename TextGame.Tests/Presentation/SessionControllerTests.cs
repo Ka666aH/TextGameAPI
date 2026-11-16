@@ -24,7 +24,7 @@ public class SessionControllerTests
         var controller = CreateController(sessionService, userId);
 
         // Act
-        IActionResult result = await controller.CreateAsync(sessionName: "новая", CancellationToken.None);
+        IActionResult result = await controller.CreateAsync(sessionName: "новая", seed: null, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<CreatedResult>();
@@ -39,7 +39,7 @@ public class SessionControllerTests
         var controller = CreateController(sessionService, userId: null);
 
         // Act
-        Func<Task> act = () => controller.CreateAsync(sessionName: "новая", CancellationToken.None);
+        Func<Task> act = () => controller.CreateAsync(sessionName: "новая", seed: null, CancellationToken.None);
 
         // Assert
         // notes/AGENTS.md §2.7: TryGetUserId's result is discarded, so the session is
@@ -83,11 +83,11 @@ public class SessionControllerTests
     {
         public Guid? LastUserId { get; private set; }
 
-        public Task<Guid> CreateAsync(Guid userId, string? sessionName, CancellationToken ct = default)
+        public Task<Session> CreateAsync(Guid userId, string? sessionName, long? seed = null, CancellationToken ct = default)
         {
             LastUserId = userId;
 
-            return Task.FromResult(Guid.NewGuid());
+            return Task.FromResult(new Session(userId, sessionName, seed));
         }
 
         public Task<string> LoadAsync(Guid userId, Guid sessionId, CancellationToken ct = default) =>

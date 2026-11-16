@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Factories;
+using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
@@ -25,7 +25,7 @@ namespace TextGame.Application.Services
             _saveFactory = saveFactory;
         }
 
-        public async Task<Guid> CreateAsync(Guid sessionId, SaveType saveType, string? name = null, CancellationToken ct = default)
+        public async Task<Guid> CreateAsync(Guid sessionId, SaveType saveType, string? name = null, long? seed = null, CancellationToken ct = default)
         {
             var state =
                 saveType != SaveType.Initial ?
@@ -34,7 +34,7 @@ namespace TextGame.Application.Services
 
             var save = saveType switch
             {
-                SaveType.Initial => _saveFactory.CreateInitial(sessionId),
+                SaveType.Initial => _saveFactory.CreateInitial(sessionId, seed ?? Random.Shared.NextInt64()),
                 SaveType.Manual => _saveFactory.CreateManual(sessionId, name, state!),
                 _ => _saveFactory.CreateAuto(sessionId, state!)
             };

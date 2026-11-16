@@ -4,14 +4,14 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
     public class Bandage : Heal
     {
-        public Bandage(int id, int roomId, bool fromShop)
+        public Bandage(int id, int roomId, bool fromShop, Random? random = null)
             : base(id,
                   ItemsLabels.BandageName,
                   ItemsLabels.BandageDescription,
                   roomId,
                   fromShop,
                   GameBalance.BandageBaseMaxHealthBoost,
-                  GameBalance.BandageBaseCurrentHealthBoost)
+                  GameBalance.BandageBaseCurrentHealthBoost, random)
         { }
         private Bandage() { }
     }

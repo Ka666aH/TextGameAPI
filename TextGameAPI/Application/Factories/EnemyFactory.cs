@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Factories;
+using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 
@@ -15,11 +15,11 @@ namespace TextGame.Application.Factories
             _roomIdService = roomIdService;
         }
 
-        public Skeletor CreateSkeletor() => new(_enemyIdService.Next(), _roomIdService.Current());
-        public SkeletorArcher CreateSkeletorArcher() => new(_enemyIdService.Next(), _roomIdService.Current());
-        public Deadman CreateDeadman() => new(_enemyIdService.Next(), _roomIdService.Current());
-        public Ghost CreateGhost() => new(_enemyIdService.Next(), _roomIdService.Current());
-        public Lich CreateLich() => new(_enemyIdService.Next(), _roomIdService.Current());
-        public Mimic CreateMimic() => new(_enemyIdService.Next(), _roomIdService.Current());
+        public Skeletor CreateSkeletor(Random random) => new(_enemyIdService.Next(), _roomIdService.Current(), random);
+        public SkeletorArcher CreateSkeletorArcher(Random random) => new(_enemyIdService.Next(), _roomIdService.Current(), random);
+        public Deadman CreateDeadman(Random random) => new(_enemyIdService.Next(), _roomIdService.Current(), random);
+        public Ghost CreateGhost(Random random) => new(_enemyIdService.Next(), _roomIdService.Current(), random);
+        public Lich CreateLich(Random random) => new(_enemyIdService.Next(), _roomIdService.Current(), random);
+        public Mimic CreateMimic(Random random) => new(_enemyIdService.Next(), _roomIdService.Current(), random);
     }
 }
