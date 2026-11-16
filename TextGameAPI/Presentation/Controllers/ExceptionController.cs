@@ -89,11 +89,12 @@ namespace TextGame.Presentation.Controllers
                 SessionNotFoundException =>
                     Problem(404, originalPath, gameEx),
 
+                // Отказ игрового действия — это запрет (403), а не необработанное
+                // содержимое запроса, поэтому 422 здесь сознательно не используется.
                 InvalidIdException or
                 UncarryableException or
                 ImpossibleStealException or
-                UnsellableItemException or //=> Problem(422, originalPath, gameEx),
-                
+                UnsellableItemException or
                 ImpossibleDeleteSaveException or
                 NotSessionOwnerException or
                 NotSaveOwnerException or

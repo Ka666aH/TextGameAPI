@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using TextGame.Domain.GameExceptions;
 using TextGame.Infrastructure.Token;
 using TextGame.Presentation.Helpers;
 
@@ -99,6 +100,34 @@ public class CookieHelperTests
         // Assert
         found.Should().BeTrue();
         accessToken.Should().Be("access-value");
+    }
+
+    [Fact]
+    public void GetRequiredRefreshToken_WhenCookieIsPresent_ReturnsValue()
+    {
+        // Arrange
+        var context = CreateContext(isHttps: false);
+        context.Request.Headers.Cookie = $"{TokenParameters.RefreshToken}=refresh-value";
+
+        // Act
+        string refreshToken = context.Request.GetRequiredRefreshToken();
+
+        // Assert
+        refreshToken.Should().Be("refresh-value");
+    }
+
+    [Fact]
+    public void GetRequiredRefreshToken_WhenCookieIsMissing_Throws()
+    {
+        // Arrange
+        var context = CreateContext(isHttps: false);
+
+        // Act
+        Action act = () => context.Request.GetRequiredRefreshToken();
+
+        // Assert
+        // The same failure the logout endpoint used to raise on its own before the helper existed.
+        act.Should().Throw<RefreshTokenNotFoundException>();
     }
 
     [Fact]

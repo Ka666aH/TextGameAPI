@@ -229,6 +229,10 @@ namespace TextGame.Application.Orchestrators
         [RequireNotShop]
         public void TakeAllItems()
         {
+            // Осознанный компромисс (notes/AGENTS.md): предметы берутся по одному, без
+            // транзакции и откатов. Проверка стоит перед изъятием, поэтому отказ на i-м
+            // предмете оставит его в комнате, а уже взятые останутся в инвентаре —
+            // состояние частичное, потерянных предметов нет.
             List<Item> carryableItems = [.. _stateService.CurrentRoom!.Items.Where(i => i.IsCarryable)];
             if (carryableItems.Count <= 0) throw new NothingFoundException();
             foreach (Item item in carryableItems)
@@ -242,6 +246,9 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public void TakeAllItemsFromChest(int chestId)
         {
+            // Осознанный компромисс (notes/AGENTS.md): сундук очищается одним вызовом,
+            // и только потом предметы проверяются. Исключение в CheckItem оставит часть
+            // предметов уже изъятыми из сундука; откат не делаем.
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var items = chest.Items.ToList();
             _chestService.TakeAllItemsFromChest(chest);
@@ -265,6 +272,8 @@ namespace TextGame.Application.Orchestrators
         {
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var item = _getItemService.GetItem(itemId, chest.Items);
+            // Изъятие идёт до проверки: если CheckItem бросит, предмет уже не в сундуке.
+            // Отката нет — осознанный компромисс (см. notes/AGENTS.md).
             _chestService.TakeItemFromChest(chest, item);
             _checkItemService.CheckItem(item);
         }

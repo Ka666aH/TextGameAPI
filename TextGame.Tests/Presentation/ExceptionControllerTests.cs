@@ -66,6 +66,41 @@ public class ExceptionControllerTests
     }
 
     [Fact]
+    public void Handle_WhenInvalidIdRejectsTheRequest_Returns403()
+    {
+        // Arrange
+        var exception = new InvalidIdException("INVALID_ID", "нет такого идентификатора");
+        var logger = new RecordingLogger<ExceptionController>();
+        var controller = CreateController(logger, exception, HttpMethods.Post, "/state/rooms/42");
+
+        // Act
+        IActionResult result = controller.Handle();
+
+        // Assert
+        // notes/AGENTS.md, §4.2: a wrong id is a refused game action, so the contract says 403,
+        // not 400 (the id was syntactically fine) and not 422.
+        result.Should().BeOfType<ObjectResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public void Handle_WhenItemIsUnsellable_Returns403()
+    {
+        // Arrange
+        var exception = new UnsellableItemException();
+        var logger = new RecordingLogger<ExceptionController>();
+        var controller = CreateController(logger, exception, HttpMethods.Post, "/state/inventory/7/sell");
+
+        // Act
+        IActionResult result = controller.Handle();
+
+        // Assert
+        // notes/AGENTS.md, §4.2: 422 stays unused on purpose, a refused sale is a 403 either way.
+        result.Should().BeOfType<ObjectResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
     public void Handle_WhenValidationFails_Returns400AndKeepsTheLogAtDebug()
     {
         // Arrange

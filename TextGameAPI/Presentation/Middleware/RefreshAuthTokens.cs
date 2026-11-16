@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameExceptions;
 using TextGame.Infrastructure.Token;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Helpers;
@@ -42,7 +41,7 @@ namespace TextGame.Presentation.Middleware
                 await _next(context);
                 return;
             }
-            string fingerprint = GetFingerprint(context);
+            string fingerprint = context.GetFingerprint();
             //Обновить в сервисе
             var refreshResult = await authService.RefreshAsync(refreshToken, accessToken, fingerprint);
             //Установить новые куки в запрос и ответ
@@ -53,12 +52,6 @@ namespace TextGame.Presentation.Middleware
             CookieHelper.SetAuthCookies(refreshResult, context);
             context.Items[ItemKeys.RefreshResultKey] = refreshResult;
             await _next(context);
-        }
-        private static string GetFingerprint(HttpContext context)
-        {
-            string deviceName = context.Request.Headers.UserAgent.ToString();
-            string ip = context.Connection.RemoteIpAddress?.ToString() ?? "";
-            return deviceName + " | " + ip;
         }
     }
     public static class RefreshAuthTokensExtensions

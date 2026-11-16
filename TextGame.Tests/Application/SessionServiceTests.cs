@@ -2,6 +2,7 @@ using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Services;
 using TextGame.Domain.Entities;
 using TextGame.Domain.GameExceptions;
+using TextGame.Infrastructure.Token;
 
 namespace TextGame.Tests.Application;
 
@@ -71,8 +72,12 @@ public class SessionServiceTests
     {
         public string GenerateAccessToken(Guid userId, Guid? gameSessionId = null) => "access-token";
 
-        public RefreshToken GenerateRefreshToken(Guid userId, string hashedFingerprint) =>
-            new(userId, $"refresh-{Guid.NewGuid()}", DateTime.UtcNow.AddDays(7), hashedFingerprint);
+        public (string RawToken, RefreshToken Stored) GenerateRefreshToken(Guid userId, string hashedFingerprint)
+        {
+            string rawToken = $"refresh-{Guid.NewGuid():N}";
+
+            return (rawToken, new RefreshToken(userId, RefreshTokenHash.Of(rawToken), DateTime.UtcNow.AddDays(7), hashedFingerprint));
+        }
 
         public System.Security.Claims.ClaimsPrincipal ReadTokenWithoutLifetime(string token) =>
             new(new System.Security.Claims.ClaimsIdentity("test"));

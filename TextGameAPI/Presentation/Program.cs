@@ -25,6 +25,9 @@ using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Middleware;
 using TextGame.Presentation.Options;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 //Ядро состояния
@@ -124,16 +127,37 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter(RateLimiter.AuthPolicyName,opt =>
-    {
-        opt.PermitLimit = TimeSettings.RateLimitPermitLimit;
-        opt.Window = TimeSettings.RateLimitWindow;
-        opt.QueueLimit = TimeSettings.RateLimitQueueLimit;
-    });
+    // Партиция по клиенту: у каждого свой лимит вместо одного bucket на всех — глобальный
+    // лимит валил 6-й логин в минуту у любого юзера (notes/AGENTS.md §1b, п.12).
+    // По логину партицию сознательно не делаем: она даёт атакующему «залочить чужой вход».
+    options.AddPolicy(TextGame.Presentation.Options.RateLimiter.AuthPolicyName, context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = TimeSettings.RateLimitPermitLimit,
+                Window = TimeSettings.RateLimitWindow,
+                QueueLimit = TimeSettings.RateLimitQueueLimit
+            }));
 });
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+// За reverse-proxy (nginx): клиентский IP восстанавливается из X-Forwarded-For до того,
+// как его прочитают fingerprint и лимитер. Блок включается только заполненным
+// ForwardedHeaders:KnownProxies (IP своего nginx) — без конфига он инертен. Доверять
+// произвольным адресам нельзя: клиент подделает заголовок и подменит свой IP.
+var knownProxies = builder.Configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [];
+if (knownProxies.Length > 0)
+{
+    var forwardedOptions = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    };
+    foreach (string proxy in knownProxies) forwardedOptions.KnownProxies.Add(IPAddress.Parse(proxy));
+    app.UseForwardedHeaders(forwardedOptions);
+}
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
@@ -141,8 +165,8 @@ var app = builder.Build();
 //    app.UseSwagger();
 //    app.UseSwaggerUI();
 //}
-app.UseSwagger();
-app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
 //app.UseHttpsRedirection();
 

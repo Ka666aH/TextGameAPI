@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameExceptions;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.DTO;
 using TextGame.Presentation.Helpers;
@@ -30,38 +29,19 @@ namespace TextGame.Presentation.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LogInAsync([FromBody] AuthRequest authRequest, CancellationToken ct)
         {
-            string fingerprint = GetFingerprint();
+            string fingerprint = HttpContext.GetFingerprint();
 
             var authResult = await _authService.LogInAsync(authRequest.Login, authRequest.Password, fingerprint, ct);
-            SetAuthCookies(authResult);
+            CookieHelper.SetAuthCookies(authResult, HttpContext);
             return NoContent();
         }
         [HttpPost("logout")]
         public async Task<IActionResult> LogOut(CancellationToken ct)
         {
-            string refreshToken = GetRefreshToken();
+            string refreshToken = HttpContext.Request.GetRequiredRefreshToken();
             await _authService.RevokeRefreshTokenAsync(refreshToken, ct);
             HttpContext.Response.DeleteAuthCookies();
             return NoContent();
-        }
-        private string GetFingerprint()
-        {
-            string deviceName = HttpContext.Request.Headers.UserAgent.ToString();
-            string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
-            return deviceName + " | " + ip;
-        }
-        private string GetRefreshToken()
-        {
-            var request = HttpContext.Request;
-            bool refreshTokenExist = request.TryGetRefreshToken(out string refreshToken);
-            if (!refreshTokenExist) throw new RefreshTokenNotFoundException();
-            return refreshToken;
-        }
-        private void SetAuthCookies(AuthResult authResult)
-        {
-            var response = HttpContext.Response;
-            response.SetRefreshCookie(authResult.RefreshToken);
-            response.SetAccessCookie(authResult.AccessToken);
         }
     }
 }

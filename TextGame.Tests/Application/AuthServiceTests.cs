@@ -130,9 +130,11 @@ public class AuthServiceTests
         result.AccessToken.Should().Be($"access-{user.Id}");
         result.RefreshToken.Should().Be("refresh-1");
 
-        RefreshToken? stored = await deps.RefreshTokens.GetAsync(result.RefreshToken);
+        // БД хранит только SHA-256; сырой токен живёт исключительно в cookie.
+        RefreshToken? stored = await deps.RefreshTokens.GetAsync(RefreshTokenHash.Of(result.RefreshToken));
         stored.Should().NotBeNull();
-        stored!.HashedFingerprint.Should().Be(deps.Hasher.Hash(Fingerprint), "the fingerprint must never be stored in plain text");
+        stored!.Token.Should().Be(RefreshTokenHash.Of(result.RefreshToken), "the refresh token must never be stored in plain text");
+        stored.HashedFingerprint.Should().Be(deps.Hasher.Hash(Fingerprint), "the fingerprint must never be stored in plain text");
         stored.UserId.Should().Be(user.Id);
     }
 
@@ -155,11 +157,13 @@ public class AuthServiceTests
         // Arrange
         Deps deps = Create();
         var userId = Guid.NewGuid();
-        var expired = new RefreshToken(userId, "expired-token", DateTime.UtcNow.AddDays(-1), deps.Hasher.Hash(Fingerprint));
+        const string rawToken = "expired-token";
+        // В строке БД — хэш, в запросе — сырой токен, как это делает cookie.
+        var expired = new RefreshToken(userId, RefreshTokenHash.Of(rawToken), DateTime.UtcNow.AddDays(-1), deps.Hasher.Hash(Fingerprint));
         deps.RefreshTokens.Seed(expired);
 
         // Act
-        Func<Task> act = () => deps.Service.RefreshAsync(expired.Token, "", Fingerprint);
+        Func<Task> act = () => deps.Service.RefreshAsync(rawToken, "", Fingerprint);
 
         // Assert
         await act.Should().ThrowAsync<RefreshTokenExpiredException>();
@@ -171,11 +175,12 @@ public class AuthServiceTests
         // Arrange
         Deps deps = Create();
         var userId = Guid.NewGuid();
-        var token = new RefreshToken(userId, "stolen-token", DateTime.UtcNow.AddDays(1), deps.Hasher.Hash("another browser | 10.0.0.1"));
+        const string rawToken = "stolen-token";
+        var token = new RefreshToken(userId, RefreshTokenHash.Of(rawToken), DateTime.UtcNow.AddDays(1), deps.Hasher.Hash("another browser | 10.0.0.1"));
         deps.RefreshTokens.Seed(token);
 
         // Act
-        Func<Task> act = () => deps.Service.RefreshAsync(token.Token, "", Fingerprint);
+        Func<Task> act = () => deps.Service.RefreshAsync(rawToken, "", Fingerprint);
 
         // Assert
         await act.Should().ThrowAsync<RefreshTokenCompromisedException>();
@@ -189,16 +194,17 @@ public class AuthServiceTests
         // Arrange
         Deps deps = Create();
         var userId = Guid.NewGuid();
-        var token = new RefreshToken(userId, "good-token", DateTime.UtcNow.AddDays(1), deps.Hasher.Hash(Fingerprint));
+        const string rawToken = "good-token";
+        var token = new RefreshToken(userId, RefreshTokenHash.Of(rawToken), DateTime.UtcNow.AddDays(1), deps.Hasher.Hash(Fingerprint));
         deps.RefreshTokens.Seed(token);
 
         // Act
-        AuthResult result = await deps.Service.RefreshAsync(token.Token, "", Fingerprint);
+        AuthResult result = await deps.Service.RefreshAsync(rawToken, "", Fingerprint);
 
         // Assert
         result.AccessToken.Should().Be($"access-{userId}");
         result.RefreshToken.Should().Be("refresh-1");
-        (await deps.RefreshTokens.GetAsync(token.Token)).Should().BeNull("the rotated token must be consumed");
+        (await deps.RefreshTokens.GetAsync(RefreshTokenHash.Of(rawToken))).Should().BeNull("the rotated token must be consumed");
     }
 
     [Fact]
@@ -208,7 +214,8 @@ public class AuthServiceTests
         Deps deps = Create();
         var userId = Guid.NewGuid();
         var foreignSessionId = Guid.NewGuid();
-        var token = new RefreshToken(userId, "good-token", DateTime.UtcNow.AddDays(1), deps.Hasher.Hash(Fingerprint));
+        const string rawToken = "good-token";
+        var token = new RefreshToken(userId, RefreshTokenHash.Of(rawToken), DateTime.UtcNow.AddDays(1), deps.Hasher.Hash(Fingerprint));
         deps.RefreshTokens.Seed(token);
         deps.Sessions.Seed(new Session(Guid.NewGuid()));
 
@@ -217,7 +224,7 @@ public class AuthServiceTests
         deps.Tokens.AccessTokenPrincipal = new ClaimsPrincipal(identity);
 
         // Act
-        await deps.Service.RefreshAsync(token.Token, "access-token", Fingerprint);
+        await deps.Service.RefreshAsync(rawToken, "access-token", Fingerprint);
 
         // Assert
         // A session that belongs to someone else must not survive the refresh.
@@ -230,12 +237,13 @@ public class AuthServiceTests
         // Two parallel requests come in with the same refresh token. The winner rotates it and
         // deletes the old row, the loser arrives a moment later and finds nothing.
         Deps deps = Create();
-        var token = new RefreshToken(Guid.NewGuid(), "racy-token", DateTime.UtcNow.AddDays(1), deps.Hasher.Hash(Fingerprint));
+        const string rawToken = "racy-token";
+        var token = new RefreshToken(Guid.NewGuid(), RefreshTokenHash.Of(rawToken), DateTime.UtcNow.AddDays(1), deps.Hasher.Hash(Fingerprint));
         deps.RefreshTokens.Seed(token);
-        await deps.Service.RefreshAsync(token.Token, "", Fingerprint);
+        await deps.Service.RefreshAsync(rawToken, "", Fingerprint);
 
         // Act
-        Func<Task> secondCall = () => deps.Service.RefreshAsync(token.Token, "", Fingerprint);
+        Func<Task> secondCall = () => deps.Service.RefreshAsync(rawToken, "", Fingerprint);
 
         // Assert
         // notes/AGENTS.md §2.1: the loser gets RefreshTokenNotFoundException, the middleware
@@ -367,11 +375,13 @@ public class AuthServiceTests
             return $"access-{userId}";
         }
 
-        public RefreshToken GenerateRefreshToken(Guid userId, string hashedFingerprint)
+        public (string RawToken, RefreshToken Stored) GenerateRefreshToken(Guid userId, string hashedFingerprint)
         {
             _refreshCounter++;
+            string rawToken = $"refresh-{_refreshCounter}";
 
-            return new RefreshToken(userId, $"refresh-{_refreshCounter}", DateTime.UtcNow.AddDays(7), hashedFingerprint);
+            // Хранится хэш, наружу — сырой токен: тот же контракт, что и в JWTRepository.
+            return (rawToken, new RefreshToken(userId, RefreshTokenHash.Of(rawToken), DateTime.UtcNow.AddDays(7), hashedFingerprint));
         }
 
         public ClaimsPrincipal ReadTokenWithoutLifetime(string token) => AccessTokenPrincipal;

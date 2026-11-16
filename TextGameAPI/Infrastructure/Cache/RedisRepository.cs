@@ -68,12 +68,15 @@ namespace TextGame.Infrastructure.Cache
             var output = new Dictionary<string, string>(keys.Count, StringComparer.Ordinal);
             if (keys.Count == 0) return output;
 
-            var redisKeys = keys.Select(k => (RedisKey)k).ToArray();
+            // Ключи индексируем в исходном виде: обратный каст RedisKey → string в SE.Redis
+            // объявлен как string? и тянет CS8600/CS8604, хотя строки здесь non-null по построению.
+            var originalKeys = keys.ToArray();
+            var redisKeys = originalKeys.Select(k => (RedisKey)k).ToArray();
             var values = await _db.StringGetAsync(redisKeys);
 
             for (var i = 0; i < redisKeys.Length; i++)
                 if ((string?)values[i] is { } value)
-                    output[(string)redisKeys[i]] = value;
+                    output[originalKeys[i]] = value;
 
             return output;
         }

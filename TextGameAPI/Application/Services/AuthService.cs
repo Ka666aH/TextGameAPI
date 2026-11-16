@@ -79,7 +79,7 @@ namespace TextGame.Application.Services
         {
             string hashedFingerprint = _hasher.Hash(fingerprint);
 
-            RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct);
+            RefreshToken? token = await _refreshTokenRepository.GetAsync(RefreshTokenHash.Of(refreshToken), ct);
             if (token == null)
             {
                 // notes/AGENTS.md §2.1: the losing half of a double submit arrives after the
@@ -124,18 +124,20 @@ namespace TextGame.Application.Services
         }
         public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
         {
-            RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct)
+            // Logout получает сырой токен из cookie, в БД лежит только его хэш.
+            RefreshToken? token = await _refreshTokenRepository.GetAsync(RefreshTokenHash.Of(refreshToken), ct)
                 ?? throw new RefreshTokenNotFoundException();
             await _refreshTokenRepository.DeleteAsync(token, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
         private async Task<AuthResult> GenerateTokens(Guid userId, string hashedFingerprint, Guid? sessionId, CancellationToken ct = default)
         {
-            RefreshToken refreshToken = _tokenRepository.GenerateRefreshToken(userId, hashedFingerprint);
+            // Сырой refresh-токен существует только до записи в БД: наружу — в cookie, в БД — хэш.
+            var (rawRefreshToken, refreshToken) = _tokenRepository.GenerateRefreshToken(userId, hashedFingerprint);
             await _refreshTokenRepository.CreateAsync(refreshToken, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             string accessToken = _tokenRepository.GenerateAccessToken(userId, sessionId);
-            return new AuthResult(refreshToken.Token, accessToken);
+            return new AuthResult(rawRefreshToken, accessToken);
         }
         // Postgres reports a unique violation as SQLSTATE 23505; EF wraps it in DbUpdateException.
         private static bool IsUniqueViolation(DbUpdateException exception)
