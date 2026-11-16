@@ -35,9 +35,12 @@ namespace TextGame.Application.Services
 
             return session;
         }
-        public async Task DeleteAsync(Guid sessionId, CancellationToken ct = default)
+        public async Task DeleteAsync(Guid userId, Guid sessionId, CancellationToken ct = default)
         {
             Session session = await _sessionRepository.GetAsync(sessionId, ct) ?? throw new SessionNotFoundException();
+            // Проверка владельца здесь, а не только в фильтре: удалять сессию можно и без активной игры,
+            // а фильтр RequireSessionOwnership требует claim SessionId и такую возможность отрезал.
+            if (session.UserId != userId) throw new NotSessionOwnerException();
 
             await _cache.DeleteAsync(sessionId, ct);
             await _sessionRepository.DeleteAsync(session, ct);
@@ -54,5 +57,7 @@ namespace TextGame.Application.Services
 
             return _tokenRepository.GenerateAccessToken(userId, sessionId);
         }
+
+        public string CreateAccessToken(Guid userId) => _tokenRepository.GenerateAccessToken(userId);
     }
 }

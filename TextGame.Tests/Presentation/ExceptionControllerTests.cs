@@ -101,6 +101,26 @@ public class ExceptionControllerTests
     }
 
     [Fact]
+    public void Handle_WhenSessionClaimIsMissing_Returns403AndKeepsTheAuthCookies()
+    {
+        // Arrange
+        var exception = new MissingSessionIdClaimException();
+        var logger = new RecordingLogger<ExceptionController>();
+        var controller = CreateController(logger, exception, HttpMethods.Put, "/sessions/current");
+
+        // Act
+        IActionResult result = controller.Handle();
+
+        // Assert
+        // «Нет активной игры» — не сломанная авторизация: куки не удаляем, иначе выбор
+        // сессии выбрасывает залогиненного игрока на экран логина.
+        result.Should().BeOfType<ObjectResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+        controller.HttpContext.Response.Headers.SetCookie.ToString().Should().BeEmpty();
+        logger.Entries[0].Level.Should().Be(LogLevel.Warning);
+    }
+
+    [Fact]
     public void Handle_WhenValidationFails_Returns400AndKeepsTheLogAtDebug()
     {
         // Arrange

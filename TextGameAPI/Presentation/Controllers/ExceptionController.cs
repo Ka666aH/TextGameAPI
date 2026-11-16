@@ -66,7 +66,6 @@ namespace TextGame.Presentation.Controllers
 
                 AccessTokenNotFoundException or
                 MissingUserIdClaimException or
-                MissingSessionIdClaimException or
                 RefreshTokenNotFoundException or
                 RefreshTokenExpiredException or
                 RefreshTokenCompromisedException =>
@@ -97,6 +96,9 @@ namespace TextGame.Presentation.Controllers
                 UnsellableItemException or
                 ImpossibleDeleteSaveException or
                 NotSessionOwnerException or
+                // Нет активной игры — это не сломанная авторизация: куки не трогаем,
+                // иначе выбор сессии выбрасывал бы залогиненного игрока на логин.
+                MissingSessionIdClaimException or
                 NotSaveOwnerException or
                 UnstartedGameException or
                 LockedException or

@@ -62,13 +62,55 @@ public class SessionControllerTests
         await act.Should().ThrowAsync<MissingUserIdClaimException>();
     }
 
-    private static SessionController CreateController(RecordingSessionService sessionService, Guid? userId)
+    [Fact]
+    public async Task DeleteAsync_WhenActiveSessionIsDeleted_ClearsTheSessionClaimInANewAccessCookie()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid sessionId = Guid.NewGuid();
+        var sessionService = new RecordingSessionService();
+        var controller = CreateController(sessionService, userId, sessionId);
+
+        // Act
+        IActionResult result = await controller.DeleteAsync(sessionId, CancellationToken.None);
+
+        // Assert
+        // В куке не должно остаться claim на удалённую игру, иначе следующий /state даёт 404.
+        result.Should().BeOfType<NoContentResult>();
+        sessionService.DeletedSessionId.Should().Be(sessionId);
+        sessionService.CreateAccessTokenCalls.Should().Be(1);
+        controller.HttpContext.Response.Headers.SetCookie.ToString().Should().Contain("AccessToken=");
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenAnotherSessionIsDeleted_KeepsTheCurrentGame()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid activeSessionId = Guid.NewGuid();
+        var sessionService = new RecordingSessionService();
+        var controller = CreateController(sessionService, userId, activeSessionId);
+
+        // Act
+        IActionResult result = await controller.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+        sessionService.CreateAccessTokenCalls.Should().Be(0);
+        controller.HttpContext.Response.Headers.SetCookie.ToString().Should().BeEmpty();
+    }
+
+    private static SessionController CreateController(RecordingSessionService sessionService, Guid? userId, Guid? sessionId = null)
     {
         var httpContext = new DefaultHttpContext();
         var identity = new ClaimsIdentity("test");
         if (userId.HasValue)
         {
             identity.AddClaim(new Claim(AccessClaims.UserId, userId.Value.ToString()));
+        }
+        if (sessionId.HasValue)
+        {
+            identity.AddClaim(new Claim(AccessClaims.SessionId, sessionId.Value.ToString()));
         }
 
         httpContext.User = new ClaimsPrincipal(identity);
@@ -82,6 +124,8 @@ public class SessionControllerTests
     private sealed class RecordingSessionService : ISessionService
     {
         public Guid? LastUserId { get; private set; }
+        public Guid? DeletedSessionId { get; private set; }
+        public int CreateAccessTokenCalls { get; private set; }
 
         public Task<Session> CreateAsync(Guid userId, string? sessionName, long? seed = null, CancellationToken ct = default)
         {
@@ -93,7 +137,20 @@ public class SessionControllerTests
         public Task<string> LoadAsync(Guid userId, Guid sessionId, CancellationToken ct = default) =>
             Task.FromResult("access-token");
 
-        public Task DeleteAsync(Guid sessionId, CancellationToken ct = default) => Task.CompletedTask;
+        public Task DeleteAsync(Guid userId, Guid sessionId, CancellationToken ct = default)
+        {
+            LastUserId = userId;
+            DeletedSessionId = sessionId;
+
+            return Task.CompletedTask;
+        }
+
+        public string CreateAccessToken(Guid userId)
+        {
+            CreateAccessTokenCalls++;
+
+            return "access-token";
+        }
 
         public Task<IReadOnlyList<Session>> GetListAsync(Guid userId, CancellationToken ct = default)
         {

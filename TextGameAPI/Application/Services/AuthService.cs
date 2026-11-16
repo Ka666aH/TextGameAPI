@@ -75,6 +75,22 @@ namespace TextGame.Application.Services
             string hashedFingerprint = _hasher.Hash(fingerprint);
             return await GenerateTokens(user.Id, hashedFingerprint, null, ct);
         }
+        public async Task<MeResult> GetCurrentAsync(Guid userId, Guid? sessionId, CancellationToken ct = default)
+        {
+            User user = await _userRepository.GetAsync(userId, ct)
+                ?? throw new UserNotFoundException();
+
+            // Claim мог пережить удаление игры: это не ошибка авторизации, просто нет активной сессии.
+            string? sessionName = null;
+            if (sessionId.HasValue)
+            {
+                Session? session = await _sessionRepository.GetAsync(sessionId.Value, ct);
+                if (session == null || session.UserId != userId) sessionId = null;
+                else sessionName = session.Name;
+            }
+
+            return new MeResult(userId, user.Login, sessionId, sessionName);
+        }
         public async Task<AuthResult> RefreshAsync(string refreshToken, string accessToken, string fingerprint, CancellationToken ct = default)
         {
             string hashedFingerprint = _hasher.Hash(fingerprint);

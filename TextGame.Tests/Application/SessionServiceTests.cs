@@ -63,6 +63,38 @@ public class SessionServiceTests
         await act.Should().ThrowAsync<NotSessionOwnerException>();
     }
 
+    [Fact]
+    public async Task DeleteAsync_WhenSessionBelongsToAnotherUser_ThrowsNotSessionOwnerException()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var attackerId = Guid.NewGuid();
+        var sessions = new FakeSessionRepository();
+        var session = new Session(ownerId);
+        sessions.Seed(session);
+        var service = CreateService(sessions);
+
+        // Act
+        Func<Task> act = () => service.DeleteAsync(attackerId, session.Id);
+
+        // Assert
+        await act.Should().ThrowAsync<NotSessionOwnerException>();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenSessionDoesNotExist_ThrowsSessionNotFoundException()
+    {
+        // Arrange
+        var sessions = new FakeSessionRepository();
+        var service = CreateService(sessions);
+
+        // Act
+        Func<Task> act = () => service.DeleteAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        await act.Should().ThrowAsync<SessionNotFoundException>();
+    }
+
     private static SessionService CreateService(ISessionRepository sessions) =>
         // Only LoadAsync is under test here: the save/cache/factory collaborators are never
         // reached, so they stay null on purpose.

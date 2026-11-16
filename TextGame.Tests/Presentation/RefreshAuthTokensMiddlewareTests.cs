@@ -119,5 +119,8 @@ public class RefreshAuthTokensMiddlewareTests
         }
 
         public Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<MeResult> GetCurrentAsync(Guid userId, Guid? sessionId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
     }
 }

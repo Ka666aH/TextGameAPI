@@ -111,8 +111,9 @@ Swagger UI: `http://localhost:5000/swagger`
 |-------|----------|-----------|------------|
 | POST | `/users` | login, password | Регистрация (сразу вход, 201) |
 | POST | `/auth/tokens` | login, password | Вход |
+| GET | `/auth/me` | — | Кто залогинен: `userId`, `login`, активная сессия `sessionId`/`sessionName` (null — игры нет) |
 | DELETE | `/auth/tokens` | — | Выход |
-| POST | `/sessions` | name?, seed? | Новая игра (без seed — сгенерируется и вернётся) |
+| POST | `/sessions` | name?, seed? | Новая игра (в ответе sessionId, sessionName, seed) |
 | PUT | `/sessions/current` | id (в теле) | Сделать сессию активной |
 | DELETE | `/sessions/{id}` | id | Удалить сессию |
 | GET | `/sessions` | — | Список сессий (с сидами) |

@@ -139,6 +139,91 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task GetCurrentAsync_WhenUserDoesNotExist_ThrowsUserNotFoundException()
+    {
+        // Arrange
+        Deps deps = Create();
+
+        // Act
+        Func<Task> act = () => deps.Service.GetCurrentAsync(Guid.NewGuid(), null);
+
+        // Assert
+        await act.Should().ThrowAsync<UserNotFoundException>();
+    }
+
+    [Fact]
+    public async Task GetCurrentAsync_WithoutSessionClaim_ReturnsUserWithoutSession()
+    {
+        // Arrange
+        Deps deps = Create();
+        var user = new User(ValidLogin, deps.Hasher.Hash(ValidPassword));
+        deps.Users.Seed(user);
+
+        // Act
+        MeResult result = await deps.Service.GetCurrentAsync(user.Id, null);
+
+        // Assert
+        // Залогинен, но игры ещё нет — фронт покажет список сессий.
+        result.UserId.Should().Be(user.Id);
+        result.Login.Should().Be(ValidLogin);
+        result.SessionId.Should().BeNull();
+        result.SessionName.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetCurrentAsync_WithOwnedSession_ReturnsThatSession()
+    {
+        // Arrange
+        Deps deps = Create();
+        var user = new User(ValidLogin, deps.Hasher.Hash(ValidPassword));
+        deps.Users.Seed(user);
+        var session = new Session(user.Id);
+        deps.Sessions.Seed(session);
+
+        // Act
+        MeResult result = await deps.Service.GetCurrentAsync(user.Id, session.Id);
+
+        // Assert
+        result.SessionId.Should().Be(session.Id);
+        result.SessionName.Should().Be(session.Name);
+    }
+
+    [Fact]
+    public async Task GetCurrentAsync_WhenSessionWasDeleted_ReturnsNoSession()
+    {
+        // Arrange
+        Deps deps = Create();
+        var user = new User(ValidLogin, deps.Hasher.Hash(ValidPassword));
+        deps.Users.Seed(user);
+
+        // Act
+        MeResult result = await deps.Service.GetCurrentAsync(user.Id, Guid.NewGuid());
+
+        // Assert
+        // Протухший claim после DELETE /sessions/{id} — нормальное состояние, а не 404.
+        result.SessionId.Should().BeNull();
+        result.SessionName.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetCurrentAsync_WhenSessionBelongsToAnotherUser_ReturnsNoSession()
+    {
+        // Arrange
+        Deps deps = Create();
+        var user = new User(ValidLogin, deps.Hasher.Hash(ValidPassword));
+        deps.Users.Seed(user);
+        var foreignSession = new Session(Guid.NewGuid());
+        deps.Sessions.Seed(foreignSession);
+
+        // Act
+        MeResult result = await deps.Service.GetCurrentAsync(user.Id, foreignSession.Id);
+
+        // Assert
+        result.SessionId.Should().BeNull();
+        result.SessionName.Should().BeNull();
+    }
+
+    [Fact]
     public async Task RefreshAsync_WhenTokenIsUnknown_ThrowsRefreshTokenNotFoundException()
     {
         // Arrange
