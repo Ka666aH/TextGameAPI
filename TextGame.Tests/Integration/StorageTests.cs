@@ -99,4 +99,31 @@ public class StorageTests : IntegrationTestBase
 
         await cache.DeleteAsync(sessionId, Ct);
     }
+
+    [Fact]
+    public async Task CacheRepository_KeyWalkFindsEveryStateSnapshotAndNothingElse()
+    {
+        // Arrange
+        ICacheRepository repository = Factory.Services.GetRequiredService<ICacheRepository>();
+        Guid[] sessionIds = [.. Enumerable.Range(0, 25).Select(_ => Guid.NewGuid())];
+        string noiseKey = $"noise:{Guid.NewGuid():N}";
+
+        foreach (Guid sessionId in sessionIds)
+            await repository.SetAsync($"{CacheParameters.StateKeyPrefix}{sessionId}", "{}", TimeSpan.FromMinutes(2), Ct);
+        await repository.SetAsync(noiseKey, "{}", TimeSpan.FromMinutes(2), Ct);
+
+        // Act
+        IReadOnlyList<string> keys = await repository.GetKeysAsync($"{CacheParameters.StateKeyPrefix}*", Ct);
+
+        // Assert
+        // notes/AGENTS.md §2.4: the sweep walks keys with SCAN instead of the blocking KEYS *.
+        // It must still see every snapshot and must not pick up keys outside the State: namespace.
+        keys.Should().Contain(sessionIds.Select(id => $"{CacheParameters.StateKeyPrefix}{id}"));
+        keys.Should().NotContain(noiseKey);
+        keys.Should().NotContainNulls();
+
+        foreach (Guid sessionId in sessionIds)
+            await repository.DeleteAsync($"{CacheParameters.StateKeyPrefix}{sessionId}", Ct);
+        await repository.DeleteAsync(noiseKey, Ct);
+    }
 }
