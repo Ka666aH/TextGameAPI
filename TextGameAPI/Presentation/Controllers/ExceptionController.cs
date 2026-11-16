@@ -100,14 +100,14 @@ namespace TextGame.Presentation.Controllers
                 NotSaveOwnerException or
                 UnstartedGameException or
                 LockedException or
-                NoKeyException or
-                NoMapException or
+                MissingKeyException or
+                MissingMapException or
                 ClosedException or
                 UndiscoveredRoomException or
                 InBattleException or
                 UnsearchedRoomException or
                 NotShopException or
-                NoMoneyException =>
+                MissingMoneyException =>
                     Problem(403, originalPath, gameEx),
 
                 _ => InternalServerError()

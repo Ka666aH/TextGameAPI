@@ -106,7 +106,7 @@ public class ExceptionControllerTests
         // Arrange
         var exception = new ValidationException([new ValidationFailure("Login", "слишком короткий")]);
         var logger = new RecordingLogger<ExceptionController>();
-        var controller = CreateController(logger, exception, HttpMethods.Post, "/auth/register");
+        var controller = CreateController(logger, exception, HttpMethods.Post, "/users");
 
         // Act
         IActionResult result = controller.Handle();

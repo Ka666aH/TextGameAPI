@@ -47,7 +47,7 @@ namespace TextGame.Application.Orchestrators
         public void BuyItem(int itemId)
         {
             Item item = _getItemService.GetItem(itemId, _stateService.CurrentRoom.Items);
-            if (item.Cost > _stateService.Coins) throw new NoMoneyException();
+            if (item.Cost > _stateService.Coins) throw new MissingMoneyException();
 
             _stateService.AddCoins(-(int)item.Cost!);
             _stateService.RemoveItemFromCurrentRoom(item);
@@ -121,7 +121,7 @@ namespace TextGame.Application.Orchestrators
         
         public IReadOnlyList<MapRoomDTO> GetMap()
         {
-            if (!_stateService.Inventory.OfType<Map>().Any()) throw new NoMapException();
+            if (!_stateService.Inventory.OfType<Map>().Any()) throw new MissingMapException();
             return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName)).ToList();
         }
 
@@ -294,7 +294,7 @@ namespace TextGame.Application.Orchestrators
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
 
             if (_stateService.Keys > 0) _stateService.AddKeys(-1);
-            else throw new NoKeyException();
+            else throw new MissingKeyException();
 
             _chestService.UnlockChest(chest);
 
