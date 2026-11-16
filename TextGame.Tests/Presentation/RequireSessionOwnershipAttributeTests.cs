@@ -35,7 +35,6 @@ public class RequireSessionOwnershipAttributeTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task OnAuthorizationAsync_WhenClaimDiffersFromRoute_ChecksTheSessionFromTheRoute()
     {
         // Arrange
@@ -54,7 +53,6 @@ public class RequireSessionOwnershipAttributeTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task OnAuthorizationAsync_WhenSessionIdClaimIsMissing_ThrowsMissingSessionIdClaimException()
     {
         // Arrange

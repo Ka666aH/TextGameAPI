@@ -5,8 +5,9 @@ using TextGame.Infrastructure.JSON;
 namespace TextGame.Tests.Presentation;
 
 /// <summary>
-/// State snapshot serialization. The three red tests cover notes/AGENTS.md §2.6:
-/// broken payloads are silently turned into an empty State instead of failing loudly.
+/// State snapshot serialization. The Deserialize failures are regression guards for
+/// notes/AGENTS.md §2.6: a broken payload must surface as a game exception, never as an
+/// empty State that silently wipes the player's map.
 /// </summary>
 public class StateSerializerTests
 {
@@ -29,7 +30,6 @@ public class StateSerializerTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void Deserialize_EmptyString_ThrowsGameException()
     {
         // Arrange
@@ -45,7 +45,6 @@ public class StateSerializerTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void Deserialize_NullLiteral_ThrowsGameException()
     {
         // Arrange
@@ -55,12 +54,11 @@ public class StateSerializerTests
         Action act = () => StateSerializer.Deserialize(jsonNull);
 
         // Assert
-        // notes/AGENTS.md §2.6: the `?? new State()` fallback hides a corrupt cache entry.
+        // notes/AGENTS.md §2.6: the old `?? new State()` fallback hid a corrupt cache entry.
         act.Should().Throw<GameException>();
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void Deserialize_MalformedJson_ThrowsGameException()
     {
         // Arrange

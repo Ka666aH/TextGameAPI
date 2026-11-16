@@ -13,8 +13,9 @@ namespace TextGame.Tests.Application;
 
 /// <summary>
 /// Registration, login and refresh against hand-written repositories.
-/// Two red tests: §2.5 (unique violation escapes as 500) and §2.1 (the losing request of a
-/// parallel refresh logs the user out).
+/// The unique-index and double-refresh tests are regression guards for notes/AGENTS.md §2.5
+/// (a lost race must be a 400, not a 500) and §2.1 (the losing request of a parallel refresh
+/// must not be logged out).
 /// </summary>
 public class AuthServiceTests
 {
@@ -70,7 +71,6 @@ public class AuthServiceTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task RegisterAsync_WhenTheUniqueIndexFires_ThrowsValidationException()
     {
         // Arrange
@@ -224,7 +224,6 @@ public class AuthServiceTests
         deps.Tokens.SessionIds.Should().ContainSingle().Which.Should().BeNull();    }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task RefreshAsync_WhenTheSameTokenIsUsedTwice_SecondCallDoesNotLogTheUserOut()
     {
         // Arrange
@@ -261,6 +260,7 @@ public class AuthServiceTests
             tokens,
             refreshTokens,
             sessions,
+            new RefreshReplayCache(),
             unitOfWork);
 
         return new Deps(service, users, refreshTokens, tokens, sessions, unitOfWork, hasher);

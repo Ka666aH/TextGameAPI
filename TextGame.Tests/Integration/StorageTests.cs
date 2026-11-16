@@ -12,7 +12,7 @@ namespace TextGame.Tests.Integration;
 /// <summary>
 /// The real Postgres and Redis behind the API, borrowed from its own service provider.
 /// The schema test proves the unique login index exists (§2.5), the cache tests prove a corrupt
-/// snapshot is fed back as an empty State (§2.6).
+/// snapshot surfaces as a game exception instead of an empty State (§2.6).
 /// </summary>
 [Collection(ApiCollection.Name)]
 [Trait("Category", "Integration")]
@@ -62,7 +62,6 @@ public class StorageTests : IntegrationTestBase
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task StateCache_WhenPayloadIsCorrupt_ThrowsGameException()
     {
         // Arrange
@@ -82,7 +81,6 @@ public class StorageTests : IntegrationTestBase
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task StateCache_WhenPayloadIsJsonNull_ThrowsGameException()
     {
         // Arrange
@@ -95,7 +93,7 @@ public class StorageTests : IntegrationTestBase
         Func<Task> act = () => cache.GetAsync(sessionId, Ct);
 
         // Assert
-        // notes/AGENTS.md §2.6: "null" silently becomes an empty State, so the player loads an
+        // notes/AGENTS.md §2.6: "null" used to become an empty State, so the player loaded an
         // empty map instead of seeing an error.
         await act.Should().ThrowAsync<GameException>();
 

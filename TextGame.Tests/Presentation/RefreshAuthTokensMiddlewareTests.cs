@@ -62,7 +62,6 @@ public class RefreshAuthTokensMiddlewareTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task InvokeAsync_WithoutAnyTokens_PassesThroughToTheNextMiddleware()
     {
         // Arrange

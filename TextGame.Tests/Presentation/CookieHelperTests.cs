@@ -5,8 +5,9 @@ using TextGame.Presentation.Helpers;
 namespace TextGame.Tests.Presentation;
 
 /// <summary>
-/// Auth cookie shape. The two red tests cover notes/AGENTS.md §2.9: the Secure flag is
-/// hardcoded to false, so an HTTPS deployment still emits downgradable cookies.
+/// Auth cookie shape. The two HTTPS tests are regression guards for notes/AGENTS.md §2.9:
+/// the Secure flag must follow the request scheme so an HTTPS deployment never emits a
+/// cookie that a browser will happily send back over plain HTTP.
 /// </summary>
 public class CookieHelperTests
 {
@@ -44,7 +45,6 @@ public class CookieHelperTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void SetAccessCookie_OverHttps_MarksCookieSecure()
     {
         // Arrange
@@ -54,13 +54,12 @@ public class CookieHelperTests
         context.Response.SetAccessCookie("access-value");
 
         // Assert
-        // notes/AGENTS.md §2.9: Secure is hardcoded false, so the browser may send this
-        // cookie back over plain HTTP.
+        // notes/AGENTS.md §2.9: Secure used to be hardcoded false, so the browser would
+        // send this cookie back over plain HTTP.
         LastSetCookie(context).Should().Contain("secure");
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void SetRefreshCookie_OverHttps_MarksCookieSecure()
     {
         // Arrange

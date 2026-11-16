@@ -9,8 +9,8 @@ using TextGame.Tests.TestSupport;
 namespace TextGame.Tests.Application;
 
 /// <summary>
-/// Orchestrator scenarios. Tests marked KnownBug are red on purpose: they assert the
-/// behaviour described in notes/AGENTS.md §1.1, §2.2 and §2.3, not the current one.
+/// Orchestrator scenarios. The room-entry, key and potion tests are regression guards for
+/// notes/AGENTS.md §1.1, §2.2 and §2.3.
 /// </summary>
 public class StateOrchestratorTests
 {
@@ -36,7 +36,6 @@ public class StateOrchestratorTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void GoToRoom_WhenRoomIsUndiscovered_ThrowsUndiscoveredRoomException()
     {
         // Arrange
@@ -56,7 +55,6 @@ public class StateOrchestratorTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void GoToRoom_WhenIdIsOutsideTheMap_ThrowsRoomNotFoundException()
     {
         // Arrange
@@ -80,7 +78,11 @@ public class StateOrchestratorTests
         // Arrange
         var state = new State();
         state.Rooms.Add(new StartRoom());
-        state.Rooms.Add(new EndRoom(id: 1));
+        var endRoom = new EndRoom(id: 1);
+        // The exit is only reachable through GoNextRoom, which discovers the room it enters,
+        // so an undiscovered EndRoom never exists at runtime (notes/AGENTS.md §1.1).
+        endRoom.Discover();
+        state.Rooms.Add(endRoom);
         var stateService = new FakeStateService(state);
         var orchestrator = CreateOrchestrator(stateService);
 
@@ -93,7 +95,6 @@ public class StateOrchestratorTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void UnlockChest_WhenChestDoesNotExist_DoesNotSpendAKey()
     {
         // Arrange
@@ -112,7 +113,6 @@ public class StateOrchestratorTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void UseInventoryItem_WhenPotionKillsThePlayer_EndsTheGame()
     {
         // Arrange
@@ -141,6 +141,7 @@ public class StateOrchestratorTests
             stateService,
             new FakeGameInfoService(),
             getItemService,
+            new GetRoomService(stateService),
             new InventoryService(stateService),
             new ChestService(getItemService),
             new CombatService(stateService),

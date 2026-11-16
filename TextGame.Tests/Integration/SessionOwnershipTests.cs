@@ -29,7 +29,6 @@ public class SessionOwnershipTests : IntegrationTestBase
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task LoadSession_OfAnotherUser_ReturnsForbidden()
     {
         // Arrange
@@ -50,7 +49,6 @@ public class SessionOwnershipTests : IntegrationTestBase
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task DeleteSession_OfAnotherUser_ReturnsForbidden()
     {
         // Arrange

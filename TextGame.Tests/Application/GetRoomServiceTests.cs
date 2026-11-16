@@ -7,8 +7,8 @@ using TextGame.Tests.TestSupport;
 namespace TextGame.Tests.Application;
 
 /// <summary>
-/// Room lookup guards. The last test is red on purpose: see notes/AGENTS.md §1.1
-/// (off-by-one in the upper range check).
+/// Room lookup guards. The last test is a regression guard for notes/AGENTS.md §1.1: the upper
+/// range check must reject the id that equals the room count.
 /// </summary>
 public class GetRoomServiceTests
 {
@@ -69,7 +69,6 @@ public class GetRoomServiceTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public void GetRoom_WhenIdEqualsRoomCount_ThrowsRoomNotFoundException()
     {
         // Arrange

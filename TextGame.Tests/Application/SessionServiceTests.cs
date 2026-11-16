@@ -29,7 +29,6 @@ public class SessionServiceTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task LoadAsync_WhenSessionDoesNotExist_ThrowsSessionNotFoundException()
     {
         // Arrange
@@ -46,7 +45,6 @@ public class SessionServiceTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task LoadAsync_WhenSessionBelongsToAnotherUser_ThrowsNotSessionOwnerException()
     {
         // Arrange

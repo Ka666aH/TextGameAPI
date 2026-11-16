@@ -32,7 +32,6 @@ public class SessionControllerTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task CreateAsync_WithoutUserIdClaim_ThrowsMissingUserIdClaimException()
     {
         // Arrange
@@ -50,7 +49,6 @@ public class SessionControllerTests
     }
 
     [Fact]
-    [Trait("Category", "KnownBug")]
     public async Task GetSessionsAsync_WithoutUserIdClaim_ThrowsMissingUserIdClaimException()
     {
         // Arrange
