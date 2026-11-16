@@ -1,4 +1,3 @@
-﻿using StackExchange.Redis;
 using System.Security.Cryptography;
 using System.Text;
 using TextGame.Application.Interfaces.Factories;
@@ -13,16 +12,16 @@ namespace TextGame.Application.Services;
 
 public class AutoSaveService : BackgroundService
 {
-    private readonly IConnectionMultiplexer _redis;
+    private readonly ICacheRepository _cache;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<AutoSaveService> _logger;
 
     public AutoSaveService(
-        IConnectionMultiplexer redis,
+        ICacheRepository cacheRepository,
         IServiceScopeFactory scopeFactory,
         ILogger<AutoSaveService> logger)
     {
-        _redis = redis;
+        _cache = cacheRepository;
         _scopeFactory = scopeFactory;
         _logger = logger;
     }
@@ -46,7 +45,7 @@ public class AutoSaveService : BackgroundService
 
     private async Task ProcessAutoSaves(CancellationToken ct)
     {
-        var redisData = await FetchFromRedis(ct);
+        var redisData = await FetchFromRedis(_cache, ct);
         if (redisData.Count == 0) return;
 
         using var scope = _scopeFactory.CreateScope();
@@ -72,31 +71,37 @@ public class AutoSaveService : BackgroundService
         _logger.LogInformation(LoggersText.AutoSaveSuccess, changedIds.Count);
     }
 
-    private async Task<Dictionary<Guid, (string RawJson, string Hash)>> FetchFromRedis(CancellationToken ct)
+    internal static async Task<Dictionary<Guid, (string RawJson, string Hash)>> FetchFromRedis(
+        ICacheRepository cache, CancellationToken ct)
     {
-        var db = _redis.GetDatabase();
+        var keys = await cache.GetKeysAsync($"{CacheParameters.StateKeyPrefix}*", ct);
+        if (keys.Count == 0) return [];
 
-        var result = (RedisResult[]?)await db.ExecuteAsync("KEYS", "*");
-        if (result == null) return [];
+        // Ключ может не совпасть с паттерном, если кэш переиспользуется под другие данные:
+        // сначала проверяем префикс, только потом режем строку — иначе на коротком ключе
+        // вылетал ArgumentOutOfRangeException.
+        var ids = new Dictionary<string, Guid>(keys.Count, StringComparer.Ordinal);
+        foreach (var key in keys)
+            if (TryParseStateKey(key, out var id))
+                ids[key] = id;
+        if (ids.Count == 0) return [];
 
-        var keyStrings = result.Select(k => (string)k!).ToList();
-        if (keyStrings.Count == 0) return [];
-        var redisKeys = keyStrings.Select(k => (RedisKey)k).ToArray();
-        var values = await db.StringGetAsync(redisKeys);
+        var values = await cache.GetManyAsync([.. ids.Keys], ct);
 
-        var output = new Dictionary<Guid, (string, string)>(keyStrings.Count);
-        for (var i = 0; i < keyStrings.Count; i++)
-        {
-            var rawJson = (string?)values[i];
-            if (rawJson == null) continue;
+        var output = new Dictionary<Guid, (string, string)>(values.Count);
+        foreach (var (key, rawJson) in values)
+            output[ids[key]] = (rawJson, ComputeHash(rawJson));
 
-            var idStr = keyStrings[i][CacheParameters.StateKeyPrefix.Length..];
-            if (!Guid.TryParse(idStr, out var id)) continue;
-
-            output[id] = (rawJson, ComputeHash(rawJson));
-        }
         return output;
     }
+
+    internal static bool TryParseStateKey(string key, out Guid id)
+    {
+        id = Guid.Empty;
+        if (!key.StartsWith(CacheParameters.StateKeyPrefix, StringComparison.Ordinal)) return false;
+        return Guid.TryParse(key.AsSpan(CacheParameters.StateKeyPrefix.Length), out id);
+    }
+
     private static string ComputeHash(string rawJson) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(rawJson)));
 }

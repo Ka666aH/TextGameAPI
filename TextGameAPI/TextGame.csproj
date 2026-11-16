@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -28,6 +28,11 @@
 
   <ItemGroup>
     <Folder Include="Infrastructure\Database\Migrations\" />
+  </ItemGroup>
+
+  <!-- Фоновые сервисы тестируются на внутренних методах: публичных швов для них нет. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="TextGame.Tests" />
   </ItemGroup>
 
 </Project>
