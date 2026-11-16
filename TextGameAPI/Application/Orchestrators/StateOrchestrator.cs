@@ -1,4 +1,4 @@
-﻿using TextGame.Application.DTO;
+using TextGame.Application.DTO;
 using TextGame.Application.Enums;
 using TextGame.Application.GuardAttributes;
 using TextGame.Application.Interfaces.Orchestrators;
@@ -20,6 +20,7 @@ namespace TextGame.Application.Orchestrators
         private readonly IStateService _stateService;
         private readonly IGameInfoService _gameInfoService;
         private readonly IGetItemService _getItemService;
+        private readonly IGetRoomService _getRoomService;
 
         private readonly IInventoryService _inventoryService;
 
@@ -27,11 +28,12 @@ namespace TextGame.Application.Orchestrators
         private readonly ICombatService _combatService;
         private readonly ICheckItemService _checkItemService;
 
-        public StateOrchestrator(IStateService stateService, IGameInfoService gameInfoService, IGetItemService getItemService, IInventoryService inventoryService, IChestService chestService, ICombatService combatService, ICheckItemService checkItemService)
+        public StateOrchestrator(IStateService stateService, IGameInfoService gameInfoService, IGetItemService getItemService, IGetRoomService getRoomService, IInventoryService inventoryService, IChestService chestService, ICombatService combatService, ICheckItemService checkItemService)
         {
             _stateService = stateService;
             _gameInfoService = gameInfoService;
             _getItemService = getItemService;
+            _getRoomService = getRoomService;
             _inventoryService = inventoryService;
             _chestService = chestService;
             _combatService = combatService;
@@ -140,10 +142,13 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public Room GoToRoom(int roomId)
         {
+            // notes/AGENTS.md §1.1: the room must exist on the map and already be discovered,
+            // otherwise any guessed id is a teleport (and an undiscovered EndRoom a free win).
+            Room room = _getRoomService.GetRoom(roomId);
             _stateService.SetCurrentRoom(roomId);
             RequireNotEndRoom();
 
-            return _stateService.CurrentRoom;
+            return room;
         }
 
         [RequireGameStarted]
@@ -276,10 +281,12 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public Chest UnlockChest(int chestId)
         {
+            // notes/AGENTS.md §2.2: the chest is resolved first, so a wrong id never eats a key.
+            var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
+
             if (_stateService.Keys > 0) _stateService.AddKeys(-1);
             else throw new NoKeyException();
 
-            var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             _chestService.UnlockChest(chest);
 
             return chest;
@@ -297,9 +304,14 @@ namespace TextGame.Application.Orchestrators
             _stateService.AddMaxHealth(maxHealthBoost);
             _stateService.AddCurrentHealth(currentHealthBoost);
             if (_stateService.CurrentHealth <= 0)
+            {
+                // notes/AGENTS.md §2.3: dying to a potion must end the game, exactly like
+                // dying in battle — otherwise the session stays "started" at zero health.
+                _stateService.EndGame();
                 throw new DefeatException(
                     string.Format(ExceptionsLabels.PlayerPoisoned, heal.Name),
                     _gameInfoService.GetGameInfo());
+            }
         }
 
         private void RequireNotEndRoom()

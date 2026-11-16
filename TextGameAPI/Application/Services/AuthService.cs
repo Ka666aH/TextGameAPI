@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using TextGame.Application.DTO;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
@@ -19,6 +20,7 @@ namespace TextGame.Application.Services
         private readonly ITokenRepository _tokenRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly ISessionRepository _sessionRepository;
+        private readonly RefreshReplayCache _replayCache;
         private readonly IUnitOfWork _unitOfWork;
 
         public AuthService(
@@ -28,6 +30,7 @@ namespace TextGame.Application.Services
             ITokenRepository tokenRepository, 
             IRefreshTokenRepository refreshTokenRepository, 
             ISessionRepository sessionRepository, 
+            RefreshReplayCache replayCache,
             IUnitOfWork unitOfWork)
         {
             _registerValidator = registerValidator;
@@ -36,6 +39,7 @@ namespace TextGame.Application.Services
             _tokenRepository = tokenRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _sessionRepository = sessionRepository;
+            _replayCache = replayCache;
             _unitOfWork = unitOfWork;
         }
 
@@ -49,8 +53,18 @@ namespace TextGame.Application.Services
 
             bool userExist = await _userRepository.GetAsync(login, ct) != null;
             if (userExist) throw new ValidationException([new("Login", ValidatorsText.LoginAlreadyExist)]);
-            await _userRepository.CreateAsync(user, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
+
+            try
+            {
+                await _userRepository.CreateAsync(user, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateException exception) when (IsUniqueViolation(exception))
+            {
+                // notes/AGENTS.md §2.5: two parallel registrations both pass the check above and
+                // the database rejects the second one. That is a duplicate login, not a 500.
+                throw new ValidationException([new("Login", ValidatorsText.LoginAlreadyExist)]);
+            }
         }
         public async Task<AuthResult> LogInAsync(string login, string password, string fingerprint, CancellationToken ct = default)
         {
@@ -63,8 +77,19 @@ namespace TextGame.Application.Services
         }
         public async Task<AuthResult> RefreshAsync(string refreshToken, string accessToken, string fingerprint, CancellationToken ct = default)
         {
-            RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct)
-                ?? throw new RefreshTokenNotFoundException();
+            string hashedFingerprint = _hasher.Hash(fingerprint);
+
+            RefreshToken? token = await _refreshTokenRepository.GetAsync(refreshToken, ct);
+            if (token == null)
+            {
+                // notes/AGENTS.md §2.1: the losing half of a double submit arrives after the
+                // winner already rotated the token. Replay the winner's result instead of
+                // throwing, which the middleware would turn into "logged out".
+                if (_replayCache.TryReplay(refreshToken, hashedFingerprint, out AuthResult? replayed))
+                    return replayed!;
+
+                throw new RefreshTokenNotFoundException();
+            }
 
             bool fingerprintIsCorrect = _hasher.Verify(fingerprint, token.HashedFingerprint);
             if (!fingerprintIsCorrect)
@@ -92,7 +117,10 @@ namespace TextGame.Application.Services
                 }
             }
             
-            return await GenerateTokens(token.UserId, token.HashedFingerprint, sessionId, ct);
+            AuthResult result = await GenerateTokens(token.UserId, token.HashedFingerprint, sessionId, ct);
+            _replayCache.Store(refreshToken, token.HashedFingerprint, result);
+
+            return result;
         }
         public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
         {
@@ -108,6 +136,18 @@ namespace TextGame.Application.Services
             await _unitOfWork.SaveChangesAsync(ct);
             string accessToken = _tokenRepository.GenerateAccessToken(userId, sessionId);
             return new AuthResult(refreshToken.Token, accessToken);
+        }
+        // Postgres reports a unique violation as SQLSTATE 23505; EF wraps it in DbUpdateException.
+        private static bool IsUniqueViolation(DbUpdateException exception)
+        {
+            for (Exception? current = exception; current != null; current = current.InnerException)
+            {
+                if (current.Message.Contains("23505", StringComparison.Ordinal) ||
+                    current.Message.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) ||
+                    current.Message.Contains("unique constraint", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
     }
 }

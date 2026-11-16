@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Factories;
+using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Repositories;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
@@ -47,7 +47,13 @@ namespace TextGame.Application.Services
         public async Task<IReadOnlyList<Session>> GetListAsync(Guid userId, CancellationToken ct = default) =>
             await _sessionRepository.GetListAsync(userId, ct);
 
-        public async Task<string> LoadAsync(Guid userId, Guid sessionId, CancellationToken ct = default) =>
-            _tokenRepository.GenerateAccessToken(userId, sessionId);
+        public async Task<string> LoadAsync(Guid userId, Guid sessionId, CancellationToken ct = default)
+        {
+            Session session = await _sessionRepository.GetAsync(sessionId, ct)
+                ?? throw new SessionNotFoundException();
+            if (session.UserId != userId) throw new NotSessionOwnerException();
+
+            return _tokenRepository.GenerateAccessToken(userId, sessionId);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.DTO;
@@ -67,6 +67,9 @@ namespace TextGame.Presentation.Controllers
                 WinException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
 
                 BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog)),
+
+                CorruptStateException =>
+                    Problem(StatusCodes.Status500InternalServerError, originalPath, gameEx),
 
                 RoomNotFoundException or
                 ItemNotFoundException or

@@ -74,7 +74,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 
 //Кэширование
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") 
-    ?? throw new InvalidOperationException("Reids is not configured.");
+    ?? throw new InvalidOperationException("Redis is not configured.");
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisConnectionString));
 builder.Services.AddSingleton<ICacheRepository, RedisRepository>();
@@ -96,6 +96,7 @@ builder.Services.AddSingleton<IHasher, BCryptRepository>();
 builder.Services.AddSingleton<IValidator<RegisterCommand>, RegisterCommandValidator>();
 
 //Сервисы
+builder.Services.AddSingleton<RefreshReplayCache>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<ISaveService, SaveService>();

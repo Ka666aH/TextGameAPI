@@ -1,4 +1,4 @@
-﻿using TextGame.Domain.DTO;
+using TextGame.Domain.DTO;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
 
 namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
@@ -13,7 +13,7 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Swords
         protected void Initialize(int durability, int damage)
         {
             var (minDurability, maxDurability) = GameBalance.CalculateSpread(durability, _roomId);
-            Durability = Random.Shared.Next(minDurability, maxDurability + 1);
+            Durability = Math.Max(1, Random.Shared.Next(minDurability, maxDurability + 1));
             var (minDamage, maxDamage) = GameBalance.CalculateSpread(damage, _roomId);
             Damage = Random.Shared.Next(minDamage, maxDamage + 1);
             if (_fromShop)

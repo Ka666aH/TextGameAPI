@@ -1,4 +1,4 @@
-﻿using TextGame.Infrastructure.Token;
+using TextGame.Infrastructure.Token;
 
 namespace TextGame.Domain.GameText
 {
@@ -9,6 +9,9 @@ namespace TextGame.Domain.GameText
 
         public const string SessionNotFoundCode = "SESSION_NOT_FOUND";
         public const string SessionNotFoundMessage = "Игровая сессия не найдена.";
+
+        public const string CorruptStateCode = "CORRUPT_STATE";
+        public const string CorruptStateMessage = "Снимок состояния игры повреждён.";
 
         public const string SaveNotFoundCode = "SAVE_NOT_FOUND";
         public const string SaveNotFoundMessage = "Сохранение не найдено.";
