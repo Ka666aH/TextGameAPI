@@ -2,6 +2,12 @@
 
 **Roguelike текстовая adventure-game в стиле RESTful API** — учебный pet-project.
 
+[![CI](https://github.com/Ka666aH/TextGameAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Ka666aH/TextGameAPI/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Ka666aH/TextGameAPI?logo=github)](https://github.com/Ka666aH/TextGameAPI/releases)
+[![Docker Image Version](https://img.shields.io/docker/v/ka666ah/text-game-api?sort=semver&logo=docker&logoColor=fff)](https://hub.docker.com/r/ka666ah/text-game-api)
+[![Docker Pulls](https://img.shields.io/docker/pulls/ka666ah/text-game-api?logo=docker&logoColor=fff)](https://hub.docker.com/r/ka666ah/text-game-api)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
+
 ![.NET 8](https://img.shields.io/badge/.NET_8-512BD4?logo=dotnet&logoColor=fff)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=fff)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=fff)
@@ -86,22 +92,49 @@ Presentation   — контроллеры, middleware, атрибуты, DTO
 
 ## Docker
 
-```yaml
-services:
-  textgame:   # ASP.NET Core API (порт 8080)
-  postgres:   # PostgreSQL 18
-  redis:      # Redis (latest)
-```
+Образы публикуются в [`ka666ah/text-game-api`](https://hub.docker.com/r/ka666ah/text-game-api) (`linux/amd64`), а `docker-compose.yml` собирает образ из исходников.
+
+### Быстрый старт
+
+Переменные окружения необязательны: в `docker-compose.yml` уже есть рабочие значения по умолчанию.
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
-Переменные окружения (`.env`): `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `JWT_SECRET`.
+- API: `http://localhost:5000`
+- Swagger UI: `http://localhost:5000/swagger`
+- Health: `http://localhost:5000/health`
 
-Настройки времени жизни токенов, TTL кеша, интервала автосохранения и лимитов рейтов — в `appsettings.json`.
+Остановить: `docker compose down`. Удалить данные вместе с томами: `docker compose down -v`.
 
-Swagger UI: `http://localhost:5000/swagger`
+### Настройка
+
+Для своего деплоя задайте переменные из таблицы в окружении перед запуском:
+
+| Переменная | По умолчанию | Назначение |
+|---|---|---|
+| `POSTGRES_DB` | `text_game_db` | Имя базы |
+| `POSTGRES_USER` | `dev_user` | Пользователь БД |
+| `POSTGRES_PASSWORD` | `dev_password` | Пароль БД |
+| `JWT_SECRET` | placeholder | Секрет подписи JWT, **минимум 32 символа** |
+
+Значения `POSTGRES_*` применяются только при первой инициализации тома. Если меняете их после первого запуска, пересоздайте том: `docker compose down -v`.
+
+Время жизни токенов, TTL кеша, интервал автосохранения и лимиты рейтов — в `appsettings.json`.
+
+### Разработка
+
+Запустить API напрямую (нужны локальные Postgres/Redis, параметры — в `appsettings.Development.json`):
+
+```bash
+cd TextGameAPI
+dotnet run
+```
+
+Для запуска тестов нужен **.NET SDK 10** (`dotnet test --project` использует Microsoft.Testing.Platform); само приложение собирается под `net8.0`.
+
+> Для публичного деплоя обязательно задайте собственный `JWT_SECRET` и пароль БД. Значения по умолчанию предназначены только для локального запуска и демонстрации.
 
 ---
 
@@ -139,16 +172,16 @@ Swagger UI: `http://localhost:5000/swagger`
 | PUT | `/state/rooms/current` | id (в теле) | Перейти в комнату |
 | POST | `/state/rooms/current/enemy/attack` | — | Атаковать врага |
 | GET | `/state/rooms/current/enemy` | — | Информация о враге |
-| GET | `/state/rooms/current/items` | — | Предметы в комнате |
+| POST | `/state/rooms/current/items` | — | Обыскать комнату |
 | POST | `/state/rooms/current/items/{id}/take` | id | Взять предмет |
 | POST | `/state/rooms/current/items/takeall` | — | Взять всё |
 | POST | `/state/rooms/current/items/{id}/buy` | id | Купить (в магазине) |
-| POST | `/state/rooms/current/chest/open` | — | Открыть сундук |
-| POST | `/state/rooms/current/chest/unlock` | — | Отпереть ключом |
-| POST | `/state/rooms/current/chest/hit` | — | Ударить сундук |
-| GET | `/state/rooms/current/chest/items` | — | Предметы в сундуке |
-| POST | `/state/rooms/current/chest/items/{id}/take` | id | Взять из сундука |
-| POST | `/state/rooms/current/chest/items/takeall` | — | Взять всё из сундука |
+| POST | `/state/rooms/current/items/{chestId}/chest/hit` | chestId | Ударить сундук |
+| POST | `/state/rooms/current/items/{chestId}/chest/open` | chestId | Открыть сундук |
+| POST | `/state/rooms/current/items/{chestId}/chest/unlock` | chestId | Отпереть ключом |
+| POST | `/state/rooms/current/items/{chestId}/chest/items` | chestId | Предметы в сундуке |
+| POST | `/state/rooms/current/items/{chestId}/chest/items/{id}/take` | chestId, id | Взять из сундука |
+| POST | `/state/rooms/current/items/{chestId}/chest/items/takeall` | chestId | Взять всё из сундука |
 | GET | `/health` | — | Health check |
 
 ---
@@ -159,3 +192,18 @@ Swagger UI: `http://localhost:5000/swagger`
 - **Полиморфная иерархия GameObject** — Room, Item (с глубиной до 4 уровней: Item -> Equipment -> Weapon -> Sword), Enemy. Вся иерархия сериализуется через Newtonsoft.Json TypeNameHandling и восстанавливается с сохранением конкретного типа.
 - **Динамические веса генерации** — вероятности появления каждого врага, предмета и комнаты зависят от номера комнаты через отдельные формулы, создавая плавное повышение сложности.
 - **Локализация** — все строки (названия, описания, сообщения лога, ошибки), вынесены в `Domain/GameText`.
+
+---
+
+## CI/CD
+
+- **CI** (`.github/workflows/ci.yml`) — на каждый push в `master` и pull request: сборка и полный прогон тестов (юнит + интеграционные) против Postgres 18 и Redis 7.
+- **Release** (`.github/workflows/release.yml`) — по пушу тега `v*`: сначала тесты, затем сборка `linux/amd64`-образа, пуш в Docker Hub (`1.1.0`, `1.1`, `latest`) и создание GitHub Release.
+
+Текущий релиз: `v1.1.0`.
+
+---
+
+## Лицензия
+
+[MIT](LICENSE.txt) © 2026 Ka666aH

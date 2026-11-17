@@ -35,6 +35,12 @@
     <Folder Include="Infrastructure\Database\Migrations\" />
   </ItemGroup>
 
+  <!-- Development-конфиг содержит dev-секрет и локальные строки подключения.
+       В опубликованный образ он попадать не должен: прод получает всё через env. -->
+  <ItemGroup>
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
   <!-- Фоновые сервисы тестируются на внутренних методах: публичных швов для них нет. -->
   <ItemGroup>
     <InternalsVisibleTo Include="TextGame.Tests" />
