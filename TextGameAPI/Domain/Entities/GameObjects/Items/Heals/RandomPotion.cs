@@ -1,20 +1,22 @@
-﻿using TextGame.Domain.GameText;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
     public class RandomPotion : Heal
     {
-        public RandomPotion(int id, int roomId, bool fromShop)
+        public RandomPotion(int id, int roomId, bool fromShop, Random? random = null)
             : base(id,
                   ItemsLabels.RandomPotionName,
                   ItemsLabels.RandomPotionDescription,
                   roomId,
                   fromShop,
                   null,
-                  null)
+                  null,
+                  random)
         {
+            var rng = random ?? Random.Shared;
             var (minCost, maxCost) = GameBalance.CalculateSpread(GameBalance.CalculateRandomPotionBaseCost(), roomId);
-            Cost = Random.Shared.Next(minCost, maxCost);
+            Cost = rng.Next(minCost, maxCost);
             if (fromShop) Cost = (int)(Cost! * GameBalance.StoreMargin);
         }
         public override (int, int) Use()

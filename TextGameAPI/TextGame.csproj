@@ -1,9 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- EF Core генерирует классы миграций из имени миграции в нижнем регистре (initial, tokenindex, ...),
+         и CS8981 ("имя может стать ключевым словом") срабатывает на каждом таком классе, включая будущие
+         миграции. Переименовывать сгенерированные файлы дороже смысла предупреждения — глушим точечно.
+         Другие источники CS8981 в коде нет: имена типов в PascalCase. -->
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
     <UserSecretsId>c74b857f-68fc-42e8-a40b-c6f6fac6eac7</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
@@ -28,6 +33,17 @@
 
   <ItemGroup>
     <Folder Include="Infrastructure\Database\Migrations\" />
+  </ItemGroup>
+
+  <!-- Development-конфиг содержит dev-секрет и локальные строки подключения.
+       В опубликованный образ он попадать не должен: прод получает всё через env. -->
+  <ItemGroup>
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <!-- Фоновые сервисы тестируются на внутренних методах: публичных швов для них нет. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="TextGame.Tests" />
   </ItemGroup>
 
 </Project>

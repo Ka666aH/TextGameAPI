@@ -1,4 +1,3 @@
-﻿using System.Text.Json.Serialization;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.GameExceptions;
@@ -35,7 +34,9 @@ namespace TextGame.Domain.Entities.GameObjects.Rooms
         }
         public void Discover() => IsDiscovered = true;
 
-        [JsonConstructor]
+        // Конструктор для Newtonsoft: ConstructorHandling.AllowNonPublicDefaultConstructor
+        // (Infrastructure/JSON/Options.cs) берёт его сам. Атрибут здесь не нужен — тип
+        // собирает Newtonsoft, а System.Text.Json в проекте не используется.
         protected Room() { }
     }
 }

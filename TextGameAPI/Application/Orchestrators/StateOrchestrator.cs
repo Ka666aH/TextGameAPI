@@ -1,4 +1,4 @@
-﻿using TextGame.Application.DTO;
+using TextGame.Application.DTO;
 using TextGame.Application.Enums;
 using TextGame.Application.GuardAttributes;
 using TextGame.Application.Interfaces.Orchestrators;
@@ -20,6 +20,7 @@ namespace TextGame.Application.Orchestrators
         private readonly IStateService _stateService;
         private readonly IGameInfoService _gameInfoService;
         private readonly IGetItemService _getItemService;
+        private readonly IGetRoomService _getRoomService;
 
         private readonly IInventoryService _inventoryService;
 
@@ -27,11 +28,12 @@ namespace TextGame.Application.Orchestrators
         private readonly ICombatService _combatService;
         private readonly ICheckItemService _checkItemService;
 
-        public StateOrchestrator(IStateService stateService, IGameInfoService gameInfoService, IGetItemService getItemService, IInventoryService inventoryService, IChestService chestService, ICombatService combatService, ICheckItemService checkItemService)
+        public StateOrchestrator(IStateService stateService, IGameInfoService gameInfoService, IGetItemService getItemService, IGetRoomService getRoomService, IInventoryService inventoryService, IChestService chestService, ICombatService combatService, ICheckItemService checkItemService)
         {
             _stateService = stateService;
             _gameInfoService = gameInfoService;
             _getItemService = getItemService;
+            _getRoomService = getRoomService;
             _inventoryService = inventoryService;
             _chestService = chestService;
             _combatService = combatService;
@@ -45,7 +47,7 @@ namespace TextGame.Application.Orchestrators
         public void BuyItem(int itemId)
         {
             Item item = _getItemService.GetItem(itemId, _stateService.CurrentRoom.Items);
-            if (item.Cost > _stateService.Coins) throw new NoMoneyException();
+            if (item.Cost > _stateService.Coins) throw new MissingMoneyException();
 
             _stateService.AddCoins(-(int)item.Cost!);
             _stateService.RemoveItemFromCurrentRoom(item);
@@ -119,7 +121,7 @@ namespace TextGame.Application.Orchestrators
         
         public IReadOnlyList<MapRoomDTO> GetMap()
         {
-            if (!_stateService.Inventory.OfType<Map>().Any()) throw new NoMapException();
+            if (!_stateService.Inventory.OfType<Map>().Any()) throw new MissingMapException();
             return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName)).ToList();
         }
 
@@ -140,10 +142,13 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public Room GoToRoom(int roomId)
         {
+            // notes/AGENTS.md §1.1: the room must exist on the map and already be discovered,
+            // otherwise any guessed id is a teleport (and an undiscovered EndRoom a free win).
+            Room room = _getRoomService.GetRoom(roomId);
             _stateService.SetCurrentRoom(roomId);
             RequireNotEndRoom();
 
-            return _stateService.CurrentRoom;
+            return room;
         }
 
         [RequireGameStarted]
@@ -224,6 +229,10 @@ namespace TextGame.Application.Orchestrators
         [RequireNotShop]
         public void TakeAllItems()
         {
+            // Осознанный компромисс (notes/AGENTS.md): предметы берутся по одному, без
+            // транзакции и откатов. Проверка стоит перед изъятием, поэтому отказ на i-м
+            // предмете оставит его в комнате, а уже взятые останутся в инвентаре —
+            // состояние частичное, потерянных предметов нет.
             List<Item> carryableItems = [.. _stateService.CurrentRoom!.Items.Where(i => i.IsCarryable)];
             if (carryableItems.Count <= 0) throw new NothingFoundException();
             foreach (Item item in carryableItems)
@@ -237,6 +246,9 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public void TakeAllItemsFromChest(int chestId)
         {
+            // Осознанный компромисс (notes/AGENTS.md): сундук очищается одним вызовом,
+            // и только потом предметы проверяются. Исключение в CheckItem оставит часть
+            // предметов уже изъятыми из сундука; откат не делаем.
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var items = chest.Items.ToList();
             _chestService.TakeAllItemsFromChest(chest);
@@ -260,6 +272,8 @@ namespace TextGame.Application.Orchestrators
         {
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var item = _getItemService.GetItem(itemId, chest.Items);
+            // Изъятие идёт до проверки: если CheckItem бросит, предмет уже не в сундуке.
+            // Отката нет — осознанный компромисс (см. notes/AGENTS.md).
             _chestService.TakeItemFromChest(chest, item);
             _checkItemService.CheckItem(item);
         }
@@ -276,10 +290,12 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public Chest UnlockChest(int chestId)
         {
-            if (_stateService.Keys > 0) _stateService.AddKeys(-1);
-            else throw new NoKeyException();
-
+            // notes/AGENTS.md §2.2: the chest is resolved first, so a wrong id never eats a key.
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
+
+            if (_stateService.Keys > 0) _stateService.AddKeys(-1);
+            else throw new MissingKeyException();
+
             _chestService.UnlockChest(chest);
 
             return chest;
@@ -297,9 +313,14 @@ namespace TextGame.Application.Orchestrators
             _stateService.AddMaxHealth(maxHealthBoost);
             _stateService.AddCurrentHealth(currentHealthBoost);
             if (_stateService.CurrentHealth <= 0)
+            {
+                // notes/AGENTS.md §2.3: dying to a potion must end the game, exactly like
+                // dying in battle — otherwise the session stays "started" at zero health.
+                _stateService.EndGame();
                 throw new DefeatException(
                     string.Format(ExceptionsLabels.PlayerPoisoned, heal.Name),
                     _gameInfoService.GetGameInfo());
+            }
         }
 
         private void RequireNotEndRoom()

@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Factories;
+using TextGame.Application.Interfaces.Factories;
 using TextGame.Application.Interfaces.Generators;
 using TextGame.Domain.Entities;
 using TextGame.Domain.GameText;
@@ -13,10 +13,10 @@ namespace TextGame.Application.Factories
         {
             _mapGenerator = mapGenerator;
         }
-        public Save CreateInitial(Guid sessionId)
+        public Save CreateInitial(Guid sessionId, long seed)
         {
             State state = new();
-            state.Rooms = _mapGenerator.Generate();
+            state.Rooms = _mapGenerator.Generate(seed);
             state.CurrentRoomId = 0;
             return new(sessionId, SaveType.Initial, GeneralLabels.SaveInitialDefaultName, state);
         }

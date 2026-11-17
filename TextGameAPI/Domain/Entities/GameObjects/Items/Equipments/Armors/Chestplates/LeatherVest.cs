@@ -4,14 +4,14 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplat
 {
     public class LeatherVest : Chestplate
     {
-        public LeatherVest(int id, int roomId, bool fromShop)
+        public LeatherVest(int id, int roomId, bool fromShop, Random? random = null)
             : base(id,
                   ItemsLabels.LeatherVestName,
                   ItemsLabels.LeatherVestDescription,
                   roomId,
                   fromShop,
                   GameBalance.LeatherVestBaseDurability,
-                  GameBalance.LeatherVestBaseDamageBlock)
+                  GameBalance.LeatherVestBaseDamageBlock, random)
         { }
         private LeatherVest() { }
     }

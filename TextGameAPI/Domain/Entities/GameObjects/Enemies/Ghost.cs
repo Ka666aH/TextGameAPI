@@ -4,14 +4,14 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
 {
     public class Ghost : Enemy
     {
-        public Ghost(int id, int roomId)
+        public Ghost(int id, int roomId, Random? random = null)
             : base(id,
                   EnemiesLabels.GhostName,
                   EnemiesLabels.GhostDescription,
                   roomId,
                   GameBalance.GhostBaseHealth,
                   GameBalance.GhostBaseDamage,
-                  GameBalance.GhostBaseDamageBlock)
+                  GameBalance.GhostBaseDamageBlock, random)
         { }
         public override void GetDamage(int damage)
         {

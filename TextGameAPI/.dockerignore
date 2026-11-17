@@ -1,0 +1,13 @@
+# Контекст сборки — папка TextGameAPI, поэтому корневой .dockerignore здесь не действует.
+# Этот файл исключает из контекста всё, что не нужно образу (bin/obj, dev-конфиг, IDE-файлы).
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/*.user
+**/*.*proj.user
+**/appsettings.Development.json
+**/Dockerfile*
+**/.dockerignore
+**/*.md
+**/*.dbmdl

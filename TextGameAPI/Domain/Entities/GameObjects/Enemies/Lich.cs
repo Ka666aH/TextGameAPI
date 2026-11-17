@@ -1,17 +1,17 @@
-﻿using TextGame.Domain.GameText;
+using TextGame.Domain.GameText;
 
 namespace TextGame.Domain.Entities.GameObjects.Enemies
 {
     public class Lich : Enemy
     {
-        public Lich(int id,int roomId)
+        public Lich(int id, int roomId, Random? random = null)
             : base(id,
                   EnemiesLabels.LichName,
                   EnemiesLabels.LichDescription,
                   roomId,
                   GameBalance.LichBaseHealth,
                   GameBalance.LichBaseDamage,
-                  GameBalance.LichBaseDamageBlock)
+                  GameBalance.LichBaseDamageBlock, random)
         { }
         private Lich() { }
     }

@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
 using TextGame.Presentation.Attributes;
+using TextGame.Presentation.DTO;
 using TextGame.Presentation.Helpers;
 using TextGame.Presentation.Mappers;
 using TextGame.Presentation.Options;
@@ -25,16 +26,17 @@ namespace TextGame.Presentation.Controllers
         public async Task<IActionResult> CreateAsync([FromQuery] string? saveName, CancellationToken ct)
         {
             User.TryGetSessionId(out Guid sessionId);
-            Guid newSaveId = await _saveService.CreateAsync(sessionId, SaveType.Manual, saveName, ct);
+            Guid newSaveId = await _saveService.CreateAsync(sessionId, SaveType.Manual, saveName, ct: ct);
             await _saveService.LoadAsync(sessionId, newSaveId, ct);
             return Created($"/saves/{newSaveId}", new { saveId = newSaveId });
         }
-        [HttpPost("{saveId}")]
-        public async Task<IActionResult> LoadAsync(Guid saveId, CancellationToken ct)
+        /// <summary>Загрузить сохранение — сделать его текущим состоянием игры.</summary>
+        [HttpPut("current")]
+        public async Task<IActionResult> LoadAsync([FromBody] SetCurrentRequest request, CancellationToken ct)
         {
             User.TryGetSessionId(out Guid sessionId);
-            await _saveService.LoadAsync(sessionId, saveId, ct);
-            return Ok(new { saveId });
+            await _saveService.LoadAsync(sessionId, request.Id, ct);
+            return Ok(new { saveId = request.Id });
         }
         [HttpDelete("{saveId}")]
         public async Task<IActionResult> DeleteAsync(Guid saveId, CancellationToken ct)

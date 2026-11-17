@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TextGame.Application.DTO;
@@ -17,11 +17,20 @@ namespace TextGame.Presentation.Controllers
     [Route("/exception")]
     public class ExceptionController : ControllerBase
     {
+        private readonly ILogger<ExceptionController> _logger;
+
+        public ExceptionController(ILogger<ExceptionController> logger)
+        {
+            _logger = logger;
+        }
+
         [HttpGet, HttpPost, HttpPut, HttpDelete, HttpPatch]
         public IActionResult Handle()
         {
             var exception = HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Error;
-            return MapException(exception);
+            var result = MapException(exception);
+            Log(exception, result);
+            return result;
         }
         private IActionResult MapException(Exception? exception)
         {
@@ -57,7 +66,6 @@ namespace TextGame.Presentation.Controllers
 
                 AccessTokenNotFoundException or
                 MissingUserIdClaimException or
-                MissingSessionIdClaimException or
                 RefreshTokenNotFoundException or
                 RefreshTokenExpiredException or
                 RefreshTokenCompromisedException =>
@@ -68,6 +76,9 @@ namespace TextGame.Presentation.Controllers
 
                 BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog)),
 
+                CorruptStateException =>
+                    Problem(StatusCodes.Status500InternalServerError, originalPath, gameEx),
+
                 RoomNotFoundException or
                 ItemNotFoundException or
                 NothingFoundException or
@@ -77,29 +88,64 @@ namespace TextGame.Presentation.Controllers
                 SessionNotFoundException =>
                     Problem(404, originalPath, gameEx),
 
+                // Отказ игрового действия — это запрет (403), а не необработанное
+                // содержимое запроса, поэтому 422 здесь сознательно не используется.
                 InvalidIdException or
                 UncarryableException or
                 ImpossibleStealException or
-                UnsellableItemException or //=> Problem(422, originalPath, gameEx),
-                
+                UnsellableItemException or
                 ImpossibleDeleteSaveException or
                 NotSessionOwnerException or
+                // Нет активной игры — это не сломанная авторизация: куки не трогаем,
+                // иначе выбор сессии выбрасывал бы залогиненного игрока на логин.
+                MissingSessionIdClaimException or
                 NotSaveOwnerException or
                 UnstartedGameException or
                 LockedException or
-                NoKeyException or
-                NoMapException or
+                MissingKeyException or
+                MissingMapException or
                 ClosedException or
                 UndiscoveredRoomException or
                 InBattleException or
                 UnsearchedRoomException or
                 NotShopException or
-                NoMoneyException =>
+                MissingMoneyException =>
                     Problem(403, originalPath, gameEx),
 
                 _ => InternalServerError()
             };
         }
+
+        private void Log(Exception? exception, IActionResult result)
+        {
+            var statusCode = result switch
+            {
+                ObjectResult objectResult => objectResult.StatusCode ?? StatusCodes.Status200OK,
+                StatusCodeResult statusCodeResult => statusCodeResult.StatusCode,
+                _ => StatusCodes.Status200OK
+            };
+
+            var method = HttpContext.Request.Method;
+            var path = HttpContext.Request.Path;
+            var code = ResolveCode(exception);
+            var traceId = HttpContext.TraceIdentifier;
+
+            // 5xx — дефект, разбирать по стеку. 401/403 — ожидаемое поведение игры и авторизации,
+            // стек там только шумит. Остальное (400, 404, 200-сценарии) — нормальный ход игры.
+            if (statusCode >= StatusCodes.Status500InternalServerError)
+                _logger.LogError(exception, LoggersText.RequestFailed, method, path, statusCode, code, traceId);
+            else if (statusCode is StatusCodes.Status401Unauthorized or StatusCodes.Status403Forbidden)
+                _logger.LogWarning(LoggersText.RequestRejected, method, path, statusCode, code, traceId);
+            else
+                _logger.LogDebug(LoggersText.GameFlowCompleted, method, path, statusCode, code, traceId);
+        }
+
+        private static string ResolveCode(Exception? exception) => exception switch
+        {
+            ValidationException => ExceptionsLabels.ValidationErrorCode,
+            GameException gameException => gameException.Code,
+            _ => ExceptionsLabels.InternalServerErrorCode
+        };
 
         private IActionResult Problem(int statusCode, string instance, GameException ex)
         {

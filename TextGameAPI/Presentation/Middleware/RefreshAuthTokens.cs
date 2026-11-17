@@ -1,6 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using TextGame.Application.Interfaces.Services;
-using TextGame.Domain.GameExceptions;
 using TextGame.Infrastructure.Token;
 using TextGame.Presentation.Attributes;
 using TextGame.Presentation.Helpers;
@@ -35,8 +34,14 @@ namespace TextGame.Presentation.Middleware
                 }
             }
             //Получить остальные данные
-            string refreshToken = GetRefreshToken(context);
-            string fingerprint = GetFingerprint(context);
+            if (!context.Request.TryGetRefreshToken(out string refreshToken))
+            {
+                // Ни одной куки нет — это анонимный запрос, а не сломанный токен.
+                // Дальше по конвейеру 401 отдаст [Authorize], swagger и /health пройдут.
+                await _next(context);
+                return;
+            }
+            string fingerprint = context.GetFingerprint();
             //Обновить в сервисе
             var refreshResult = await authService.RefreshAsync(refreshToken, accessToken, fingerprint);
             //Установить новые куки в запрос и ответ
@@ -47,19 +52,6 @@ namespace TextGame.Presentation.Middleware
             CookieHelper.SetAuthCookies(refreshResult, context);
             context.Items[ItemKeys.RefreshResultKey] = refreshResult;
             await _next(context);
-        }
-        private static string GetFingerprint(HttpContext context)
-        {
-            string deviceName = context.Request.Headers.UserAgent.ToString();
-            string ip = context.Connection.RemoteIpAddress?.ToString() ?? "";
-            return deviceName + " | " + ip;
-        }
-        private static string GetRefreshToken(HttpContext context)
-        {
-            var request = context.Request;
-            bool refreshTokenExist = request.TryGetRefreshToken(out string refreshToken);
-            if (!refreshTokenExist) throw new RefreshTokenNotFoundException();
-            return refreshToken;
         }
     }
     public static class RefreshAuthTokensExtensions

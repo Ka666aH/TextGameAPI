@@ -4,14 +4,14 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Heals
 {
     public class RegenPotion : Heal
     {
-        public RegenPotion(int id, int roomId, bool fromShop)
+        public RegenPotion(int id, int roomId, bool fromShop, Random? random = null)
             : base(id,
                   ItemsLabels.RegenPotionName,
                   ItemsLabels.RegenPotionDescription,
                   roomId,
                   fromShop,
                   GameBalance.RegenPotionBaseMaxHealthBoost,
-                  GameBalance.RegenPotionBaseCurrentHealthBoost)
+                  GameBalance.RegenPotionBaseCurrentHealthBoost, random)
         { }
         private RegenPotion() { }
     }

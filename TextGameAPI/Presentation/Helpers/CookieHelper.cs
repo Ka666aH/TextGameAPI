@@ -1,4 +1,5 @@
-﻿using TextGame.Application.DTO;
+using TextGame.Application.DTO;
+using TextGame.Domain.GameExceptions;
 using TextGame.Infrastructure.Configuration;
 using TextGame.Infrastructure.Token;
 
@@ -9,23 +10,25 @@ namespace TextGame.Presentation.Helpers
         private static readonly CookieOptions DefaultOptions = new()
         {
             HttpOnly = true,
-            Secure = false,
             SameSite = SameSiteMode.Lax,
             Path = "/"
         };
-        private static CookieOptions SetExpiringOptions(TimeSpan tokenLifetime) =>
+        private static CookieOptions SetExpiringOptions(TimeSpan tokenLifetime, bool secure) =>
             new()
             {
                 HttpOnly = DefaultOptions.HttpOnly,
-                Secure = DefaultOptions.Secure,
+                Secure = secure,
                 SameSite = DefaultOptions.SameSite,
                 Path = DefaultOptions.Path,
                 Expires = DateTimeOffset.UtcNow.Add(tokenLifetime)
             };
+        // notes/AGENTS.md §2.9: the flag follows the actual scheme instead of being hardcoded,
+        // so an HTTPS deployment never emits a cookie that can travel over plain HTTP.
+        private static bool IsSecureRequest(HttpResponse response) => response.HttpContext.Request.IsHttps;
         public static void SetRefreshCookie(this HttpResponse response, string value) =>
-                response.Cookies.Append(TokenParameters.RefreshToken, value, SetExpiringOptions(TimeSettings.RefreshCookieLifetime));
+                response.Cookies.Append(TokenParameters.RefreshToken, value, SetExpiringOptions(TimeSettings.RefreshCookieLifetime, IsSecureRequest(response)));
         public static void SetAccessCookie(this HttpResponse response, string value) =>
-            response.Cookies.Append(TokenParameters.AccessToken, value, SetExpiringOptions(TimeSettings.AccessCookieLifetime));
+            response.Cookies.Append(TokenParameters.AccessToken, value, SetExpiringOptions(TimeSettings.AccessCookieLifetime, IsSecureRequest(response)));
         public static void SetAuthCookies(AuthResult authResult, HttpContext context)
         {
             var response = context.Response;
@@ -36,6 +39,15 @@ namespace TextGame.Presentation.Helpers
         {
             refreshToken = request.Cookies[TokenParameters.RefreshToken] ?? "";
             return refreshToken != "";
+        }
+        /// <summary>
+        /// Одна точка отказа для мест, где refresh-токен обязателен (logout): в контроллере
+        /// и в middleware проверка должна быть одинаковой, иначе поведение 401 разъедется.
+        /// </summary>
+        public static string GetRequiredRefreshToken(this HttpRequest request)
+        {
+            if (!request.TryGetRefreshToken(out string refreshToken)) throw new RefreshTokenNotFoundException();
+            return refreshToken;
         }
         public static bool TryGetAccessToken(this HttpRequest request, out string accessToken)
         {

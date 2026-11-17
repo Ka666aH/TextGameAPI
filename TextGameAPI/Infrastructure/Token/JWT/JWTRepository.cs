@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -11,18 +11,21 @@ namespace TextGame.Infrastructure.Token.JWT
 {
     public class JWTRepository : ITokenRepository
     {
-        public RefreshToken GenerateRefreshToken(Guid userId, string hashedFingerprint)
+        public (string RawToken, RefreshToken Stored) GenerateRefreshToken(Guid userId, string hashedFingerprint)
         {
             var randomBytes = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
-            var token = Convert.ToBase64String(randomBytes);
+            var rawToken = Convert.ToBase64String(randomBytes);
 
-            return new RefreshToken(
+            // В БД уходит только хэш; сырой токен вернётся в AuthResult и дальше в cookie.
+            var stored = new RefreshToken(
                 userId,
-                token,
+                RefreshTokenHash.Of(rawToken),
                 DateTime.UtcNow.Add(TimeSettings.RefreshTokenLifetime),
                 hashedFingerprint);
+
+            return (rawToken, stored);
         }
 
         public string GenerateAccessToken(Guid userId, Guid? gameSessionId = null)

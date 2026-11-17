@@ -1,4 +1,4 @@
-﻿using TextGame.Domain.DTO;
+using TextGame.Domain.DTO;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments;
 
 namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors
@@ -6,18 +6,19 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors
     public abstract class Armor : Equipment
     {
         public int DamageBlock { get; protected set; }
-        public Armor(int id, string name, string description, int roomId, bool fromShop, int durability, int damageBlock) 
+        public Armor(int id, string name, string description, int roomId, bool fromShop, int durability, int damageBlock, Random? random = null)
             : base(id, name, description, durability, roomId, fromShop)
         {
-            Initialize(durability, damageBlock);
+            Initialize(durability, damageBlock, random);
         }
-        protected void Initialize(int durability, int damageBlock)
+        protected void Initialize(int durability, int damageBlock, Random? random = null)
         {
-            Durability = Random.Shared.Next(
+            var rng = random ?? Random.Shared;
+            Durability = rng.Next(
                 (int)(durability * GameBalance.SpreadFloor),
                 (int)(durability * GameBalance.SpreadCeiling + 1));
             var (min, max) = GameBalance.CalculateSpread(damageBlock, _roomId);
-            DamageBlock = Random.Shared.Next(min, max + 1);
+            DamageBlock = rng.Next(min, max + 1);
             if (_fromShop)
             {
                 Durability = GameBalance.CalculateShopMultiplier((int)Durability!);

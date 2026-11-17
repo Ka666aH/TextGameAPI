@@ -5,14 +5,14 @@ namespace TextGame.Domain.Entities.GameObjects.Enemies
     public class Skeletor : Enemy
     {
 
-        public Skeletor(int id, int roomId)
+        public Skeletor(int id, int roomId, Random? random = null)
             : base(id,
                   EnemiesLabels.SkeletorName,
                   EnemiesLabels.SkeletorDescription,
                   roomId,
                   GameBalance.SkeletorBaseHealth,
                   GameBalance.SkeletorBaseDamage,
-                  GameBalance.SkeletorBaseDamageBlock)
+                  GameBalance.SkeletorBaseDamageBlock, random)
         { }
         private Skeletor() { }
     }

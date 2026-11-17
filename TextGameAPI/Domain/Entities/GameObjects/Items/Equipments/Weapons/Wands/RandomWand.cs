@@ -5,13 +5,13 @@ namespace TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons.Wands
 {
     public class RandomWand : Wand
     {
-        public RandomWand(int id, int roomId, bool fromShop)
+        public RandomWand(int id, int roomId, bool fromShop, Random? random = null)
             : base(id,
                   ItemsLabels.RandomWandName,
                   ItemsLabels.RandomWandDescription, 
                   roomId, 
                   fromShop, 
-                  GameBalance.RandomWandBaseDamage) { }
+                  GameBalance.RandomWandBaseDamage, random) { }
         public override WeaponAttackResult Attack(int roomId)
         {
             int damage = (int)(Damage * GameBalance.CalculateGain(_roomId));

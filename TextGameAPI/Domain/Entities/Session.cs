@@ -1,17 +1,24 @@
-﻿namespace TextGame.Domain.Entities
+namespace TextGame.Domain.Entities
 {
     public class Session
     {
         public Guid Id { get; private set; } = Guid.NewGuid();
         public Guid UserId { get; private set; }
-        public User User { get; private set; }
-        public string Name { get; private set; }
+        // Навигация: заполняется EF Core при материализации, вручную не присваивается.
+        public User User { get; private set; } = null!;
+        // init + null! вместо required — см. комментарий в User.cs.
+        public string Name { get; init; } = null!;
+        // Сид генерации: игрок может задать его при создании (POST /sessions?seed=),
+        // иначе генерируется и всё равно сохраняется — сессию можно воспроизвести.
+        public long Seed { get; private set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-        public Session(Guid userId, string name = GameText.GeneralLabels.SessionDefaultName)
+        public Session(Guid userId, string? name = null, long? seed = null)
         {
             UserId = userId;
-            Name = name;
+            Name = name ?? GameText.GeneralLabels.SessionDefaultName;
+            Seed = seed ?? Random.Shared.NextInt64();
         }
+        // EF Core материализует сущность через этот конструктор и заполняет свойства из БД рефлексией.
         private Session() { }
     }
 }

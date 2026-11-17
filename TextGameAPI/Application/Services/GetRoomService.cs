@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
+using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 
@@ -13,7 +13,7 @@ namespace TextGame.Application.Services
         }
         public Room GetRoom(int roomId)
         {
-            if (roomId < 0 || roomId > _stateService.Rooms.Count) throw new RoomNotFoundException();
+            if (roomId < 0 || roomId >= _stateService.Rooms.Count) throw new RoomNotFoundException();
             Room room = _stateService.Rooms[roomId];
             if (!room.IsDiscovered) throw new UndiscoveredRoomException();
             return room;

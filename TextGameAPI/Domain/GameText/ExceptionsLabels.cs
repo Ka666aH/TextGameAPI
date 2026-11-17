@@ -1,4 +1,4 @@
-﻿using TextGame.Infrastructure.Token;
+using TextGame.Infrastructure.Token;
 
 namespace TextGame.Domain.GameText
 {
@@ -9,6 +9,9 @@ namespace TextGame.Domain.GameText
 
         public const string SessionNotFoundCode = "SESSION_NOT_FOUND";
         public const string SessionNotFoundMessage = "Игровая сессия не найдена.";
+
+        public const string CorruptStateCode = "CORRUPT_STATE";
+        public const string CorruptStateMessage = "Снимок состояния игры повреждён.";
 
         public const string SaveNotFoundCode = "SAVE_NOT_FOUND";
         public const string SaveNotFoundMessage = "Сохранение не найдено.";
@@ -61,14 +64,15 @@ namespace TextGame.Domain.GameText
         public const string LockedCode = "LOCKED";
         public const string LockedText = "Сундук заперт!";
 
-        public const string NoKeyCode = "NO_KEY_ERROR";
-        public const string NoKeyText = "Нет ключа!";
+        // Wire-коды (NO_KEY_ERROR и т.д.) не менялись: это title в ProblemDetails — контракт фронта.
+        public const string MissingKeyCode = "NO_KEY_ERROR";
+        public const string MissingKeyText = "Нет ключа!";
 
-        public const string NoMapCode = "NO_MAP_ERROR";
-        public const string NoMapText = "Нет карты!";
+        public const string MissingMapCode = "NO_MAP_ERROR";
+        public const string MissingMapText = "Нет карты!";
 
-        public const string NoMoneyCode = "NO_MONEY";
-        public const string NoMoneyText = "Недостаточно средств!";
+        public const string MissingMoneyCode = "NO_MONEY";
+        public const string MissingMoneyText = "Недостаточно средств!";
 
         public const string NotShopCode = "NOT_IN_SHOP";
         public const string NotShopText = "Невозможно вне магазина!";

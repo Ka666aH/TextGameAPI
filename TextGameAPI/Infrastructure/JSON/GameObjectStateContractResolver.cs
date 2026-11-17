@@ -1,25 +1,28 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Reflection;
 
-public class GameObjectStateContractResolver : DefaultContractResolver
+namespace TextGame.Infrastructure.JSON
 {
-    // Доступ к защищённым сеттерам
-    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    public class GameObjectStateContractResolver : DefaultContractResolver
     {
-        var property = base.CreateProperty(member, memberSerialization);
-        if (!property.Writable)
+        // Доступ к защищённым сеттерам
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
-            if (member is PropertyInfo propInfo)
+            var property = base.CreateProperty(member, memberSerialization);
+            if (!property.Writable)
             {
-                var setter = propInfo.GetSetMethod(true);
-                if (setter != null)
+                if (member is PropertyInfo propInfo)
                 {
-                    property.Writable = true;
-                    property.ValueProvider = new ReflectionValueProvider(propInfo);
+                    var setter = propInfo.GetSetMethod(true);
+                    if (setter != null)
+                    {
+                        property.Writable = true;
+                        property.ValueProvider = new ReflectionValueProvider(propInfo);
+                    }
                 }
             }
+            return property;
         }
-        return property;
     }
 }
