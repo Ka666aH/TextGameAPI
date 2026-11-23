@@ -297,6 +297,10 @@ namespace TextGame.Application.Orchestrators
             // notes/AGENTS.md §2.2: the chest is resolved first, so a wrong id never eats a key.
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
 
+            // Идемпотентность (п. 4): после F5 клиент не знает состояние замка, и повторный
+            // unlock не должен стоить второго ключа. Неверный id, как и раньше, ключ не ест.
+            if (!chest.IsLocked) return chest;
+
             if (_stateService.Keys > 0) _stateService.AddKeys(-1);
             else throw new MissingKeyException();
 

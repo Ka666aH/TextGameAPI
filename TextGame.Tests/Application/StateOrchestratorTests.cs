@@ -116,6 +116,28 @@ public class StateOrchestratorTests
     }
 
     [Fact]
+    public void UnlockChest_WhenChestIsAlreadyUnlocked_DoesNotSpendASecondKey()
+    {
+        // Arrange
+        var state = new State { Keys = 1 };
+        state.Rooms.Add(new StartRoom());
+        var chest = new Chest(id: 0, roomId: 0, items: []) { IsLocked = true };
+        var stateService = new FakeStateService(state);
+        stateService.AddItemToCurrentRoom(chest);
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        orchestrator.UnlockChest(chestId: 0);
+        Action secondUnlock = () => orchestrator.UnlockChest(chestId: 0);
+
+        // Assert
+        // notes/fixes-1.2.0.md, п. 9: первый unlock тратит ключ, повторный — нет.
+        secondUnlock.Should().NotThrow();
+        chest.IsLocked.Should().BeFalse();
+        stateService.Keys.Should().Be(0);
+    }
+
+    [Fact]
     public void UseInventoryItem_WhenPotionKillsThePlayer_EndsTheGame()
     {
         // Arrange
