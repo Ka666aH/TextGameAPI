@@ -1,4 +1,4 @@
-﻿namespace TextGame.Application.DTO
+namespace TextGame.Application.DTO
 {
-    public record MapRoomDTO(int Number, string Name);
+    public record MapRoomDTO(int Number, string Name, bool IsDiscovered);
 }

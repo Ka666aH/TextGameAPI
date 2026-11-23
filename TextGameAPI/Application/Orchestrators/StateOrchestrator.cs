@@ -123,7 +123,7 @@ namespace TextGame.Application.Orchestrators
         public IReadOnlyList<MapRoomDTO> GetMap()
         {
             if (!_stateService.Inventory.OfType<Map>().Any()) throw new MissingMapException();
-            return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName)).ToList();
+            return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName, r.IsDiscovered)).ToList();
         }
 
         [RequireGameStarted]

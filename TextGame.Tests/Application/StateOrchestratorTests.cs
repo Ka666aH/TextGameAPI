@@ -2,6 +2,7 @@ using TextGame.Application.Orchestrators;
 using TextGame.Application.Services;
 using TextGame.Domain.Entities;
 using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items.Other;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 using TextGame.Domain.GameExceptions;
 using TextGame.Tests.TestSupport;
@@ -153,6 +154,26 @@ public class StateOrchestratorTests
         act.Should().Throw<DefeatException>();
         stateService.IsGameStarted.Should().BeFalse();
         stateService.Result.Should().Be(GameResult.Lose);
+    }
+
+    [Fact]
+    public void GetMap_WhenMapIsInInventory_ReturnsDiscoveryFlagForEveryRoom()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        state.Rooms.Add(new EmptyRoom(id: 1));
+        var stateService = new FakeStateService(state);
+        stateService.AddItemToInventory(new Map(id: 0, roomId: 0));
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        var map = orchestrator.GetMap();
+
+        // Assert
+        map.Should().HaveCount(2);
+        map[0].IsDiscovered.Should().BeTrue("стартовая комната открыта в конструкторе");
+        map[1].IsDiscovered.Should().BeFalse();
     }
 
     private static StateOrchestrator CreateOrchestrator(FakeStateService stateService)
