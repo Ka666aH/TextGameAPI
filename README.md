@@ -198,9 +198,7 @@ dotnet run
 ## CI/CD
 
 - **CI** (`.github/workflows/ci.yml`) — на каждый push в `master` и pull request: сборка и полный прогон тестов (юнит + интеграционные) против Postgres 18 и Redis 7.
-- **Release** (`.github/workflows/release.yml`) — по пушу тега `v*`: сначала тесты, затем сборка `linux/amd64`-образа, пуш в Docker Hub (`1.1.0`, `1.1`, `latest`) и создание GitHub Release.
-
-Текущий релиз: `v1.1.0`.
+- **Release** (`.github/workflows/release.yml`) — по пушу тега `v*`: сначала тесты, затем сборка `linux/amd64`-образа, пуш в Docker Hub (`1.0.0`, `1.0`, `latest`) и создание GitHub Release.
 
 ---
 
