@@ -1,3 +1,4 @@
+using TextGame.Application.Interfaces.Services;
 using TextGame.Application.Orchestrators;
 using TextGame.Application.Services;
 using TextGame.Domain.Entities;
@@ -176,7 +177,75 @@ public class StateOrchestratorTests
         map[1].IsDiscovered.Should().BeFalse();
     }
 
-    private static StateOrchestrator CreateOrchestrator(FakeStateService stateService)
+    [Fact]
+    public void TakeAllItemsFromChest_WhenCheckFailsOnSecondItem_LeavesChestFull()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        var chest = new Chest(id: 0, roomId: 0, items: [new BagOfCoins(1, 0), new BagOfCoins(2, 0)]);
+        chest.IsLocked = false;
+        chest.Open();
+        var stateService = new FakeStateService(state);
+        stateService.AddItemToCurrentRoom(chest);
+        var orchestrator = CreateOrchestrator(stateService, new FailingOnSecondItemCheckService());
+
+        // Act
+        Action act = () => orchestrator.TakeAllItemsFromChest(chestId: 0);
+
+        // Assert
+        // notes/backend-requests.md п. 11: проверка до изъятия, поэтому отказ на втором
+        // предмете не оставляет сундук пустым.
+        act.Should().Throw<UncarryableException>();
+        chest.Items.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void TakeItemFromChest_WhenCheckFails_LeavesItemInChest()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        var chest = new Chest(id: 0, roomId: 0, items: [new BagOfCoins(1, 0)]);
+        chest.IsLocked = false;
+        chest.Open();
+        var stateService = new FakeStateService(state);
+        stateService.AddItemToCurrentRoom(chest);
+        var orchestrator = CreateOrchestrator(stateService, new AlwaysFailingCheckService());
+
+        // Act
+        Action act = () => orchestrator.TakeItemFromChest(chestId: 0, itemId: 1);
+
+        // Assert
+        act.Should().Throw<UncarryableException>();
+        chest.Items.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void TakeItemFromChest_WhenChestIsLocked_RejectsBeforeCheckingTheItem()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        var chest = new Chest(id: 0, roomId: 0, items: [new BagOfCoins(1, 0)]) { IsLocked = true };
+        var stateService = new FakeStateService(state);
+        stateService.AddItemToCurrentRoom(chest);
+        var checkItemService = new FakeCheckItemService();
+        var orchestrator = CreateOrchestrator(stateService, checkItemService);
+
+        // Act
+        Action act = () => orchestrator.TakeItemFromChest(chestId: 0, itemId: 1);
+
+        // Assert
+        // CheckItem кладёт предмет в инвентарь, поэтому отказ по замку обязан случиться до него.
+        act.Should().Throw<LockedException>();
+        checkItemService.CheckedItems.Should().BeEmpty();
+        chest.Items.Should().ContainSingle();
+    }
+
+    private static StateOrchestrator CreateOrchestrator(
+        FakeStateService stateService,
+        ICheckItemService? checkItemService = null)
     {
         var getItemService = new GetItemService();
 
@@ -188,6 +257,22 @@ public class StateOrchestratorTests
             new InventoryService(stateService),
             new ChestService(getItemService),
             new CombatService(stateService),
-            new FakeCheckItemService());
+            checkItemService ?? new FakeCheckItemService());
+    }
+
+    private sealed class FailingOnSecondItemCheckService : ICheckItemService
+    {
+        private int _calls;
+
+        public void CheckItem(Item item)
+        {
+            _calls++;
+            if (_calls == 2) throw new UncarryableException();
+        }
+    }
+
+    private sealed class AlwaysFailingCheckService : ICheckItemService
+    {
+        public void CheckItem(Item item) => throw new UncarryableException();
     }
 }

@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
+using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
 using TextGame.Domain.Entities.GameObjects.Items;
@@ -39,17 +39,20 @@ namespace TextGame.Application.Services
         }
         public void TakeItemFromChest(Chest chest, Item item)
         {
-            RequireUnlocked(chest);
-            RequireOpened(chest);
+            EnsureCanTakeItems(chest);
 
             chest.RemoveItem(item);
         }
         public void TakeAllItemsFromChest(Chest chest)
         {
-            RequireUnlocked(chest);
-            RequireOpened(chest);
+            EnsureCanTakeItems(chest);
 
             chest.RemoveAllItems();
+        }
+        public void EnsureCanTakeItems(Chest chest)
+        {
+            RequireUnlocked(chest);
+            RequireOpened(chest);
         }
         private void RequireOpened(Chest chest)
         {

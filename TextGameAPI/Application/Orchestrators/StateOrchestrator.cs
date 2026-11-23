@@ -247,13 +247,15 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public void TakeAllItemsFromChest(int chestId)
         {
-            // Осознанный компромисс (notes/AGENTS.md): сундук очищается одним вызовом,
-            // и только потом предметы проверяются. Исключение в CheckItem оставит часть
-            // предметов уже изъятыми из сундука; откат не делаем.
+            // Предвалидация до мутации: если CheckItem бросит, сундук должен остаться полным.
+            // Отката нет, но и терять предметы на отказе нельзя (notes/backend-requests.md п. 11).
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var items = chest.Items.ToList();
-            _chestService.TakeAllItemsFromChest(chest);
+            // CheckItem кладёт предмет в инвентарь, поэтому сначала убеждаемся, что сундук
+            // открыт и не заперт: иначе отказ по замку оставил бы предмет в инвентаре.
+            _chestService.EnsureCanTakeItems(chest);
             foreach (var item in items) _checkItemService.CheckItem(item);
+            _chestService.TakeAllItemsFromChest(chest);
         }
 
         [RequireGameStarted]
@@ -273,10 +275,11 @@ namespace TextGame.Application.Orchestrators
         {
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var item = _getItemService.GetItem(itemId, chest.Items);
-            // Изъятие идёт до проверки: если CheckItem бросит, предмет уже не в сундуке.
-            // Отката нет — осознанный компромисс (см. notes/AGENTS.md).
-            _chestService.TakeItemFromChest(chest, item);
+            // Проверка до изъятия: отказ CheckItem оставит предмет в сундуке (п. 11).
+            // Сначала — отказ по замку/крышке, он не должен доходить до CheckItem с его мутацией.
+            _chestService.EnsureCanTakeItems(chest);
             _checkItemService.CheckItem(item);
+            _chestService.TakeItemFromChest(chest, item);
         }
 
         [RequireGameStarted]
