@@ -1,3 +1,4 @@
+using TextGame.Domain.Entities.GameObjects.Items.Other;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 using TextGame.Presentation.DTO.GameObjectsDTO;
 using TextGame.Presentation.Mappers;
@@ -12,6 +13,25 @@ namespace TextGame.Tests.Presentation;
 /// </summary>
 public class GameObjectMapperTests
 {
+    [Fact]
+    public void ToDTO_WhenChestIsLocked_ReturnsCostAndLockState()
+    {
+        // Arrange
+        var chest = new Chest(id: 1, roomId: 0, items: []) { IsLocked = true };
+
+        // Act
+        var dto = chest.ToDTO();
+
+        // Assert
+        // notes/backend-requests.md п. 14.2: сундук входит в общий union предметов,
+        // cost у него всегда null, а состояние замка больше не нужно выяснять пробой open.
+        var chestDto = dto.Should().BeOfType<ChestDTO>().Which;
+        chestDto.Id.Should().Be(1);
+        chestDto.IsClosed.Should().BeTrue();
+        chestDto.Cost.Should().BeNull();
+        chestDto.IsLocked.Should().BeTrue();
+    }
+
     [Fact]
     public void ToDTO_ReturnsKindForEveryRoomType()
     {

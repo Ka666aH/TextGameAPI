@@ -28,7 +28,7 @@ namespace TextGame.Presentation.Mappers
                 Item item =>
                 item switch
                 {
-                    Chest chest => new ChestDTO(chest.Id, chest.Name, chest.Description, chest.IsClosed),
+                    Chest chest => new ChestDTO(chest.Id, chest.Name, chest.Description, chest.IsClosed, chest.Cost, chest.IsLocked),
                     Heal heal =>
                     heal switch
                     {
