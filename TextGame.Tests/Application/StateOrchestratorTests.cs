@@ -138,6 +138,29 @@ public class StateOrchestratorTests
     }
 
     [Fact]
+    public void HitChest_WhenSelfDamageKillsThePlayer_EndsTheGameWithLose()
+    {
+        // Arrange
+        var state = new State { CurrentHealth = 5, MaxHealth = 100 };
+        state.Rooms.Add(new StartRoom());
+        var stateService = new FakeStateService(state);
+        stateService.AddItemToCurrentRoom(new Chest(id: 0, roomId: 0, items: []));
+        stateService.EquipWeapon(new ScriptedWeapon(damage: 1, selfDamage: 10));
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Action act = () => orchestrator.HitChest(chestId: 0);
+
+        // Assert
+        // notes/fixes-1.2.0.md, п. 10: смерть от своей же атаки завершает игру, как в бою
+        // и как зелье в UseInventoryItem.
+        act.Should().Throw<DefeatException>();
+        stateService.IsGameStarted.Should().BeFalse();
+        stateService.Result.Should().Be(GameResult.Lose);
+        stateService.CurrentHealth.Should().BeLessThanOrEqualTo(0);
+    }
+
+    [Fact]
     public void UseInventoryItem_WhenPotionKillsThePlayer_EndsTheGame()
     {
         // Arrange

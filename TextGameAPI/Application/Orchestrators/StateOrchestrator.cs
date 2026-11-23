@@ -183,6 +183,13 @@ namespace TextGame.Application.Orchestrators
                 int playerHealthBeforeAttack = _stateService.CurrentHealth;
                 var attackResult = _stateService.Weapon.Attack(_stateService.CurrentRoom.Id);
                 if (attackResult.SelfDamage != 0) _stateService.AddCurrentHealth(-attackResult.SelfDamage);
+                // AddCurrentHealth не клампится снизу, а кулаки бьют себя с шансом 50%:
+                // без этой проверки игрок уходит в отрицательное HP и продолжает играть (п. 10).
+                if (_stateService.CurrentHealth <= 0)
+                {
+                    _stateService.EndGame(GameResult.Lose);
+                    throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
+                }
                 if (attackResult.IsWeaponBrokenDown) _stateService.RemoveWeapon();
 
                 battleLog = new BattleLog(ItemsLabels.ChestName, attackResult.Damage, null, null, GeneralLabels.PlayerName, attackResult.SelfDamage, playerHealthBeforeAttack, _stateService.CurrentHealth);
