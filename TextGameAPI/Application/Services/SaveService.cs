@@ -12,25 +12,32 @@ namespace TextGame.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStateCacheService _cache;
         private readonly ISaveFactory _saveFactory;
+        private readonly ISessionProvider _sessionProvider;
 
         public SaveService(
             ISaveRepository saveRepository,
             IUnitOfWork unitOfWork,
             IStateCacheService cache,
-            ISaveFactory saveFactory)
+            ISaveFactory saveFactory,
+            ISessionProvider sessionProvider)
         {
             _saveRepository = saveRepository;
             _unitOfWork = unitOfWork;
             _cache = cache;
             _saveFactory = saveFactory;
+            _sessionProvider = sessionProvider;
         }
 
         public async Task<Guid> CreateAsync(Guid sessionId, SaveType saveType, string? name = null, long? seed = null, CancellationToken ct = default)
         {
-            var state =
-                saveType != SaveType.Initial ?
-                await _cache.GetAsync(sessionId, ct) ?? throw new SessionNotFoundException() :
-                null;
+            // Ручное сохранение читает состояние через провайдер: если снапшот вытеснен из Redis,
+            // он поднимется из последнего сейва, а не упадёт SESSION_NOT_FOUND (п. 8).
+            var state = saveType switch
+            {
+                SaveType.Initial => null,
+                SaveType.Manual => await _sessionProvider.GetAsync(sessionId, ct),
+                _ => await _cache.GetAsync(sessionId, ct) ?? throw new SessionNotFoundException()
+            };
 
             var save = saveType switch
             {
