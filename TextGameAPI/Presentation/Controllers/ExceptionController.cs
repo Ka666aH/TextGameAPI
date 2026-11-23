@@ -74,7 +74,7 @@ namespace TextGame.Presentation.Controllers
                 DefeatException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
                 WinException e => Ok(new GameOverDTO(e.Message, e.GameInfo)),
 
-                BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog)),
+                BattleWinException e => Ok(new BattleWinDTO(e.Message, e.BattleLog, e.GameInfo)),
 
                 CorruptStateException =>
                     Problem(StatusCodes.Status500InternalServerError, originalPath, gameEx),

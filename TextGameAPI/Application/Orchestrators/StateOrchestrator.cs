@@ -67,7 +67,7 @@ namespace TextGame.Application.Orchestrators
                 case DealDamageOutcome.BattleContinues: break;
                 case DealDamageOutcome.EnemyDefeated:
                     if (_stateService.CurrentRoom.Enemy == null) _stateService.EndBattle();
-                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, cachedEnemy.Name), battleLog);
+                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, cachedEnemy.Name), battleLog, _gameInfoService.GetGameInfo());
                 case DealDamageOutcome.PlayerDied:
                     _stateService.EndGame(GameResult.Lose);
                     throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
@@ -101,7 +101,7 @@ namespace TextGame.Application.Orchestrators
                     throw new DefeatException(string.Format(ExceptionsLabels.PlayerDefeated, cachedEnemy.Name), _gameInfoService.GetGameInfo());
                 case GetDamageOutcome.EnemyDied:
                     _stateService.EndBattle();
-                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemySuicideText, cachedEnemy.Name), battleLog);
+                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemySuicideText, cachedEnemy.Name), battleLog, _gameInfoService.GetGameInfo());
             }
             return battleLog;
         }
@@ -172,7 +172,7 @@ namespace TextGame.Application.Orchestrators
                         return battleLog;
                     case DealDamageOutcome.EnemyDefeated:
                         if (_stateService.CurrentRoom.Enemy == null) _stateService.EndBattle();
-                        throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, mimic.Name), battleLog);
+                        throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, mimic.Name), battleLog, _gameInfoService.GetGameInfo());
                     case DealDamageOutcome.PlayerDied:
                         _stateService.EndGame(GameResult.Lose);
                         throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
