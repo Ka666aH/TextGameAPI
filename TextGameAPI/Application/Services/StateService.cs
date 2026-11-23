@@ -1,4 +1,4 @@
-﻿using TextGame.Application.Interfaces.Services;
+using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
@@ -33,6 +33,7 @@ namespace TextGame.Application.Services
         }
         private State State => _state ?? throw new SessionNotFoundException();
         public bool IsGameStarted => State.IsGameStarted;
+        public GameResult Result => State.Result;
         public bool IsInBattle { get => State.IsInBattle; }
         public int CurrentRoomId { get => State.CurrentRoomId; }
         public Room CurrentRoom { get => State.Rooms[CurrentRoomId]; }
@@ -72,7 +73,11 @@ namespace TextGame.Application.Services
         public void RemoveCurrentMimicChest() => State.CurrentMimicChest = null;
         public void SetCurrentMimicChest(Chest chest) => State.CurrentMimicChest = chest;
 
-        public void EndGame() => State.IsGameStarted = false;
+        public void EndGame(GameResult result)
+        {
+            State.IsGameStarted = false;
+            State.Result = result;
+        }
         public void StartBattle() => State.IsInBattle = true;
         public void EndBattle() => State.IsInBattle = false;
         public void AddCoins(int value) => State.Coins += value;

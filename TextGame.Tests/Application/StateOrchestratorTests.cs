@@ -92,6 +92,7 @@ public class StateOrchestratorTests
         // Assert
         act.Should().Throw<WinException>();
         stateService.IsGameStarted.Should().BeFalse();
+        stateService.Result.Should().Be(GameResult.Win);
     }
 
     [Fact]
@@ -131,6 +132,27 @@ public class StateOrchestratorTests
         // stays "started" with health at or below zero.
         act.Should().Throw<DefeatException>();
         stateService.IsGameStarted.Should().BeFalse();
+        stateService.Result.Should().Be(GameResult.Lose);
+    }
+
+    [Fact]
+    public void DealDamage_WhenSelfDamageKillsThePlayer_EndsTheGameWithLose()
+    {
+        // Arrange
+        var state = new State { CurrentHealth = 5, MaxHealth = 100 };
+        state.Rooms.Add(new StartRoom());
+        var stateService = new FakeStateService(state);
+        stateService.AddEnemyToCurrentRoom(new TestEnemy(health: 100));
+        stateService.EquipWeapon(new ScriptedWeapon(damage: 1, selfDamage: 10));
+        var orchestrator = CreateOrchestrator(stateService);
+
+        // Act
+        Action act = () => orchestrator.DealDamage();
+
+        // Assert
+        act.Should().Throw<DefeatException>();
+        stateService.IsGameStarted.Should().BeFalse();
+        stateService.Result.Should().Be(GameResult.Lose);
     }
 
     private static StateOrchestrator CreateOrchestrator(FakeStateService stateService)

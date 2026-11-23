@@ -4,6 +4,7 @@ using TextGame.Application.GuardAttributes;
 using TextGame.Application.Interfaces.Orchestrators;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.DTO;
+using TextGame.Domain.Entities;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments;
@@ -68,7 +69,7 @@ namespace TextGame.Application.Orchestrators
                     if (_stateService.CurrentRoom.Enemy == null) _stateService.EndBattle();
                     throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, cachedEnemy.Name), battleLog);
                 case DealDamageOutcome.PlayerDied:
-                    _stateService.EndGame();
+                    _stateService.EndGame(GameResult.Lose);
                     throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
             }
             return battleLog;
@@ -96,7 +97,7 @@ namespace TextGame.Application.Orchestrators
             {
                 case GetDamageOutcome.BattleContinues: break;
                 case GetDamageOutcome.PlayerDefeated:
-                    _stateService.EndGame();
+                    _stateService.EndGame(GameResult.Lose);
                     throw new DefeatException(string.Format(ExceptionsLabels.PlayerDefeated, cachedEnemy.Name), _gameInfoService.GetGameInfo());
                 case GetDamageOutcome.EnemyDied:
                     _stateService.EndBattle();
@@ -173,7 +174,7 @@ namespace TextGame.Application.Orchestrators
                         if (_stateService.CurrentRoom.Enemy == null) _stateService.EndBattle();
                         throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, mimic.Name), battleLog);
                     case DealDamageOutcome.PlayerDied:
-                        _stateService.EndGame();
+                        _stateService.EndGame(GameResult.Lose);
                         throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
                 }
             }
@@ -197,7 +198,7 @@ namespace TextGame.Application.Orchestrators
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom.Items);
             if (!_chestService.OpenChest(chest))
             {
-                _stateService.EndGame();
+                _stateService.EndGame(GameResult.Lose);
                 throw new DefeatException(ExceptionsLabels.PlayerEaten, _gameInfoService.GetGameInfo());
             }
         }
@@ -316,7 +317,7 @@ namespace TextGame.Application.Orchestrators
             {
                 // notes/AGENTS.md §2.3: dying to a potion must end the game, exactly like
                 // dying in battle — otherwise the session stays "started" at zero health.
-                _stateService.EndGame();
+                _stateService.EndGame(GameResult.Lose);
                 throw new DefeatException(
                     string.Format(ExceptionsLabels.PlayerPoisoned, heal.Name),
                     _gameInfoService.GetGameInfo());
@@ -327,7 +328,7 @@ namespace TextGame.Application.Orchestrators
         {
             if (_stateService.CurrentRoom is EndRoom)
             {
-                _stateService.EndGame();
+                _stateService.EndGame(GameResult.Win);
                 throw new WinException(_gameInfoService.GetGameInfo());
             }
         }

@@ -28,6 +28,7 @@ internal sealed class FakeStateService : IStateService
     public Task CacheAsync(Guid sessionId, CancellationToken ct = default) => Task.CompletedTask;
 
     public bool IsGameStarted => _state.IsGameStarted;
+    public GameResult Result => _state.Result;
     public bool IsInBattle => _state.IsInBattle;
     public int CurrentRoomId => _state.CurrentRoomId;
     public Room CurrentRoom => _state.Rooms[_state.CurrentRoomId];
@@ -68,7 +69,11 @@ internal sealed class FakeStateService : IStateService
 
     public void RemoveCurrentMimicChest() => _state.CurrentMimicChest = null;
     public void SetCurrentMimicChest(Chest chest) => _state.CurrentMimicChest = chest;
-    public void EndGame() => _state.IsGameStarted = false;
+    public void EndGame(GameResult result)
+    {
+        _state.IsGameStarted = false;
+        _state.Result = result;
+    }
     public void StartBattle() => _state.IsInBattle = true;
     public void EndBattle() => _state.IsInBattle = false;
     public void AddCoins(int value) => _state.Coins += value;
