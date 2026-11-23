@@ -1,5 +1,5 @@
-﻿namespace TextGame.Presentation.DTO.GameObjectsDTO
+namespace TextGame.Presentation.DTO.GameObjectsDTO
 {
-    public record RoomWithoutEnemyDTO(int Number, string Name, string Description)
-        : RoomDTOBase(Number, Name, Description);
+    public record RoomWithoutEnemyDTO(int Number, string Name, string Description, bool IsSearched, string Kind)
+        : RoomDTOBase(Number, Name, Description, IsSearched, Kind);
 }
