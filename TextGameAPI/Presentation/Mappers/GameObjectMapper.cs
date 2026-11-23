@@ -1,4 +1,4 @@
-﻿using TextGame.Presentation.DTO;
+using TextGame.Presentation.DTO;
 using TextGame.Domain.GameText;
 using TextGame.Domain.Entities.GameObjects;
 using TextGame.Domain.Entities.GameObjects.Enemies;
@@ -21,18 +21,14 @@ namespace TextGame.Presentation.Mappers
             return gameObject switch
             {
                 Room room =>
-                room switch
-                {
-                    StartRoom or EndRoom or Shop => new RoomWithoutEnemyDTO(room.Id, room.Name, room.Description),
-                    _ => room.Enemy == null ?
-                    new RoomWithoutEnemyDTO(room.Id, room.Name, room.Description) :
-                    new RoomWithEnemyDTO(room.Id, room.Name, room.Description, (EnemyDTO)ToDTO(room.Enemy)),
-                },
+                    room.Enemy == null || room is StartRoom or EndRoom or Shop
+                        ? new RoomWithoutEnemyDTO(room.Id, room.Name, room.Description, room.IsSearched, ToKind(room))
+                        : new RoomWithEnemyDTO(room.Id, room.Name, room.Description, room.IsSearched, ToKind(room), (EnemyDTO)ToDTO(room.Enemy)),
                 Enemy enemy => new EnemyDTO(enemy.Id, enemy.Name, enemy.Description, enemy.Health, enemy.Damage, enemy.DamageBlock),
                 Item item =>
                 item switch
                 {
-                    Chest chest => new ChestDTO(chest.Id, chest.Name, chest.Description, chest.IsClosed),
+                    Chest chest => new ChestDTO(chest.Id, chest.Name, chest.Description, chest.IsClosed, chest.Cost, chest.IsLocked),
                     Heal heal =>
                     heal switch
                     {
@@ -61,5 +57,18 @@ namespace TextGame.Presentation.Mappers
         }
         public static List<IGameObjectDTO> ToDTO(this IEnumerable<GameObject> gameObjects) =>
             [.. gameObjects.Select(ToDTO)];
+
+        // Вид комнаты выводится из CLR-типа, а не из названия: переименование текста
+        // не должно ломать логику клиента (notes/backend-requests.md п. 7).
+        private static string ToKind(Room room) => room switch
+        {
+            StartRoom => "start",
+            EmptyRoom => "empty",
+            SmallRoom => "small",
+            BigRoom => "big",
+            Shop => "shop",
+            EndRoom => "exit",
+            _ => "unknown"
+        };
     }
 }

@@ -1,4 +1,4 @@
-﻿using TextGame.Domain.Entities.GameObjects.Items;
+using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Chestplates;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Armors.Helms;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments.Weapons;
@@ -10,6 +10,7 @@ namespace TextGame.Domain.Entities
     public class State
     {
         public bool IsGameStarted { get; set; } = true;
+        public GameResult Result { get; set; } = GameResult.None;
         public bool IsInBattle { get; set; } = false;
         public List<Room> Rooms { get; set; } = [];
         public int CurrentRoomId { get; set; } = 0;

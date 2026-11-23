@@ -1,4 +1,5 @@
-﻿using TextGame.Domain.Entities.GameObjects.Enemies;
+using TextGame.Domain.Entities;
+using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Rooms;
 using TextGame.Domain.Entities.GameObjects.Items.Other;
@@ -14,6 +15,7 @@ namespace TextGame.Application.Interfaces.Services
         Task CacheAsync(Guid sessionId, CancellationToken ct = default);
         // Свойства для чтения состояния
         bool IsGameStarted { get; }
+        GameResult Result { get; }
         bool IsInBattle { get; }
         int CurrentRoomId { get; }
         Room CurrentRoom { get; }
@@ -45,7 +47,7 @@ namespace TextGame.Application.Interfaces.Services
         public void SetCurrentMimicChest(Chest chest);
 
         //public void StartGame();
-        public void EndGame();
+        public void EndGame(GameResult result);
         public void StartBattle();
         public void EndBattle();
 

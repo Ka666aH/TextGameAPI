@@ -1,7 +1,11 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using System.Globalization;
+using System.Text.Json;
 using TextGame.Application.DTO;
 using TextGame.Application.Factories;
 using TextGame.Application.Generators;
@@ -14,6 +18,7 @@ using TextGame.Application.GuardAttributes;
 using TextGame.Application.Orchestrators;
 using TextGame.Application.Services;
 using TextGame.Application.Validators;
+using TextGame.Domain.GameText;
 using TextGame.Infrastructure.Cache;
 using TextGame.Infrastructure.Configuration;
 using TextGame.Infrastructure.Database;
@@ -22,6 +27,7 @@ using TextGame.Infrastructure.PasswordHasher;
 using TextGame.Infrastructure.Token;
 using TextGame.Infrastructure.Token.JWT;
 using TextGame.Presentation.Attributes;
+using TextGame.Presentation.Authorization;
 using TextGame.Presentation.Middleware;
 using TextGame.Presentation.Options;
 using Microsoft.AspNetCore.RateLimiting;
@@ -122,8 +128,12 @@ JwtKeyProvider.Initialize(jwtSecret);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(JWTOptions.Configure);
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.RequireSession, policy => policy.RequireClaim(AccessClaims.SessionId));
+// 403 от policy и 401 от забытой куки отдают ProblemDetails, как и игровые исключения (п. 13).
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, ProblemDetailsAuthorizationHandler>();
 
 builder.Services.AddHttpContextAccessor();
+// camelCase в теле 429, как у остальных ProblemDetails (notes/backend-requests.md п. 12).
+var problemJsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -139,23 +149,47 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSettings.RateLimitWindow,
                 QueueLimit = TimeSettings.RateLimitQueueLimit
             }));
+
+    // 429 без тела и Retry-After заставлял клиента гадать, когда повторять (п. 12).
+    options.OnRejected = async (context, token) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
+            context.HttpContext.Response.Headers["Retry-After"] =
+                ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);
+
+        var problem = new ProblemDetails
+        {
+            Status = StatusCodes.Status429TooManyRequests,
+            Title = ExceptionsLabels.RateLimitedCode,
+            Detail = ExceptionsLabels.RateLimitedMessage,
+            Instance = context.HttpContext.Request.Path
+        };
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        await context.HttpContext.Response.WriteAsJsonAsync(problem, problemJsonOptions, "application/problem+json", token);
+    };
 });
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
 // За reverse-proxy (nginx): клиентский IP восстанавливается из X-Forwarded-For до того,
-// как его прочитают fingerprint и лимитер. Блок включается только заполненным
-// ForwardedHeaders:KnownProxies (IP своего nginx) — без конфига он инертен. Доверять
-// произвольным адресам нельзя: клиент подделает заголовок и подменит свой IP.
+// как его прочитают fingerprint и лимитер. Блок включается заполненным
+// ForwardedHeaders:KnownProxies (IP своего nginx) или ForwardedHeaders:KnownNetworks (CIDR,
+// для Docker-сети с плавающим IP прокси) — без конфига он инертен. Доверять произвольным
+// адресам нельзя: клиент подделает заголовок и подменит свой IP. XFF на nginx должен
+// аппендиться ($proxy_add_x_forwarded_for), иначе клиент подделает и его.
 var knownProxies = builder.Configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [];
-if (knownProxies.Length > 0)
+var knownNetworks = builder.Configuration.GetSection("ForwardedHeaders:KnownNetworks").Get<string[]>() ?? [];
+if (knownProxies.Length > 0 || knownNetworks.Length > 0)
 {
     var forwardedOptions = new ForwardedHeadersOptions
     {
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
     };
     foreach (string proxy in knownProxies) forwardedOptions.KnownProxies.Add(IPAddress.Parse(proxy));
+    foreach (string network in knownNetworks) forwardedOptions.KnownNetworks.Add(ParseNetwork(network));
     app.UseForwardedHeaders(forwardedOptions);
 }
 
@@ -190,4 +224,17 @@ void ApplyMigrations()
 {
     using var scope = app.Services.CreateScope();
     scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+}
+
+// net8: KnownNetworks принимает Microsoft.AspNetCore.HttpOverrides.IPNetwork, а строку
+// вида "172.18.0.0/16" он сам не парсит — разбираем addr/len руками.
+static Microsoft.AspNetCore.HttpOverrides.IPNetwork ParseNetwork(string network)
+{
+    string[] parts = network.Split('/', 2);
+    if (parts.Length != 2
+        || !IPAddress.TryParse(parts[0], out IPAddress? address)
+        || !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out int prefixLength))
+        throw new InvalidOperationException($"ForwardedHeaders:KnownNetworks содержит некорректный CIDR: {network}");
+
+    return new Microsoft.AspNetCore.HttpOverrides.IPNetwork(address, prefixLength);
 }

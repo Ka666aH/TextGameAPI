@@ -4,6 +4,7 @@ using TextGame.Application.GuardAttributes;
 using TextGame.Application.Interfaces.Orchestrators;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.DTO;
+using TextGame.Domain.Entities;
 using TextGame.Domain.Entities.GameObjects.Enemies;
 using TextGame.Domain.Entities.GameObjects.Items;
 using TextGame.Domain.Entities.GameObjects.Items.Equipments;
@@ -66,9 +67,9 @@ namespace TextGame.Application.Orchestrators
                 case DealDamageOutcome.BattleContinues: break;
                 case DealDamageOutcome.EnemyDefeated:
                     if (_stateService.CurrentRoom.Enemy == null) _stateService.EndBattle();
-                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, cachedEnemy.Name), battleLog);
+                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, cachedEnemy.Name), battleLog, _gameInfoService.GetGameInfo());
                 case DealDamageOutcome.PlayerDied:
-                    _stateService.EndGame();
+                    _stateService.EndGame(GameResult.Lose);
                     throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
             }
             return battleLog;
@@ -96,11 +97,11 @@ namespace TextGame.Application.Orchestrators
             {
                 case GetDamageOutcome.BattleContinues: break;
                 case GetDamageOutcome.PlayerDefeated:
-                    _stateService.EndGame();
+                    _stateService.EndGame(GameResult.Lose);
                     throw new DefeatException(string.Format(ExceptionsLabels.PlayerDefeated, cachedEnemy.Name), _gameInfoService.GetGameInfo());
                 case GetDamageOutcome.EnemyDied:
                     _stateService.EndBattle();
-                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemySuicideText, cachedEnemy.Name), battleLog);
+                    throw new BattleWinException(string.Format(ExceptionsLabels.EnemySuicideText, cachedEnemy.Name), battleLog, _gameInfoService.GetGameInfo());
             }
             return battleLog;
         }
@@ -122,7 +123,7 @@ namespace TextGame.Application.Orchestrators
         public IReadOnlyList<MapRoomDTO> GetMap()
         {
             if (!_stateService.Inventory.OfType<Map>().Any()) throw new MissingMapException();
-            return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName)).ToList();
+            return _stateService.Rooms.Select(r => new MapRoomDTO(r.Id, r.Name ?? GeneralLabels.GameObjectDefaultName, r.IsDiscovered)).ToList();
         }
 
         [RequireGameStarted]
@@ -171,9 +172,9 @@ namespace TextGame.Application.Orchestrators
                         return battleLog;
                     case DealDamageOutcome.EnemyDefeated:
                         if (_stateService.CurrentRoom.Enemy == null) _stateService.EndBattle();
-                        throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, mimic.Name), battleLog);
+                        throw new BattleWinException(string.Format(ExceptionsLabels.EnemyDefeated, mimic.Name), battleLog, _gameInfoService.GetGameInfo());
                     case DealDamageOutcome.PlayerDied:
-                        _stateService.EndGame();
+                        _stateService.EndGame(GameResult.Lose);
                         throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
                 }
             }
@@ -182,6 +183,13 @@ namespace TextGame.Application.Orchestrators
                 int playerHealthBeforeAttack = _stateService.CurrentHealth;
                 var attackResult = _stateService.Weapon.Attack(_stateService.CurrentRoom.Id);
                 if (attackResult.SelfDamage != 0) _stateService.AddCurrentHealth(-attackResult.SelfDamage);
+                // AddCurrentHealth не клампится снизу, а кулаки бьют себя с шансом 50%:
+                // без этой проверки игрок уходит в отрицательное HP и продолжает играть (п. 10).
+                if (_stateService.CurrentHealth <= 0)
+                {
+                    _stateService.EndGame(GameResult.Lose);
+                    throw new DefeatException(ExceptionsLabels.PlayerSuicideText, _gameInfoService.GetGameInfo());
+                }
                 if (attackResult.IsWeaponBrokenDown) _stateService.RemoveWeapon();
 
                 battleLog = new BattleLog(ItemsLabels.ChestName, attackResult.Damage, null, null, GeneralLabels.PlayerName, attackResult.SelfDamage, playerHealthBeforeAttack, _stateService.CurrentHealth);
@@ -197,7 +205,7 @@ namespace TextGame.Application.Orchestrators
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom.Items);
             if (!_chestService.OpenChest(chest))
             {
-                _stateService.EndGame();
+                _stateService.EndGame(GameResult.Lose);
                 throw new DefeatException(ExceptionsLabels.PlayerEaten, _gameInfoService.GetGameInfo());
             }
         }
@@ -246,13 +254,15 @@ namespace TextGame.Application.Orchestrators
         [RequireNotInBattle]
         public void TakeAllItemsFromChest(int chestId)
         {
-            // Осознанный компромисс (notes/AGENTS.md): сундук очищается одним вызовом,
-            // и только потом предметы проверяются. Исключение в CheckItem оставит часть
-            // предметов уже изъятыми из сундука; откат не делаем.
+            // Предвалидация до мутации: если CheckItem бросит, сундук должен остаться полным.
+            // Отката нет, но и терять предметы на отказе нельзя (notes/backend-requests.md п. 11).
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var items = chest.Items.ToList();
-            _chestService.TakeAllItemsFromChest(chest);
+            // CheckItem кладёт предмет в инвентарь, поэтому сначала убеждаемся, что сундук
+            // открыт и не заперт: иначе отказ по замку оставил бы предмет в инвентаре.
+            _chestService.EnsureCanTakeItems(chest);
             foreach (var item in items) _checkItemService.CheckItem(item);
+            _chestService.TakeAllItemsFromChest(chest);
         }
 
         [RequireGameStarted]
@@ -272,10 +282,11 @@ namespace TextGame.Application.Orchestrators
         {
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
             var item = _getItemService.GetItem(itemId, chest.Items);
-            // Изъятие идёт до проверки: если CheckItem бросит, предмет уже не в сундуке.
-            // Отката нет — осознанный компромисс (см. notes/AGENTS.md).
-            _chestService.TakeItemFromChest(chest, item);
+            // Проверка до изъятия: отказ CheckItem оставит предмет в сундуке (п. 11).
+            // Сначала — отказ по замку/крышке, он не должен доходить до CheckItem с его мутацией.
+            _chestService.EnsureCanTakeItems(chest);
             _checkItemService.CheckItem(item);
+            _chestService.TakeItemFromChest(chest, item);
         }
 
         [RequireGameStarted]
@@ -292,6 +303,10 @@ namespace TextGame.Application.Orchestrators
         {
             // notes/AGENTS.md §2.2: the chest is resolved first, so a wrong id never eats a key.
             var chest = _chestService.GetChest(chestId, _stateService.CurrentRoom!.Items);
+
+            // Идемпотентность (п. 4): после F5 клиент не знает состояние замка, и повторный
+            // unlock не должен стоить второго ключа. Неверный id, как и раньше, ключ не ест.
+            if (!chest.IsLocked) return chest;
 
             if (_stateService.Keys > 0) _stateService.AddKeys(-1);
             else throw new MissingKeyException();
@@ -316,7 +331,7 @@ namespace TextGame.Application.Orchestrators
             {
                 // notes/AGENTS.md §2.3: dying to a potion must end the game, exactly like
                 // dying in battle — otherwise the session stays "started" at zero health.
-                _stateService.EndGame();
+                _stateService.EndGame(GameResult.Lose);
                 throw new DefeatException(
                     string.Format(ExceptionsLabels.PlayerPoisoned, heal.Name),
                     _gameInfoService.GetGameInfo());
@@ -327,7 +342,7 @@ namespace TextGame.Application.Orchestrators
         {
             if (_stateService.CurrentRoom is EndRoom)
             {
-                _stateService.EndGame();
+                _stateService.EndGame(GameResult.Win);
                 throw new WinException(_gameInfoService.GetGameInfo());
             }
         }

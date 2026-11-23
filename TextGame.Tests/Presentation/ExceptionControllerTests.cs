@@ -5,9 +5,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TextGame.Application.DTO;
+using TextGame.Application.Services;
+using TextGame.Domain.DTO;
+using TextGame.Domain.Entities;
+using TextGame.Domain.Entities.GameObjects.Rooms;
 using TextGame.Domain.GameExceptions;
 using TextGame.Domain.GameText;
 using TextGame.Presentation.Controllers;
+using TextGame.Presentation.DTO;
 using TextGame.Tests.TestSupport;
 
 namespace TextGame.Tests.Presentation;
@@ -157,6 +163,31 @@ public class ExceptionControllerTests
         logger.Entries.Should().ContainSingle();
         logger.Entries[0].Level.Should().Be(LogLevel.Error);
         logger.Entries[0].Exception.Should().BeNull();
+    }
+
+    [Fact]
+    public void Handle_WhenBattleIsWon_Returns200WithBattleLogAndGameInfo()
+    {
+        // Arrange
+        var state = new State();
+        state.Rooms.Add(new StartRoom());
+        GameInfoDTO gameInfo = new GameInfoService(new FakeStateService(state)).GetGameInfo();
+        var battleLog = new BattleLog("Противник", 3, 10, 7, "ИГРОК", 0, 10, 10);
+        var exception = new BattleWinException("Противник повержен.", battleLog, gameInfo);
+        var logger = new RecordingLogger<ExceptionController>();
+        var controller = CreateController(logger, exception, HttpMethods.Post, "/state/rooms/current/enemy/attack");
+
+        // Act
+        IActionResult result = controller.Handle();
+
+        // Assert
+        // notes/backend-requests.md п. 9: gameInfo приходит в том же ответе, клиенту не нужен
+        // обязательный GET /state после каждой победы.
+        var dto = result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeOfType<BattleWinDTO>().Which;
+        dto.BattleLog.Should().BeSameAs(battleLog);
+        dto.GameInfo.Should().BeSameAs(gameInfo);
+        dto.GameInfo.IsGameStarted.Should().BeTrue();
     }
 
     private static ExceptionController CreateController(
