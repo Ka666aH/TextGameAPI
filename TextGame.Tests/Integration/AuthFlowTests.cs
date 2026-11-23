@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using TextGame.Domain.GameText;
 using TextGame.Presentation.DTO;
 
@@ -82,6 +83,30 @@ public class AuthFlowTests : IntegrationTestBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        JsonElement body = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
+        body.GetProperty("title").GetString().Should().Be(ExceptionsLabels.AccessTokenNotFoundCode);
+        body.GetProperty("status").GetInt32().Should().Be(StatusCodes.Status401Unauthorized);
+    }
+
+    [Fact]
+    public async Task GetState_AfterRegisterWithoutActiveSession_ReturnsForbiddenWithProblemDetails()
+    {
+        // Arrange
+        HttpClient client = CreateClient();
+        (await RegisterAsync(client, NewCredentials())).EnsureSuccessStatusCode();
+
+        // Act
+        HttpResponseMessage response = await client.GetAsync("/state", Ct);
+
+        // Assert
+        // notes/backend-requests.md п. 13: policy RequireSession отказывает с телом, а не пустым 403.
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        JsonElement body = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
+        body.GetProperty("title").GetString().Should().Be(ExceptionsLabels.MissingSessionIdClaimCode);
+        body.GetProperty("status").GetInt32().Should().Be(StatusCodes.Status403Forbidden);
+        body.GetProperty("instance").GetString().Should().Be("/state");
     }
 
     [Fact]

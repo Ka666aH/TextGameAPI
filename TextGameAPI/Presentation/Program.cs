@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -26,6 +27,7 @@ using TextGame.Infrastructure.PasswordHasher;
 using TextGame.Infrastructure.Token;
 using TextGame.Infrastructure.Token.JWT;
 using TextGame.Presentation.Attributes;
+using TextGame.Presentation.Authorization;
 using TextGame.Presentation.Middleware;
 using TextGame.Presentation.Options;
 using Microsoft.AspNetCore.RateLimiting;
@@ -126,6 +128,8 @@ JwtKeyProvider.Initialize(jwtSecret);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(JWTOptions.Configure);
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.RequireSession, policy => policy.RequireClaim(AccessClaims.SessionId));
+// 403 от policy и 401 от забытой куки отдают ProblemDetails, как и игровые исключения (п. 13).
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, ProblemDetailsAuthorizationHandler>();
 
 builder.Services.AddHttpContextAccessor();
 // camelCase в теле 429, как у остальных ProblemDetails (notes/backend-requests.md п. 12).
