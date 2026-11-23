@@ -32,6 +32,30 @@ public class SessionControllerTests
     }
 
     [Fact]
+    public async Task CreateAsync_ReturnsSeedAsString()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        const long seed = 9007199254740993L;
+        var sessionService = new RecordingSessionService();
+        var controller = CreateController(sessionService, userId);
+
+        // Act
+        IActionResult result = await controller.CreateAsync(sessionName: "новая", seed: seed, CancellationToken.None);
+
+        // Assert
+        // notes/backend-requests.md п. 15: то же самое, что и в SessionDTO, — иначе клиент
+        // получает number в POST /sessions и string в GET /sessions.
+        var created = result.Should().BeOfType<CreatedResult>().Which;
+        created.Value.Should().BeEquivalentTo(new
+        {
+            sessionId = sessionService.LastSession!.Id,
+            sessionName = "новая",
+            seed = "9007199254740993"
+        });
+    }
+
+    [Fact]
     public async Task CreateAsync_WithoutUserIdClaim_ThrowsMissingUserIdClaimException()
     {
         // Arrange
@@ -125,13 +149,15 @@ public class SessionControllerTests
     {
         public Guid? LastUserId { get; private set; }
         public Guid? DeletedSessionId { get; private set; }
+        public Session? LastSession { get; private set; }
         public int CreateAccessTokenCalls { get; private set; }
 
         public Task<Session> CreateAsync(Guid userId, string? sessionName, long? seed = null, CancellationToken ct = default)
         {
             LastUserId = userId;
+            LastSession = new Session(userId, sessionName, seed);
 
-            return Task.FromResult(new Session(userId, sessionName, seed));
+            return Task.FromResult(LastSession!);
         }
 
         public Task<string> LoadAsync(Guid userId, Guid sessionId, CancellationToken ct = default) =>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using TextGame.Application.Interfaces.Services;
 using TextGame.Domain.Entities;
 using TextGame.Domain.GameExceptions;
@@ -31,7 +32,7 @@ namespace TextGame.Presentation.Controllers
 
             CookieHelper.SetAccessCookie(HttpContext.Response, newAccessToken);
 
-            return Created($"/sessions/{session.Id}", new { sessionId = session.Id, sessionName = session.Name, seed = session.Seed });
+            return Created($"/sessions/{session.Id}", new { sessionId = session.Id, sessionName = session.Name, seed = session.Seed.ToString(CultureInfo.InvariantCulture) });
         }
         /// <summary>Сделать сессию активной.</summary>
         [HttpPut("current")]
