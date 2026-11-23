@@ -51,8 +51,8 @@ public class StateOrchestratorTests
         Action act = () => orchestrator.GoToRoom(1);
 
         // Assert
-        // notes/AGENTS.md §1.1: no IsDiscovered check, so the player teleports into a
-        // room they have not opened yet.
+        // notes/AGENTS.md §1.1: GetRoomService rejects a room that is not discovered yet,
+        // so a guessed id cannot teleport the player into it.
         act.Should().Throw<UndiscoveredRoomException>();
     }
 
@@ -69,8 +69,8 @@ public class StateOrchestratorTests
         Action act = () => orchestrator.GoToRoom(999);
 
         // Assert
-        // notes/AGENTS.md §1.1: no range check, so the id reaches StateService and the
-        // request dies with a raw index-out-of-range instead of a 404.
+        // The range check lives in GetRoomService, so an out-of-range id is a 404 and never
+        // reaches the indexer of StateService.
         act.Should().Throw<RoomNotFoundException>();
     }
 
@@ -110,7 +110,8 @@ public class StateOrchestratorTests
         Action act = () => orchestrator.UnlockChest(chestId: 999);
 
         // Assert
-        // notes/AGENTS.md §2.2: the key is spent before the chest is even looked up.
+        // notes/AGENTS.md §2.2: the chest is resolved before the key is spent, so a wrong id
+        // never eats a key.
         act.Should().Throw<ItemNotFoundException>();
         stateService.Keys.Should().Be(1);
     }
@@ -175,8 +176,8 @@ public class StateOrchestratorTests
         Action act = () => orchestrator.UseInventoryItem(itemId: 0);
 
         // Assert
-        // notes/AGENTS.md §2.3: DefeatException is thrown without EndGame, so the state
-        // stays "started" with health at or below zero.
+        // notes/AGENTS.md §2.3: EndGame runs before the throw, so the session is finished
+        // instead of staying "started" with health at or below zero.
         act.Should().Throw<DefeatException>();
         stateService.IsGameStarted.Should().BeFalse();
         stateService.Result.Should().Be(GameResult.Lose);
