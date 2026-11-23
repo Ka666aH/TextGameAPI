@@ -175,17 +175,21 @@ builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 // За reverse-proxy (nginx): клиентский IP восстанавливается из X-Forwarded-For до того,
-// как его прочитают fingerprint и лимитер. Блок включается только заполненным
-// ForwardedHeaders:KnownProxies (IP своего nginx) — без конфига он инертен. Доверять
-// произвольным адресам нельзя: клиент подделает заголовок и подменит свой IP.
+// как его прочитают fingerprint и лимитер. Блок включается заполненным
+// ForwardedHeaders:KnownProxies (IP своего nginx) или ForwardedHeaders:KnownNetworks (CIDR,
+// для Docker-сети с плавающим IP прокси) — без конфига он инертен. Доверять произвольным
+// адресам нельзя: клиент подделает заголовок и подменит свой IP. XFF на nginx должен
+// аппендиться ($proxy_add_x_forwarded_for), иначе клиент подделает и его.
 var knownProxies = builder.Configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [];
-if (knownProxies.Length > 0)
+var knownNetworks = builder.Configuration.GetSection("ForwardedHeaders:KnownNetworks").Get<string[]>() ?? [];
+if (knownProxies.Length > 0 || knownNetworks.Length > 0)
 {
     var forwardedOptions = new ForwardedHeadersOptions
     {
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
     };
     foreach (string proxy in knownProxies) forwardedOptions.KnownProxies.Add(IPAddress.Parse(proxy));
+    foreach (string network in knownNetworks) forwardedOptions.KnownNetworks.Add(ParseNetwork(network));
     app.UseForwardedHeaders(forwardedOptions);
 }
 
@@ -220,4 +224,17 @@ void ApplyMigrations()
 {
     using var scope = app.Services.CreateScope();
     scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+}
+
+// net8: KnownNetworks принимает Microsoft.AspNetCore.HttpOverrides.IPNetwork, а строку
+// вида "172.18.0.0/16" он сам не парсит — разбираем addr/len руками.
+static Microsoft.AspNetCore.HttpOverrides.IPNetwork ParseNetwork(string network)
+{
+    string[] parts = network.Split('/', 2);
+    if (parts.Length != 2
+        || !IPAddress.TryParse(parts[0], out IPAddress? address)
+        || !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out int prefixLength))
+        throw new InvalidOperationException($"ForwardedHeaders:KnownNetworks содержит некорректный CIDR: {network}");
+
+    return new Microsoft.AspNetCore.HttpOverrides.IPNetwork(address, prefixLength);
 }
