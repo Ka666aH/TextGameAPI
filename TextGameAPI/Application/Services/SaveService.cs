@@ -50,6 +50,18 @@ namespace TextGame.Application.Services
             await _unitOfWork.SaveChangesAsync(ct);
             return save.Id;
         }
+        public async Task SaveAutoAsync(Guid sessionId, CancellationToken ct = default)
+        {
+            // Немедленный автосейв на конец игры: заменяем существующую строку, а не создаём
+            // новую — так же, как фоновый AutoSaveService (notes/fixes-1.2.0.md, п. 11).
+            var state = await _cache.GetAsync(sessionId, ct);
+            if (state is null) return;
+
+            var save = _saveFactory.CreateAuto(sessionId, state);
+            await _saveRepository.BatchReplaceAutoSavesAsync([sessionId], [save], ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
+
         public async Task DeleteAsync(Guid sessionId, Guid saveId, CancellationToken ct = default)
         {
             Save save = await _saveRepository.GetAsyncWithTrack(saveId, ct) ?? throw new SaveNotFoundException();

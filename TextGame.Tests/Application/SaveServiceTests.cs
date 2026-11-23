@@ -58,6 +58,45 @@ public class SaveServiceTests
         await act.Should().ThrowAsync<SaveNotFoundException>();
     }
 
+    [Fact]
+    public async Task SaveAutoAsync_WhenStateIsCached_ReplacesTheAutoSave()
+    {
+        // Arrange
+        var sessionId = Guid.NewGuid();
+        var state = new State { Coins = 3 };
+        var cache = new StubStateCache(state);
+        var saves = new RecordingSaveRepository();
+        var unitOfWork = new RecordingUnitOfWork();
+        var service = CreateService(saves, unitOfWork, cache, new FakeSessionProvider(state));
+
+        // Act
+        await service.SaveAutoAsync(sessionId);
+
+        // Assert
+        // notes/fixes-1.2.0.md, п. 11: именно замена, а не новая строка — иначе автосейвов
+        // на сессию становится больше одного.
+        saves.ReplacedSessionIds.Should().ContainSingle().Which.Should().Be(sessionId);
+        saves.ReplacedSaves.Should().ContainSingle().Which.Type.Should().Be(SaveType.Auto);
+        saves.Created.Should().BeEmpty();
+        unitOfWork.Saves.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task SaveAutoAsync_WhenStateIsNotCached_DoesNothing()
+    {
+        // Arrange
+        var saves = new RecordingSaveRepository();
+        var unitOfWork = new RecordingUnitOfWork();
+        var service = CreateService(saves, unitOfWork, new EmptyStateCache(), new FakeSessionProvider(state: null));
+
+        // Act
+        await service.SaveAutoAsync(Guid.NewGuid());
+
+        // Assert
+        saves.ReplacedSaves.Should().BeEmpty();
+        unitOfWork.Saves.Should().Be(0);
+    }
+
     private static SaveService CreateService(
         ISaveRepository saves,
         IUnitOfWork unitOfWork,
@@ -94,6 +133,19 @@ public class SaveServiceTests
             GetCalls++;
             return Task.FromResult<State?>(null);
         }
+
+        public Task DeleteAsync(Guid sessionId, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    private sealed class StubStateCache : IStateCacheService
+    {
+        private readonly State? _state;
+
+        public StubStateCache(State? state) => _state = state;
+
+        public Task SetAsync(Guid sessionId, State state, CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<State?> GetAsync(Guid sessionId, CancellationToken ct = default) => Task.FromResult(_state);
 
         public Task DeleteAsync(Guid sessionId, CancellationToken ct = default) => Task.CompletedTask;
     }
