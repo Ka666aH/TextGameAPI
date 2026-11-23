@@ -13,7 +13,6 @@ namespace TextGame.Presentation.Controllers
     /// </summary>
     [ApiController]
     [BypassRefresh]
-    [EnableRateLimiting(RateLimiter.AuthPolicyName)]
     [Route("auth")]
     public class AuthController : ControllerBase
     {
@@ -23,6 +22,8 @@ namespace TextGame.Presentation.Controllers
             _authService = authService;
         }
         [HttpPost("tokens")]
+        // Лимит только на вход: иначе игрок, упёршийся в 429, не может даже разлогиниться (п. 12).
+        [EnableRateLimiting(RateLimiter.AuthPolicyName)]
         public async Task<IActionResult> LogInAsync([FromBody] AuthRequest authRequest, CancellationToken ct)
         {
             string fingerprint = HttpContext.GetFingerprint();

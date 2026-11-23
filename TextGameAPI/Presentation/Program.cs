@@ -1,7 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using System.Globalization;
+using System.Text.Json;
 using TextGame.Application.DTO;
 using TextGame.Application.Factories;
 using TextGame.Application.Generators;
@@ -14,6 +17,7 @@ using TextGame.Application.GuardAttributes;
 using TextGame.Application.Orchestrators;
 using TextGame.Application.Services;
 using TextGame.Application.Validators;
+using TextGame.Domain.GameText;
 using TextGame.Infrastructure.Cache;
 using TextGame.Infrastructure.Configuration;
 using TextGame.Infrastructure.Database;
@@ -124,6 +128,8 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.RequireSession, policy => policy.RequireClaim(AccessClaims.SessionId));
 
 builder.Services.AddHttpContextAccessor();
+// camelCase в теле 429, как у остальных ProblemDetails (notes/backend-requests.md п. 12).
+var problemJsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -139,6 +145,26 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSettings.RateLimitWindow,
                 QueueLimit = TimeSettings.RateLimitQueueLimit
             }));
+
+    // 429 без тела и Retry-After заставлял клиента гадать, когда повторять (п. 12).
+    options.OnRejected = async (context, token) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
+            context.HttpContext.Response.Headers["Retry-After"] =
+                ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);
+
+        var problem = new ProblemDetails
+        {
+            Status = StatusCodes.Status429TooManyRequests,
+            Title = ExceptionsLabels.RateLimitedCode,
+            Detail = ExceptionsLabels.RateLimitedMessage,
+            Instance = context.HttpContext.Request.Path
+        };
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        await context.HttpContext.Response.WriteAsJsonAsync(problem, problemJsonOptions, "application/problem+json", token);
+    };
 });
 builder.Services.AddHealthChecks();
 

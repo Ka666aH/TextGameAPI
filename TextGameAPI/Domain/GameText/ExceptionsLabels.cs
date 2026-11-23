@@ -121,6 +121,9 @@ namespace TextGame.Domain.GameText
         public const string ValidationErrorCode = "VALIDATION_ERROR";
         public const string ValidationErrorMessage = "Одна или несколько ошибок валидации.";
 
+        public const string RateLimitedCode = "RATE_LIMITED";
+        public const string RateLimitedMessage = "Слишком много запросов. Повторите попытку позже.";
+
         public const string InternalServerErrorCode = "INTERNAL_SERVER_ERROR";
         public const string InternalServerErrorMessage = "Непредвиденная ошибка сервера.";
     }
